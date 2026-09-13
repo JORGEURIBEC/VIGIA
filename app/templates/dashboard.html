@@ -1,0 +1,726 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Dashboard | VIGIA
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- ======================================================
+     ENCABEZADO
+====================================================== -->
+
+<section class="page-header">
+
+    <div>
+
+        <p class="page-eyebrow">
+            CENTRO DE MONITOREO
+        </p>
+
+        <h1>
+            Dashboard de Seguridad
+        </h1>
+
+        <p class="page-description">
+            Visualización general de eventos, alertas e
+            incidentes registrados en VIGIA.
+        </p>
+
+    </div>
+
+
+    <div class="page-actions">
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            id="btnActualizarDashboard"
+        >
+            Actualizar
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     INDICADORES PRINCIPALES
+====================================================== -->
+
+<section class="stats-grid">
+
+
+    <!-- EVENTOS -->
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-label">
+                Eventos
+            </span>
+
+            <span class="stat-icon">
+                ◉
+            </span>
+
+        </div>
+
+        <strong
+            class="stat-value"
+            id="totalEventos"
+        >
+            --
+        </strong>
+
+        <span class="stat-description">
+            Eventos de seguridad registrados
+        </span>
+
+    </article>
+
+
+    <!-- ALERTAS -->
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-label">
+                Alertas
+            </span>
+
+            <span class="stat-icon">
+                ⚠
+            </span>
+
+        </div>
+
+        <strong
+            class="stat-value"
+            id="totalAlertas"
+        >
+            --
+        </strong>
+
+        <span class="stat-description">
+            Alertas generadas
+        </span>
+
+    </article>
+
+
+    <!-- INCIDENTES -->
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-label">
+                Incidentes
+            </span>
+
+            <span class="stat-icon">
+                ◆
+            </span>
+
+        </div>
+
+        <strong
+            class="stat-value"
+            id="totalIncidentes"
+        >
+            --
+        </strong>
+
+        <span class="stat-description">
+            Incidentes registrados
+        </span>
+
+    </article>
+
+
+    <!-- INCIDENTES ABIERTOS -->
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-label">
+                Incidentes activos
+            </span>
+
+            <span class="stat-icon">
+                ●
+            </span>
+
+        </div>
+
+        <strong
+            class="stat-value"
+            id="incidentesActivos"
+        >
+            --
+        </strong>
+
+        <span class="stat-description">
+            Requieren seguimiento
+        </span>
+
+    </article>
+
+
+</section>
+
+
+<!-- ======================================================
+     SEGUNDA FILA
+====================================================== -->
+
+<section class="dashboard-grid">
+
+
+    <!-- EVENTOS POR SEVERIDAD -->
+
+    <article class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <p class="card-eyebrow">
+                    DISTRIBUCIÓN
+                </p>
+
+                <h2>
+                    Eventos por severidad
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div id="eventosSeveridad">
+
+            <p class="empty-state">
+                Cargando información...
+            </p>
+
+        </div>
+
+    </article>
+
+
+
+    <!-- ALERTAS POR ESTADO -->
+
+    <article class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <p class="card-eyebrow">
+                    MONITOREO
+                </p>
+
+                <h2>
+                    Alertas por estado
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div id="alertasEstado">
+
+            <p class="empty-state">
+                Cargando información...
+            </p>
+
+        </div>
+
+    </article>
+
+
+
+    <!-- INCIDENTES POR PRIORIDAD -->
+
+    <article class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <p class="card-eyebrow">
+                    INCIDENTES
+                </p>
+
+                <h2>
+                    Incidentes por prioridad
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div id="incidentesPrioridad">
+
+            <p class="empty-state">
+                Cargando información...
+            </p>
+
+        </div>
+
+    </article>
+
+
+
+    <!-- INCIDENTES POR ESTADO -->
+
+    <article class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <p class="card-eyebrow">
+                    SEGUIMIENTO
+                </p>
+
+                <h2>
+                    Incidentes por estado
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div id="incidentesEstado">
+
+            <p class="empty-state">
+                Cargando información...
+            </p>
+
+        </div>
+
+    </article>
+
+
+</section>
+
+
+<!-- ======================================================
+     MENSAJE DE ESTADO
+====================================================== -->
+
+<div
+    id="mensajeDashboard"
+    class="app-message"
+    hidden
+>
+</div>
+
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        cargarDashboard();
+
+
+        const botonActualizar =
+            document.getElementById(
+                "btnActualizarDashboard"
+            );
+
+
+        if (botonActualizar) {
+
+            botonActualizar.addEventListener(
+                "click",
+                cargarDashboard
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================================
+   CARGAR DASHBOARD
+========================================================== */
+
+async function cargarDashboard() {
+
+    const mensaje =
+        document.getElementById(
+            "mensajeDashboard"
+        );
+
+
+    try {
+
+        const token =
+            localStorage.getItem(
+                "vigia_access_token"
+            );
+
+
+        /*
+        Si todavía no existe token en el navegador,
+        mostramos la interfaz igualmente.
+
+        El login web será el siguiente módulo.
+        */
+
+        const headers = {
+            "Content-Type": "application/json"
+        };
+
+
+        if (token) {
+
+            headers["Authorization"] =
+                `Bearer ${token}`;
+
+        }
+
+
+        const respuesta =
+            await fetch(
+                "/api/v1/dashboard/resumen",
+                {
+                    method: "GET",
+                    headers: headers
+                }
+            );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `HTTP ${respuesta.status}`
+            );
+
+        }
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (
+            resultado.estado !== "OK" ||
+            !resultado.data
+        ) {
+
+            throw new Error(
+                "No fue posible obtener los datos."
+            );
+
+        }
+
+
+        mostrarDashboard(
+            resultado.data
+        );
+
+
+        if (mensaje) {
+
+            mensaje.hidden = true;
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Error al cargar dashboard:",
+            error
+        );
+
+
+        if (mensaje) {
+
+            mensaje.textContent =
+                "El Dashboard está disponible, pero todavía " +
+                "se requiere iniciar sesión para consultar " +
+                "los indicadores protegidos.";
+
+            mensaje.hidden = false;
+
+        }
+
+    }
+
+}
+
+
+/* ==========================================================
+   MOSTRAR DATOS
+========================================================== */
+
+function mostrarDashboard(data) {
+
+    asignarTexto(
+        "totalEventos",
+        data.total_eventos ?? 0
+    );
+
+    asignarTexto(
+        "totalAlertas",
+        data.total_alertas ?? 0
+    );
+
+    asignarTexto(
+        "totalIncidentes",
+        data.total_incidentes ?? 0
+    );
+
+
+    const incidentesEstado =
+        data.incidentes_por_estado || {};
+
+
+    const activos = Object.entries(
+        incidentesEstado
+    )
+        .filter(
+            ([estado]) =>
+                estado !== "CERRADO"
+        )
+        .reduce(
+            (acumulado, [, cantidad]) =>
+                acumulado + cantidad,
+            0
+        );
+
+
+    asignarTexto(
+        "incidentesActivos",
+        activos
+    );
+
+
+    mostrarDistribucion(
+        "eventosSeveridad",
+        data.eventos_por_severidad
+    );
+
+
+    mostrarDistribucion(
+        "alertasEstado",
+        data.alertas_por_estado
+    );
+
+
+    mostrarDistribucion(
+        "incidentesPrioridad",
+        data.incidentes_por_prioridad
+    );
+
+
+    mostrarDistribucion(
+        "incidentesEstado",
+        data.incidentes_por_estado
+    );
+
+}
+
+
+/* ==========================================================
+   ASIGNAR TEXTO
+========================================================== */
+
+function asignarTexto(
+    idElemento,
+    valor
+) {
+
+    const elemento =
+        document.getElementById(
+            idElemento
+        );
+
+
+    if (elemento) {
+
+        elemento.textContent =
+            valor;
+
+    }
+
+}
+
+
+/* ==========================================================
+   MOSTRAR DISTRIBUCIÓN
+========================================================== */
+
+function mostrarDistribucion(
+    contenedorId,
+    datos
+) {
+
+    const contenedor =
+        document.getElementById(
+            contenedorId
+        );
+
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    contenedor.innerHTML = "";
+
+
+    const elementos =
+        Object.entries(
+            datos || {}
+        );
+
+
+    if (elementos.length === 0) {
+
+        contenedor.innerHTML = `
+            <p class="empty-state">
+                Sin información disponible.
+            </p>
+        `;
+
+        return;
+
+    }
+
+
+    elementos.forEach(
+        ([nombre, cantidad]) => {
+
+            const fila =
+                document.createElement(
+                    "div"
+                );
+
+
+            fila.className =
+                "metric-row";
+
+
+            fila.innerHTML = `
+
+                <div class="metric-info">
+
+                    <span class="metric-name">
+                        ${formatearTexto(nombre)}
+                    </span>
+
+                    <strong class="metric-value">
+                        ${cantidad}
+                    </strong>
+
+                </div>
+
+                <div class="metric-bar">
+
+                    <div
+                        class="metric-bar-fill"
+                        style="width: ${calcularPorcentaje(
+                            cantidad,
+                            elementos
+                        )}%"
+                    >
+                    </div>
+
+                </div>
+            `;
+
+
+            contenedor.appendChild(
+                fila
+            );
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+   PORCENTAJE
+========================================================== */
+
+function calcularPorcentaje(
+    cantidad,
+    elementos
+) {
+
+    const total =
+        elementos.reduce(
+            (acumulado, [, valor]) =>
+                acumulado +
+                Number(valor || 0),
+            0
+        );
+
+
+    if (total === 0) {
+        return 0;
+    }
+
+
+    return Math.max(
+        4,
+        Math.round(
+            (
+                Number(cantidad) /
+                total
+            ) * 100
+        )
+    );
+
+}
+
+
+/* ==========================================================
+   FORMATEAR TEXTO
+========================================================== */
+
+function formatearTexto(texto) {
+
+    return String(texto)
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .replace(
+            /\b\w/g,
+            letra =>
+                letra.toUpperCase()
+        );
+
+}
+
+</script>
+
+{% endblock %}

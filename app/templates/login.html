@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="VIGIA - Plataforma Web de Monitoreo, Análisis y Gestión de Eventos de Seguridad Informática"
+    >
+
+    <title>Iniciar sesión | VIGIA</title>
+
+    <!-- Hoja de estilos principal de VIGIA -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/styles.css') }}"
+    >
+
+    <style>
+
+        /* =========================================================
+           LOGIN VIGIA
+           ========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.login-page {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 15% 15%,
+                    rgba(37, 99, 235, 0.16),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 85% 80%,
+                    rgba(6, 182, 212, 0.12),
+                    transparent 30%
+                ),
+                #08111f;
+
+            color: #0f172a;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+        }
+
+
+        /* =========================================================
+           CONTENEDOR
+           ========================================================= */
+
+        .login-container {
+            width: 100%;
+            max-width: 1080px;
+            min-height: 640px;
+
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+
+            background: #ffffff;
+
+            border-radius: 24px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.35);
+        }
+
+
+        /* =========================================================
+           ÁREA INSTITUCIONAL
+           ========================================================= */
+
+        .login-brand {
+            position: relative;
+
+            padding: 58px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #071325 0%,
+                    #0d1b31 55%,
+                    #102a46 100%
+                );
+        }
+
+
+        .login-brand::before {
+            content: "";
+
+            position: absolute;
+
+            width: 300px;
+            height: 300px;
+
+            border-radius: 50%;
+
+            background: rgba(14, 165, 233, 0.08);
+
+            top: -100px;
+            right: -80px;
+        }
+
+
+        .login-brand::after {
+            content: "";
+
+            position: absolute;
+
+            width: 220px;
+            height: 220px;
+
+            border-radius: 50%;
+
+            background: rgba(6, 182, 212, 0.06);
+
+            bottom: -80px;
+            left: -70px;
+        }
+
+
+        .brand-content,
+        .brand-footer {
+            position: relative;
+            z-index: 2;
+        }
+
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+
+            margin-bottom: 65px;
+        }
+
+
+        .brand-logo-icon {
+            width: 54px;
+            height: 54px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            font-size: 28px;
+            font-weight: 800;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #06b6d4
+                );
+
+            box-shadow:
+                0 12px 28px rgba(37, 99, 235, 0.35);
+        }
+
+
+        .brand-logo-text h1 {
+            margin: 0;
+
+            font-size: 25px;
+            letter-spacing: 0.04em;
+        }
+
+
+        .brand-logo-text span {
+            display: block;
+
+            margin-top: 3px;
+
+            font-size: 12px;
+
+            color: #94a3b8;
+        }
+
+
+        .brand-main-title {
+            margin: 0 0 18px;
+
+            max-width: 480px;
+
+            font-size: 42px;
+            line-height: 1.1;
+            font-weight: 750;
+
+            letter-spacing: -0.03em;
+        }
+
+
+        .brand-description {
+            max-width: 500px;
+
+            margin: 0;
+
+            color: #cbd5e1;
+
+            font-size: 16px;
+            line-height: 1.75;
+        }
+
+
+        .brand-features {
+            display: grid;
+
+            margin-top: 40px;
+
+            gap: 17px;
+        }
+
+
+        .brand-feature {
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            color: #dbeafe;
+
+            font-size: 14px;
+        }
+
+
+        .brand-feature-icon {
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 8px;
+
+            color: #67e8f9;
+
+            background: rgba(6, 182, 212, 0.12);
+
+            border: 1px solid rgba(103, 232, 249, 0.12);
+        }
+
+
+        .brand-footer {
+            margin-top: 45px;
+
+            color: #64748b;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================================
+           FORMULARIO
+           ========================================================= */
+
+        .login-panel {
+            padding: 60px 64px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            background: #ffffff;
+        }
+
+
+        .login-header {
+            margin-bottom: 36px;
+        }
+
+
+        .login-eyebrow {
+            margin-bottom: 8px;
+
+            color: #2563eb;
+
+            font-size: 12px;
+            font-weight: 750;
+
+            letter-spacing: 0.08em;
+
+            text-transform: uppercase;
+        }
+
+
+        .login-title {
+            margin: 0 0 11px;
+
+            color: #0f172a;
+
+            font-size: 32px;
+            font-weight: 750;
+
+            letter-spacing: -0.025em;
+        }
+
+
+        .login-subtitle {
+            margin: 0;
+
+            color: #64748b;
+
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+
+        /* =========================================================
+           FORMULARIO
+           ========================================================= */
+
+        .login-form {
+            width: 100%;
+        }
+
+
+        .login-field {
+            margin-bottom: 22px;
+        }
+
+
+        .login-label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #334155;
+
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+
+        .login-input-wrapper {
+            position: relative;
+        }
+
+
+        .login-input {
+            width: 100%;
+            height: 50px;
+
+            padding: 0 46px 0 15px;
+
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+
+            outline: none;
+
+            color: #0f172a;
+            background: #ffffff;
+
+            font-size: 14px;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .login-input:hover {
+            border-color: #94a3b8;
+        }
+
+
+        .login-input:focus {
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 4px rgba(37, 99, 235, 0.10);
+        }
+
+
+        .login-input::placeholder {
+            color: #94a3b8;
+        }
+
+
+        .password-toggle {
+            position: absolute;
+
+            top: 50%;
+            right: 13px;
+
+            transform: translateY(-50%);
+
+            width: 32px;
+            height: 32px;
+
+            border: none;
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            color: #64748b;
+            background: transparent;
+
+            font-size: 16px;
+        }
+
+
+        .password-toggle:hover {
+            background: #f1f5f9;
+        }
+
+
+        /* =========================================================
+           MENSAJES
+           ========================================================= */
+
+        .login-message {
+            display: none;
+
+            margin-bottom: 20px;
+
+            padding: 12px 14px;
+
+            border-radius: 9px;
+
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+        .login-message.error {
+            display: block;
+
+            color: #991b1b;
+
+            background: #fef2f2;
+
+            border: 1px solid #fecaca;
+        }
+
+
+        .login-message.success {
+            display: block;
+
+            color: #166534;
+
+            background: #f0fdf4;
+
+            border: 1px solid #bbf7d0;
+        }
+
+
+        /* =========================================================
+           BOTÓN
+           ========================================================= */
+
+        .login-button {
+            width: 100%;
+            height: 51px;
+
+            border: none;
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 10px;
+
+            color: #ffffff;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #0ea5e9
+                );
+
+            box-shadow:
+                0 10px 22px rgba(37, 99, 235, 0.22);
+
+            transition:
+                transform 0.15s ease,
+                box-shadow 0.15s ease,
+                opacity 0.15s ease;
+        }
+
+
+        .login-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 13px 28px rgba(37, 99, 235, 0.28);
+        }
+
+
+        .login-button:disabled {
+            cursor: not-allowed;
+
+            opacity: 0.65;
+        }
+
+
+        .login-spinner {
+            display: none;
+
+            width: 17px;
+            height: 17px;
+
+            border: 2px solid rgba(255, 255, 255, 0.35);
+
+            border-top-color: #ffffff;
+
+            border-radius: 50%;
+
+            animation: login-spin 0.8s linear infinite;
+        }
+
+
+        @keyframes login-spin {
+
+            to {
+                transform: rotate(360deg);
+            }
+
+        }
+
+
+        /* =========================================================
+           RECUPERAR CONTRASEÑA
+           ========================================================= */
+
+        .login-options {
+            display: flex;
+
+            align-items: center;
+            justify-content: flex-end;
+
+            margin:
+                -8px
+                0
+                22px;
+        }
+
+
+        .login-link {
+            border: none;
+
+            padding: 0;
+
+            cursor: pointer;
+
+            color: #2563eb;
+            background: transparent;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            text-decoration: none;
+        }
+
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+
+        /* =========================================================
+           PIE
+           ========================================================= */
+
+        .login-security {
+            margin-top: 28px;
+
+            padding-top: 22px;
+
+            border-top: 1px solid #e2e8f0;
+
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            color: #64748b;
+
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+
+        .security-dot {
+            width: 9px;
+            height: 9px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            background: #16a34a;
+
+            box-shadow:
+                0 0 0 4px rgba(22, 163, 74, 0.10);
+        }
+
+
+        /* =========================================================
+           RESPONSIVE
+           ========================================================= */
+
+        @media (max-width: 900px) {
+
+            body.login-page {
+                padding: 20px;
+            }
+
+
+            .login-container {
+                max-width: 580px;
+
+                grid-template-columns: 1fr;
+
+                min-height: auto;
+            }
+
+
+            .login-brand {
+                padding: 34px;
+            }
+
+
+            .brand-logo {
+                margin-bottom: 28px;
+            }
+
+
+            .brand-main-title {
+                font-size: 30px;
+            }
+
+
+            .brand-features {
+                display: none;
+            }
+
+
+            .brand-footer {
+                margin-top: 25px;
+            }
+
+
+            .login-panel {
+                padding: 42px 38px;
+            }
+
+        }
+
+
+        @media (max-width: 480px) {
+
+            body.login-page {
+                padding: 0;
+
+                align-items: stretch;
+
+                background: #ffffff;
+            }
+
+
+            .login-container {
+                min-height: 100vh;
+
+                border-radius: 0;
+
+                box-shadow: none;
+            }
+
+
+            .login-brand {
+                padding: 28px 24px;
+            }
+
+
+            .brand-description {
+                font-size: 14px;
+            }
+
+
+            .login-panel {
+                padding: 35px 24px;
+            }
+
+
+            .login-title {
+                font-size: 28px;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body class="login-page">
+
+    <main class="login-container">
+
+        <!-- =====================================================
+             INFORMACIÓN INSTITUCIONAL
+             ===================================================== -->
+
+        <section class="login-brand">
+
+            <div class="brand-content">
+
+                <div class="brand-logo">
+
+                    <div class="brand-logo-icon">
+                        V
+                    </div>
+
+                    <div class="brand-logo-text">
+                        <h1>VIGIA</h1>
+                        <span>Seguridad Informática</span>
+                    </div>
+
+                </div>
+
+
+                <h2 class="brand-main-title">
+                    Monitoreo y gestión de seguridad en un solo lugar.
+                </h2>
+
+
+                <p class="brand-description">
+                    Plataforma Web de Monitoreo, Análisis y Gestión
+                    de Eventos de Seguridad Informática para
+                    NovaTech SpA.
+                </p>
+
+
+                <div class="brand-features">
+
+                    <div class="brand-feature">
+
+                        <div class="brand-feature-icon">
+                            ◎
+                        </div>
+
+                        <span>
+                            Centralización de eventos de seguridad
+                        </span>
+
+                    </div>
+
+
+                    <div class="brand-feature">
+
+                        <div class="brand-feature-icon">
+                            △
+                        </div>
+
+                        <span>
+                            Detección y seguimiento de alertas
+                        </span>
+
+                    </div>
+
+
+                    <div class="brand-feature">
+
+                        <div class="brand-feature-icon">
+                            ◇
+                        </div>
+
+                        <span>
+                            Gestión trazable de incidentes
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="brand-footer">
+                VIGIA · Visualización Integrada y Gestión de
+                Incidentes y Alertas
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             LOGIN
+             ===================================================== -->
+
+        <section class="login-panel">
+
+            <div class="login-header">
+
+                <div class="login-eyebrow">
+                    Acceso seguro
+                </div>
+
+                <h2 class="login-title">
+                    Iniciar sesión
+                </h2>
+
+                <p class="login-subtitle">
+                    Ingrese sus credenciales para acceder al
+                    centro de monitoreo de VIGIA.
+                </p>
+
+            </div>
+
+
+            <div
+                id="loginMessage"
+                class="login-message"
+                role="alert"
+            ></div>
+
+
+            <form
+                id="loginForm"
+                class="login-form"
+                autocomplete="on"
+            >
+
+                <!-- CORREO -->
+
+                <div class="login-field">
+
+                    <label
+                        for="correo"
+                        class="login-label"
+                    >
+                        Correo electrónico
+                    </label>
+
+
+                    <div class="login-input-wrapper">
+
+                        <input
+                            type="email"
+                            id="correo"
+                            name="correo"
+                            class="login-input"
+                            placeholder="usuario@novatech.cl"
+                            autocomplete="username"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONTRASEÑA -->
+
+                <div class="login-field">
+
+                    <label
+                        for="password"
+                        class="login-label"
+                    >
+                        Contraseña
+                    </label>
+
+
+                    <div class="login-input-wrapper">
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="login-input"
+                            placeholder="Ingrese su contraseña"
+                            autocomplete="current-password"
+                            required
+                        >
+
+
+                        <button
+                            type="button"
+                            id="passwordToggle"
+                            class="password-toggle"
+                            aria-label="Mostrar contraseña"
+                            title="Mostrar contraseña"
+                        >
+                            ◉
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="login-options">
+
+                    <button
+                        type="button"
+                        class="login-link"
+                        id="forgotPasswordButton"
+                    >
+                        ¿Olvidó su contraseña?
+                    </button>
+
+                </div>
+
+
+                <!-- BOTÓN -->
+
+                <button
+                    type="submit"
+                    id="loginButton"
+                    class="login-button"
+                >
+
+                    <span
+                        id="loginSpinner"
+                        class="login-spinner"
+                    ></span>
+
+                    <span id="loginButtonText">
+                        Ingresar a VIGIA
+                    </span>
+
+                </button>
+
+            </form>
+
+
+            <div class="login-security">
+
+                <span class="security-dot"></span>
+
+                <span>
+                    Acceso protegido mediante autenticación
+                    y control de permisos por perfil.
+                </span>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         JAVASCRIPT DEL LOGIN
+         ========================================================= -->
+
+    <script>
+
+        "use strict";
+
+
+        /* =========================================================
+           CONFIGURACIÓN
+           ========================================================= */
+
+        const LOGIN_CONFIG = {
+
+            LOGIN_URL: "/api/v1/auth/login",
+
+            PROFILE_URL: "/api/v1/auth/me",
+
+            TOKEN_KEY: "vigia_access_token",
+
+            USER_KEY: "vigia_usuario",
+
+            DASHBOARD_URL: "/dashboard"
+
+        };
+
+
+        /* =========================================================
+           ELEMENTOS
+           ========================================================= */
+
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const correoInput =
+            document.getElementById("correo");
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const loginButton =
+            document.getElementById("loginButton");
+
+        const loginButtonText =
+            document.getElementById("loginButtonText");
+
+        const loginSpinner =
+            document.getElementById("loginSpinner");
+
+        const loginMessage =
+            document.getElementById("loginMessage");
+
+        const passwordToggle =
+            document.getElementById("passwordToggle");
+
+        const forgotPasswordButton =
+            document.getElementById("forgotPasswordButton");
+
+
+        /* =========================================================
+           MOSTRAR / OCULTAR CONTRASEÑA
+           ========================================================= */
+
+        passwordToggle.addEventListener("click", () => {
+
+            const mostrando =
+                passwordInput.type === "text";
+
+
+            passwordInput.type =
+                mostrando
+                    ? "password"
+                    : "text";
+
+
+            passwordToggle.textContent =
+                mostrando
+                    ? "◉"
+                    : "◌";
+
+
+            passwordToggle.setAttribute(
+                "aria-label",
+                mostrando
+                    ? "Mostrar contraseña"
+                    : "Ocultar contraseña"
+            );
+
+        });
+
+
+        /* =========================================================
+           MENSAJES
+           ========================================================= */
+
+        function mostrarMensaje(
+            mensaje,
+            tipo = "error"
+        ) {
+
+            loginMessage.textContent = mensaje;
+
+            loginMessage.className =
+                `login-message ${tipo}`;
+
+        }
+
+
+        function limpiarMensaje() {
+
+            loginMessage.textContent = "";
+
+            loginMessage.className =
+                "login-message";
+
+        }
+
+
+        /* =========================================================
+           ESTADO DEL BOTÓN
+           ========================================================= */
+
+        function establecerCarga(cargando) {
+
+            loginButton.disabled = cargando;
+
+
+            loginSpinner.style.display =
+                cargando
+                    ? "inline-block"
+                    : "none";
+
+
+            loginButtonText.textContent =
+                cargando
+                    ? "Verificando credenciales..."
+                    : "Ingresar a VIGIA";
+
+        }
+
+
+        /* =========================================================
+           EXTRAER TOKEN
+           Permite pequeñas variaciones en la respuesta de la API.
+           ========================================================= */
+
+        function obtenerTokenRespuesta(respuesta) {
+
+            return (
+                respuesta?.access_token
+                ||
+                respuesta?.token
+                ||
+                respuesta?.data?.access_token
+                ||
+                respuesta?.data?.token
+                ||
+                null
+            );
+
+        }
+
+
+        /* =========================================================
+           EXTRAER USUARIO
+           ========================================================= */
+
+        function obtenerUsuarioRespuesta(respuesta) {
+
+            return (
+                respuesta?.usuario
+                ||
+                respuesta?.user
+                ||
+                respuesta?.data?.usuario
+                ||
+                respuesta?.data?.user
+                ||
+                null
+            );
+
+        }
+
+
+        /* =========================================================
+           CONSULTAR PERFIL
+           ========================================================= */
+
+        async function obtenerPerfil(token) {
+
+            try {
+
+                const respuesta = await fetch(
+                    LOGIN_CONFIG.PROFILE_URL,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Accept": "application/json",
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+
+                if (!respuesta.ok) {
+                    return null;
+                }
+
+
+                const datos =
+                    await respuesta.json();
+
+
+                return (
+                    datos?.data
+                    ||
+                    datos?.usuario
+                    ||
+                    datos
+                    ||
+                    null
+                );
+
+            }
+            catch (error) {
+
+                console.error(
+                    "No fue posible obtener el perfil:",
+                    error
+                );
+
+                return null;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           LOGIN
+           ========================================================= */
+
+        loginForm.addEventListener(
+            "submit",
+            async (evento) => {
+
+                evento.preventDefault();
+
+                limpiarMensaje();
+
+
+                const correo =
+                    correoInput.value.trim();
+
+                const password =
+                    passwordInput.value;
+
+
+                /* ---------------------------
+                   VALIDACIONES
+                   --------------------------- */
+
+                if (!correo) {
+
+                    mostrarMensaje(
+                        "Debe ingresar su correo electrónico."
+                    );
+
+                    correoInput.focus();
+
+                    return;
+
+                }
+
+
+                if (!password) {
+
+                    mostrarMensaje(
+                        "Debe ingresar su contraseña."
+                    );
+
+                    passwordInput.focus();
+
+                    return;
+
+                }
+
+
+                establecerCarga(true);
+
+
+                try {
+
+                    /* ---------------------------
+                       PETICIÓN AL BACKEND
+                       --------------------------- */
+
+                    const respuesta = await fetch(
+                        LOGIN_CONFIG.LOGIN_URL,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                correo: correo,
+                                password: password
+                            })
+                        }
+                    );
+
+
+                    let datos = {};
+
+
+                    try {
+
+                        datos =
+                            await respuesta.json();
+
+                    }
+                    catch {
+
+                        datos = {};
+
+                    }
+
+
+                    /* ---------------------------
+                       ERROR DE AUTENTICACIÓN
+                       --------------------------- */
+
+                    if (!respuesta.ok) {
+
+                        localStorage.removeItem(
+                            LOGIN_CONFIG.TOKEN_KEY
+                        );
+
+                        localStorage.removeItem(
+                            LOGIN_CONFIG.USER_KEY
+                        );
+
+
+                        const mensaje =
+                            datos?.mensaje
+                            ||
+                            datos?.message
+                            ||
+                            datos?.msg
+                            ||
+                            datos?.error
+                            ||
+                            "Correo o contraseña incorrectos.";
+
+
+                        mostrarMensaje(mensaje);
+
+                        return;
+
+                    }
+
+
+                    /* ---------------------------
+                       OBTENER JWT
+                       --------------------------- */
+
+                    const token =
+                        obtenerTokenRespuesta(datos);
+
+
+                    if (!token) {
+
+                        throw new Error(
+                            "La API autenticó al usuario, pero no devolvió un token de acceso."
+                        );
+
+                    }
+
+
+                    /* ---------------------------
+                       GUARDAR TOKEN
+                       --------------------------- */
+
+                    localStorage.setItem(
+                        LOGIN_CONFIG.TOKEN_KEY,
+                        token
+                    );
+
+
+                    /* ---------------------------
+                       OBTENER USUARIO
+                       --------------------------- */
+
+                    let usuario =
+                        obtenerUsuarioRespuesta(datos);
+
+
+                    /*
+                     * Si el login no devuelve
+                     * todos los datos del usuario,
+                     * consultamos /auth/me.
+                     */
+
+                    if (!usuario) {
+
+                        usuario =
+                            await obtenerPerfil(token);
+
+                    }
+
+
+                    /* ---------------------------
+                       GUARDAR USUARIO
+                       --------------------------- */
+
+                    if (usuario) {
+
+                        localStorage.setItem(
+                            LOGIN_CONFIG.USER_KEY,
+                            JSON.stringify(usuario)
+                        );
+
+                    }
+
+
+                    /* ---------------------------
+                       ÉXITO
+                       --------------------------- */
+
+                    mostrarMensaje(
+                        "Autenticación correcta. Ingresando al sistema...",
+                        "success"
+                    );
+
+
+                    setTimeout(() => {
+
+                        window.location.href =
+                            LOGIN_CONFIG.DASHBOARD_URL;
+
+                    }, 450);
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Error durante el inicio de sesión:",
+                        error
+                    );
+
+
+                    localStorage.removeItem(
+                        LOGIN_CONFIG.TOKEN_KEY
+                    );
+
+
+                    mostrarMensaje(
+                        "No fue posible iniciar sesión. Verifique que el servidor VIGIA se encuentre funcionando."
+                    );
+
+                }
+                finally {
+
+                    establecerCarga(false);
+
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           RECUPERAR CONTRASEÑA
+           ========================================================= */
+
+        forgotPasswordButton.addEventListener(
+            "click",
+            () => {
+
+                mostrarMensaje(
+                    "La recuperación de credenciales será gestionada mediante el correo registrado en VIGIA.",
+                    "success"
+                );
+
+            }
+        );
+
+
+        /* =========================================================
+           VERIFICAR SESIÓN EXISTENTE
+           ========================================================= */
+
+        async function verificarSesionExistente() {
+
+            const token =
+                localStorage.getItem(
+                    LOGIN_CONFIG.TOKEN_KEY
+                );
+
+
+            if (!token) {
+                return;
+            }
+
+
+            const usuario =
+                await obtenerPerfil(token);
+
+
+            if (usuario) {
+
+                localStorage.setItem(
+                    LOGIN_CONFIG.USER_KEY,
+                    JSON.stringify(usuario)
+                );
+
+
+                window.location.href =
+                    LOGIN_CONFIG.DASHBOARD_URL;
+
+                return;
+
+            }
+
+
+            /*
+             * Token antiguo o expirado.
+             */
+
+            localStorage.removeItem(
+                LOGIN_CONFIG.TOKEN_KEY
+            );
+
+            localStorage.removeItem(
+                LOGIN_CONFIG.USER_KEY
+            );
+
+        }
+
+
+        verificarSesionExistente();
+
+    </script>
+
+</body>
+
+</html>

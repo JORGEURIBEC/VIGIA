@@ -1,0 +1,2900 @@
+/* =========================================================
+   VIGIA
+   Plataforma Web de Monitoreo, Análisis y Gestión
+   de Eventos de Seguridad Informática
+
+   Archivo:
+   app/static/css/styles.css
+========================================================= */
+
+
+/* =========================================================
+   1. VARIABLES GENERALES
+========================================================= */
+
+:root {
+
+    /* Colores principales */
+    --bg-main: #0b1120;
+    --bg-secondary: #111827;
+    --bg-sidebar: #0f172a;
+    --bg-card: #ffffff;
+    --bg-page: #f1f5f9;
+
+    /* Azul institucional VIGIA */
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+
+    /* Cian de seguridad */
+    --accent: #06b6d4;
+    --accent-dark: #0891b2;
+
+    /* Texto */
+    --text-main: #0f172a;
+    --text-secondary: #64748b;
+    --text-light: #f8fafc;
+    --text-sidebar: #cbd5e1;
+    --text-muted: #94a3b8;
+
+    /* Bordes */
+    --border: #e2e8f0;
+    --border-dark: #334155;
+
+    /* Estados */
+    --success: #16a34a;
+    --success-bg: #dcfce7;
+
+    --warning: #d97706;
+    --warning-bg: #fef3c7;
+
+    --danger: #dc2626;
+    --danger-bg: #fee2e2;
+
+    --critical: #991b1b;
+    --critical-bg: #fecaca;
+
+    --info: #0284c7;
+    --info-bg: #e0f2fe;
+
+    /* Dimensiones */
+    --sidebar-width: 260px;
+    --topbar-height: 74px;
+
+    /* Efectos */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   2. RESET
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family:
+        "Segoe UI",
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background-color: var(--bg-page);
+    color: var(--text-main);
+
+    min-height: 100vh;
+
+    line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+
+/* =========================================================
+   3. ESTRUCTURA GENERAL
+========================================================= */
+
+.app-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+
+/* =========================================================
+   4. SIDEBAR
+========================================================= */
+
+.sidebar {
+
+    width: var(--sidebar-width);
+    height: 100vh;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0f172a 0%,
+            #111827 100%
+        );
+
+    color: var(--text-light);
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 1000;
+
+    border-right:
+        1px solid rgba(255, 255, 255, 0.06);
+
+    transition:
+        transform 0.3s ease,
+        width 0.3s ease;
+}
+
+
+/* =========================================================
+   5. LOGO
+========================================================= */
+
+.sidebar-header {
+
+    min-height: 82px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 17px 20px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.logo-icon {
+
+    width: 44px;
+    height: 44px;
+
+    border-radius: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 23px;
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--accent)
+        );
+
+    color: white;
+
+    flex-shrink: 0;
+
+    box-shadow:
+        0 4px 12px
+        rgba(37, 99, 235, 0.30);
+}
+
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.logo-title {
+
+    font-size: 21px;
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+}
+
+
+.logo-subtitle {
+
+    margin-top: 2px;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   6. NAVEGACIÓN SIDEBAR
+========================================================= */
+
+.sidebar-nav {
+
+    flex: 1;
+
+    padding: 18px 12px;
+
+    overflow-y: auto;
+}
+
+
+.nav-section-title {
+
+    display: block;
+
+    padding:
+        12px
+        12px
+        7px;
+
+    color: #64748b;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1.3px;
+}
+
+
+.nav-item {
+
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 11px 12px;
+
+    margin: 3px 0;
+
+    border-radius: 8px;
+
+    color: var(--text-sidebar);
+
+    font-size: 14px;
+    font-weight: 500;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.nav-item:hover {
+
+    background-color:
+        rgba(255, 255, 255, 0.07);
+
+    color: white;
+
+    transform: translateX(2px);
+}
+
+
+.nav-item.active {
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(37, 99, 235, 0.28),
+            rgba(6, 182, 212, 0.10)
+        );
+
+    color: white;
+
+    border-left:
+        3px solid var(--accent);
+}
+
+
+.nav-icon {
+
+    width: 22px;
+
+    text-align: center;
+
+    font-size: 17px;
+
+    flex-shrink: 0;
+}
+
+
+.nav-text {
+    flex: 1;
+}
+
+
+.nav-badge {
+
+    min-width: 24px;
+    height: 21px;
+
+    padding: 0 7px;
+
+    border-radius: 20px;
+
+    background-color: var(--danger);
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   7. FOOTER DEL SIDEBAR
+========================================================= */
+
+.sidebar-footer {
+
+    padding: 15px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.system-status {
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    border-radius: 8px;
+}
+
+
+.status-indicator {
+
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    background-color: #22c55e;
+
+    box-shadow:
+        0 0 10px
+        rgba(34, 197, 94, 0.7);
+
+    flex-shrink: 0;
+}
+
+
+.status-title {
+
+    display: block;
+
+    color: #e2e8f0;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+.status-text {
+
+    display: block;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   8. CONTENEDOR PRINCIPAL
+========================================================= */
+
+.main-wrapper {
+
+    margin-left: var(--sidebar-width);
+
+    width:
+        calc(
+            100% - var(--sidebar-width)
+        );
+
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    transition:
+        margin-left 0.3s ease,
+        width 0.3s ease;
+}
+
+
+/* =========================================================
+   9. TOPBAR
+========================================================= */
+
+.topbar {
+
+    min-height: var(--topbar-height);
+
+    background-color: white;
+
+    border-bottom:
+        1px solid var(--border);
+
+    padding:
+        0 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 500;
+
+    box-shadow: var(--shadow-sm);
+}
+
+
+.topbar-left,
+.topbar-right {
+
+    display: flex;
+    align-items: center;
+}
+
+
+.topbar-left {
+    gap: 15px;
+}
+
+
+.topbar-right {
+    gap: 17px;
+}
+
+
+/* =========================================================
+   10. BOTÓN MENÚ
+========================================================= */
+
+.menu-toggle {
+
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid var(--border);
+
+    background-color: white;
+
+    border-radius: 8px;
+
+    font-size: 19px;
+
+    color: var(--text-main);
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        background-color 0.2s ease;
+}
+
+
+.menu-toggle:hover {
+    background-color: #f8fafc;
+}
+
+
+/* =========================================================
+   11. ENCABEZADO DE PÁGINA
+========================================================= */
+
+.page-heading h1 {
+
+    font-size: 20px;
+    font-weight: 700;
+
+    color: var(--text-main);
+}
+
+
+.page-heading span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   12. NOTIFICACIONES
+========================================================= */
+
+.notification-button {
+
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 9px;
+
+    border: 1px solid var(--border);
+
+    background-color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 17px;
+}
+
+
+.notification-button:hover {
+    background-color: #f8fafc;
+}
+
+
+.notification-count {
+
+    position: absolute;
+
+    top: -5px;
+    right: -5px;
+
+    min-width: 19px;
+    height: 19px;
+
+    padding: 0 5px;
+
+    background-color: var(--danger);
+
+    color: white;
+
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid white;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   13. USUARIO
+========================================================= */
+
+.user-info {
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+
+.user-avatar {
+
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--accent)
+        );
+
+    color: white;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.user-name {
+
+    color: var(--text-main);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+.user-role {
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   14. BOTÓN CERRAR SESIÓN
+========================================================= */
+
+.logout-button {
+
+    border: 1px solid var(--border);
+
+    background-color: white;
+
+    color: #475569;
+
+    border-radius: 7px;
+
+    padding:
+        8px
+        12px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+
+.logout-button:hover {
+
+    background-color: var(--danger-bg);
+
+    color: var(--danger);
+
+    border-color: #fecaca;
+}
+
+
+/* =========================================================
+   15. CONTENIDO PRINCIPAL
+========================================================= */
+
+.main-content {
+
+    flex: 1;
+
+    padding: 28px;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   16. PANEL DE BIENVENIDA
+========================================================= */
+
+.welcome-panel {
+
+    background-color: white;
+
+    padding: 30px;
+
+    border-radius: var(--radius-lg);
+
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow-sm);
+}
+
+
+.welcome-panel h2 {
+
+    margin-bottom: 8px;
+
+    color: var(--text-main);
+
+    font-size: 23px;
+}
+
+
+.welcome-panel p {
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   17. TÍTULOS DE SECCIÓN
+========================================================= */
+
+.section-header {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+
+.section-title {
+
+    font-size: 21px;
+    font-weight: 700;
+
+    color: var(--text-main);
+}
+
+
+.section-description {
+
+    margin-top: 4px;
+
+    font-size: 13px;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   18. GRID DE TARJETAS DEL DASHBOARD
+========================================================= */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 18px;
+
+    margin-bottom: 24px;
+}
+
+
+.stat-card {
+
+    background-color: white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    padding: 20px;
+
+    box-shadow:
+        var(--shadow-sm);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.stat-card:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        var(--shadow-md);
+}
+
+
+.stat-card-header {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+
+.stat-card-title {
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+}
+
+
+.stat-card-icon {
+
+    width: 38px;
+    height: 38px;
+
+    border-radius: 9px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color:
+        var(--primary-light);
+
+    color: var(--primary);
+
+    font-size: 18px;
+}
+
+
+.stat-card-value {
+
+    font-size: 29px;
+
+    font-weight: 750;
+
+    color: var(--text-main);
+}
+
+
+.stat-card-detail {
+
+    display: block;
+
+    margin-top: 5px;
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   19. TARJETAS GENERALES
+========================================================= */
+
+.card {
+
+    background-color: white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow:
+        var(--shadow-sm);
+
+    overflow: hidden;
+}
+
+
+.card-header {
+
+    padding:
+        17px
+        20px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+
+.card-title {
+
+    color: var(--text-main);
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+.card-body {
+    padding: 20px;
+}
+
+
+/* =========================================================
+   20. GRID GENERAL
+========================================================= */
+
+.content-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+
+.content-grid-3 {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+
+/* =========================================================
+   21. TABLAS
+========================================================= */
+
+.table-container {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+    background-color: white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow:
+        var(--shadow-sm);
+}
+
+
+.data-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 760px;
+}
+
+
+.data-table thead {
+
+    background-color: #f8fafc;
+}
+
+
+.data-table th {
+
+    padding:
+        13px
+        15px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    text-align: left;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #475569;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+}
+
+
+.data-table td {
+
+    padding:
+        13px
+        15px;
+
+    border-bottom:
+        1px solid #eef2f7;
+
+    color: #334155;
+
+    font-size: 13px;
+}
+
+
+.data-table tbody tr {
+
+    transition:
+        background-color 0.15s ease;
+}
+
+
+.data-table tbody tr:hover {
+
+    background-color: #f8fafc;
+}
+
+
+.data-table tbody tr:last-child td {
+
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   22. BADGES
+========================================================= */
+
+.badge {
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        4px
+        9px;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+
+.badge-success {
+
+    background-color:
+        var(--success-bg);
+
+    color:
+        var(--success);
+}
+
+
+.badge-warning {
+
+    background-color:
+        var(--warning-bg);
+
+    color:
+        var(--warning);
+}
+
+
+.badge-danger {
+
+    background-color:
+        var(--danger-bg);
+
+    color:
+        var(--danger);
+}
+
+
+.badge-info {
+
+    background-color:
+        var(--info-bg);
+
+    color:
+        var(--info);
+}
+
+
+.badge-neutral {
+
+    background-color: #e2e8f0;
+
+    color: #475569;
+}
+
+
+/* =========================================================
+   23. SEVERIDADES
+========================================================= */
+
+.severity-critica {
+
+    background-color:
+        var(--critical-bg);
+
+    color:
+        var(--critical);
+}
+
+
+.severity-alta {
+
+    background-color:
+        var(--danger-bg);
+
+    color:
+        var(--danger);
+}
+
+
+.severity-media {
+
+    background-color:
+        var(--warning-bg);
+
+    color:
+        var(--warning);
+}
+
+
+.severity-baja {
+
+    background-color:
+        var(--success-bg);
+
+    color:
+        var(--success);
+}
+
+
+/* =========================================================
+   24. BOTONES
+========================================================= */
+
+.btn {
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    padding:
+        9px
+        14px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    transition:
+        transform 0.15s ease,
+        background-color 0.2s ease;
+}
+
+
+.btn:hover {
+
+    transform:
+        translateY(-1px);
+}
+
+
+.btn-primary {
+
+    background-color:
+        var(--primary);
+
+    color: white;
+}
+
+
+.btn-primary:hover {
+
+    background-color:
+        var(--primary-dark);
+}
+
+
+.btn-success {
+
+    background-color:
+        var(--success);
+
+    color: white;
+}
+
+
+.btn-danger {
+
+    background-color:
+        var(--danger);
+
+    color: white;
+}
+
+
+.btn-warning {
+
+    background-color:
+        var(--warning);
+
+    color: white;
+}
+
+
+.btn-secondary {
+
+    background-color: #e2e8f0;
+
+    color: #334155;
+}
+
+
+.btn-outline {
+
+    background-color: white;
+
+    color:
+        var(--primary);
+
+    border:
+        1px solid
+        var(--primary);
+}
+
+
+.btn-sm {
+
+    padding:
+        6px
+        10px;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   25. FORMULARIOS
+========================================================= */
+
+.form-container {
+
+    background-color: white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow:
+        var(--shadow-sm);
+
+    padding: 22px;
+}
+
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+
+.form-group {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+
+.form-group.full-width {
+
+    grid-column:
+        1 / -1;
+}
+
+
+.form-label {
+
+    color: #334155;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+.form-control {
+
+    width: 100%;
+
+    padding:
+        10px
+        12px;
+
+    border:
+        1px solid #cbd5e1;
+
+    border-radius: 7px;
+
+    background-color: white;
+
+    color:
+        var(--text-main);
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.form-control:focus {
+
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(37, 99, 235, 0.12);
+}
+
+
+textarea.form-control {
+
+    min-height: 100px;
+
+    resize: vertical;
+}
+
+
+.form-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 18px;
+
+    justify-content: flex-end;
+}
+
+
+/* =========================================================
+   26. FILTROS
+========================================================= */
+
+.filters-panel {
+
+    display: flex;
+
+    align-items: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    padding: 15px;
+
+    margin-bottom: 18px;
+
+    background-color: white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow:
+        var(--shadow-sm);
+}
+
+
+.filter-group {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    min-width: 150px;
+}
+
+
+.filter-group label {
+
+    color:
+        var(--text-secondary);
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   27. MENSAJES
+========================================================= */
+
+.global-message {
+
+    margin-bottom: 18px;
+
+    padding:
+        12px
+        15px;
+
+    border-radius:
+        var(--radius-sm);
+
+    font-size: 13px;
+
+    font-weight: 500;
+}
+
+
+.message-success {
+
+    background-color:
+        var(--success-bg);
+
+    color:
+        #166534;
+
+    border:
+        1px solid #bbf7d0;
+}
+
+
+.message-error {
+
+    background-color:
+        var(--danger-bg);
+
+    color:
+        #991b1b;
+
+    border:
+        1px solid #fecaca;
+}
+
+
+.message-warning {
+
+    background-color:
+        var(--warning-bg);
+
+    color:
+        #92400e;
+
+    border:
+        1px solid #fde68a;
+}
+
+
+.message-info {
+
+    background-color:
+        var(--info-bg);
+
+    color:
+        #075985;
+
+    border:
+        1px solid #bae6fd;
+}
+
+
+/* =========================================================
+   28. ESTADO VACÍO
+========================================================= */
+
+.empty-state {
+
+    padding:
+        45px
+        20px;
+
+    text-align: center;
+
+    color:
+        var(--text-secondary);
+}
+
+
+.empty-state-icon {
+
+    margin-bottom: 10px;
+
+    font-size: 35px;
+
+    opacity: 0.7;
+}
+
+
+.empty-state h3 {
+
+    margin-bottom: 5px;
+
+    color:
+        var(--text-main);
+
+    font-size: 16px;
+}
+
+
+.empty-state p {
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   29. DETALLES DE REGISTRO
+========================================================= */
+
+.detail-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+
+.detail-item {
+
+    padding: 12px;
+
+    background-color: #f8fafc;
+
+    border-radius: 7px;
+}
+
+
+.detail-label {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color:
+        var(--text-secondary);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+
+.detail-value {
+
+    color:
+        var(--text-main);
+
+    font-size: 13px;
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   30. MODAL
+========================================================= */
+
+.modal-overlay {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    background-color:
+        rgba(15, 23, 42, 0.65);
+
+    z-index: 3000;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+
+.modal-overlay.active {
+    display: flex;
+}
+
+
+.modal {
+
+    width: 100%;
+
+    max-width: 620px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background-color: white;
+
+    border-radius:
+        var(--radius-lg);
+
+    box-shadow:
+        0 20px 40px
+        rgba(0, 0, 0, 0.20);
+}
+
+
+.modal-header {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding:
+        18px
+        20px;
+
+    border-bottom:
+        1px solid var(--border);
+}
+
+
+.modal-title {
+
+    font-size: 17px;
+
+    font-weight: 700;
+}
+
+
+.modal-close {
+
+    width: 32px;
+    height: 32px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background-color: #f1f5f9;
+
+    color: #475569;
+
+    font-size: 18px;
+}
+
+
+.modal-body {
+    padding: 20px;
+}
+
+
+.modal-footer {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding:
+        15px
+        20px;
+
+    border-top:
+        1px solid var(--border);
+}
+
+
+/* =========================================================
+   31. CARGANDO
+========================================================= */
+
+.loading {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 30px;
+
+    color:
+        var(--text-secondary);
+
+    font-size: 13px;
+}
+
+
+.spinner {
+
+    width: 21px;
+    height: 21px;
+
+    border:
+        3px solid #e2e8f0;
+
+    border-top-color:
+        var(--primary);
+
+    border-radius: 50%;
+
+    animation:
+        spin 0.8s linear infinite;
+}
+
+
+@keyframes spin {
+
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   32. FOOTER
+========================================================= */
+
+.footer {
+
+    min-height: 48px;
+
+    padding:
+        12px
+        28px;
+
+    border-top:
+        1px solid var(--border);
+
+    background-color: white;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    color:
+        var(--text-secondary);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   33. CLASES AUXILIARES
+========================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+
+.text-right {
+    text-align: right;
+}
+
+
+.text-success {
+    color: var(--success);
+}
+
+
+.text-danger {
+    color: var(--danger);
+}
+
+
+.text-warning {
+    color: var(--warning);
+}
+
+
+.text-muted {
+    color: var(--text-secondary);
+}
+
+
+.mt-1 {
+    margin-top: 8px;
+}
+
+
+.mt-2 {
+    margin-top: 16px;
+}
+
+
+.mt-3 {
+    margin-top: 24px;
+}
+
+
+.mb-1 {
+    margin-bottom: 8px;
+}
+
+
+.mb-2 {
+    margin-bottom: 16px;
+}
+
+
+.mb-3 {
+    margin-bottom: 24px;
+}
+
+
+/* =========================================================
+   34. SCROLLBAR SIDEBAR
+========================================================= */
+
+.sidebar-nav::-webkit-scrollbar {
+
+    width: 5px;
+}
+
+
+.sidebar-nav::-webkit-scrollbar-track {
+
+    background: transparent;
+}
+
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+
+    background-color:
+        #334155;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   35. RESPONSIVE - TABLETS
+========================================================= */
+
+@media
+(max-width: 1100px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+
+    .content-grid-3 {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+}
+
+
+/* =========================================================
+   36. RESPONSIVE - MENÚ LATERAL
+========================================================= */
+
+@media
+(max-width: 900px) {
+
+    .sidebar {
+
+        transform:
+            translateX(-100%);
+    }
+
+
+    .sidebar.active {
+
+        transform:
+            translateX(0);
+    }
+
+
+    .main-wrapper {
+
+        margin-left: 0;
+
+        width: 100%;
+    }
+
+
+    .menu-toggle {
+
+        display: flex;
+    }
+
+
+    .user-details {
+
+        display: none;
+    }
+
+
+    .logout-button {
+
+        font-size: 0;
+
+        width: 38px;
+
+        height: 38px;
+
+        padding: 0;
+    }
+
+
+    .logout-button::after {
+
+        content: "↪";
+
+        font-size: 18px;
+    }
+
+}
+
+
+/* =========================================================
+   37. RESPONSIVE - MÓVILES
+========================================================= */
+
+@media
+(max-width: 700px) {
+
+    .topbar {
+
+        padding:
+            0
+            15px;
+    }
+
+
+    .main-content {
+
+        padding:
+            18px
+            14px;
+    }
+
+
+    .page-heading h1 {
+
+        font-size: 17px;
+    }
+
+
+    .page-heading span {
+
+        display: none;
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .content-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .content-grid-3 {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .form-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .detail-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .form-group.full-width {
+
+        grid-column:
+            auto;
+    }
+
+
+    .section-header {
+
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+    }
+
+
+    .footer {
+
+        flex-direction:
+            column;
+
+        text-align:
+            center;
+
+        padding: 12px;
+    }
+
+
+    .notification-button {
+
+        width: 36px;
+        height: 36px;
+    }
+
+
+    .user-avatar {
+
+        width: 34px;
+        height: 34px;
+    }
+
+}
+
+
+/* =========================================================
+   38. MÓVILES PEQUEÑOS
+========================================================= */
+
+@media
+(max-width: 450px) {
+
+    .sidebar {
+
+        width: 85%;
+    }
+
+
+    .topbar-right {
+
+        gap: 7px;
+    }
+
+
+    .main-content {
+
+        padding:
+            14px
+            10px;
+    }
+
+
+    .filters-panel {
+
+        align-items:
+            stretch;
+
+        flex-direction:
+            column;
+    }
+
+
+    .filter-group {
+
+        width: 100%;
+    }
+
+
+    .form-actions {
+
+        flex-direction:
+            column;
+    }
+
+
+    .form-actions .btn {
+
+        width: 100%;
+    }
+
+}
+
+
+/* ============================================================
+   CORRECCIÓN DE COMPATIBILIDAD - BASE.HTML VIGIA
+   Mantiene correctamente alineado el menú lateral
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   SIDEBAR
+   ------------------------------------------------------------ */
+
+.sidebar {
+    width: 220px;
+    min-width: 220px;
+    height: 100vh;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #0f172a;
+    color: #cbd5e1;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    z-index: 1000;
+}
+
+
+/* ------------------------------------------------------------
+   CABECERA / LOGO
+   ------------------------------------------------------------ */
+
+.sidebar-header {
+    min-height: 136px;
+
+    padding: 16px 20px;
+
+    display: flex;
+    align-items: center;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.sidebar-brand {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 8px;
+
+    color: #ffffff;
+
+    text-decoration: none;
+}
+
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #06b6d4
+    );
+
+    color: #ffffff;
+
+    font-size: 21px;
+    font-weight: 800;
+}
+
+
+.logo-text {
+    display: block;
+}
+
+
+.logo-title {
+    color: #ffffff;
+
+    font-size: 20px;
+    font-weight: 800;
+
+    letter-spacing: 0.04em;
+}
+
+
+.logo-subtitle {
+    margin-top: 3px;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+}
+
+
+/* ------------------------------------------------------------
+   NAVEGACIÓN
+   ------------------------------------------------------------ */
+
+.sidebar-nav {
+    flex: 1;
+
+    width: 100%;
+
+    padding: 14px 12px 22px;
+}
+
+
+.nav-section {
+    width: 100%;
+
+    margin-bottom: 20px;
+}
+
+
+.nav-section-title {
+    display: block;
+
+    margin: 12px 10px 8px;
+
+    color: #64748b;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: 0.16em;
+
+    text-transform: uppercase;
+}
+
+
+/* ------------------------------------------------------------
+   ENLACES DEL MENÚ
+   ------------------------------------------------------------ */
+
+.nav-link {
+    width: 100%;
+    min-height: 40px;
+
+    margin-bottom: 3px;
+    padding: 9px 11px;
+
+    display: flex !important;
+    align-items: center;
+
+    gap: 10px;
+
+    position: relative;
+
+    border-radius: 8px;
+
+    color: #cbd5e1;
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 550;
+
+    white-space: nowrap;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+
+    color: #ffffff;
+}
+
+
+.nav-link.active {
+    color: #ffffff;
+
+    background: #123252;
+
+    box-shadow:
+        inset 3px 0 0 #06b6d4;
+}
+
+
+.nav-icon {
+    width: 20px;
+    min-width: 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #cbd5e1;
+
+    font-size: 13px;
+}
+
+
+.nav-link.active .nav-icon {
+    color: #ffffff;
+}
+
+
+.nav-text {
+    flex: 1;
+
+    display: block;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ------------------------------------------------------------
+   CONTADOR DE ALERTAS
+   ------------------------------------------------------------ */
+
+.nav-badge {
+    width: auto !important;
+    min-width: 20px;
+    height: 20px;
+
+    padding: 0 6px;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    flex: none !important;
+
+    border-radius: 999px;
+
+    background: #ef4444;
+
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* ------------------------------------------------------------
+   PIE DEL SIDEBAR
+   ------------------------------------------------------------ */
+
+.sidebar-footer {
+    width: 100%;
+
+    margin-top: auto;
+
+    padding: 12px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.system-status {
+    width: 100%;
+
+    padding: 10px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.04);
+}
+
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+
+    box-shadow:
+        0 0 0 4px rgba(34, 197, 94, 0.08);
+}
+
+
+.status-text {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+.status-text strong {
+    color: #e2e8f0;
+
+    font-size: 9px;
+}
+
+
+.status-text span {
+    margin-top: 2px;
+
+    color: #64748b;
+
+    font-size: 8px;
+}
+
+
+/* ------------------------------------------------------------
+   CONTENIDO PRINCIPAL
+   ------------------------------------------------------------ */
+
+.main-wrapper {
+    width: calc(100% - 220px);
+    min-height: 100vh;
+
+    margin-left: 220px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ------------------------------------------------------------
+   TOPBAR
+   ------------------------------------------------------------ */
+
+.topbar {
+    min-height: 68px;
+
+    padding: 0 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #e2e8f0;
+}
+
+
+.topbar-left {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.topbar-title-wrapper {
+    min-width: 0;
+}
+
+
+.topbar-title {
+    margin: 0;
+
+    color: #0f172a;
+
+    font-size: 19px;
+    font-weight: 700;
+}
+
+
+.topbar-subtitle {
+    margin-top: 3px;
+
+    color: #64748b;
+
+    font-size: 11px;
+}
+
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+}
+
+
+/* ------------------------------------------------------------
+   ALERTA SUPERIOR
+   ------------------------------------------------------------ */
+
+.topbar-alert-button {
+    position: relative;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+
+    color: #0f172a;
+    background: #ffffff;
+
+    text-decoration: none;
+}
+
+
+.topbar-alert-badge {
+    position: absolute;
+
+    top: -5px;
+    right: -5px;
+
+    min-width: 17px;
+    height: 17px;
+
+    padding: 0 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+
+    background: #ef4444;
+
+    color: #ffffff;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+/* ------------------------------------------------------------
+   USUARIO
+   ------------------------------------------------------------ */
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    color: #ffffff;
+
+    background: #168bd2;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.user-name {
+    color: #0f172a;
+
+    font-size: 11px;
+}
+
+
+.user-status {
+    margin-top: 2px;
+
+    color: #64748b;
+
+    font-size: 10px;
+}
+
+
+.logout-button {
+    height: 34px;
+
+    padding: 0 14px;
+
+    border: 1px solid #dbe3ed;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    color: #334155;
+    background: #ffffff;
+
+    font-size: 11px;
+}
+
+
+.logout-button:hover {
+    background: #f8fafc;
+}
+
+
+/* ------------------------------------------------------------
+   CONTENIDO
+   ------------------------------------------------------------ */
+
+.main-content {
+    flex: 1;
+
+    width: 100%;
+
+    padding: 25px 24px;
+
+    background: #f1f5f9;
+}
+
+
+/* ------------------------------------------------------------
+   FOOTER
+   ------------------------------------------------------------ */
+
+.app-footer {
+    min-height: 40px;
+
+    padding: 0 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    background: #ffffff;
+
+    border-top: 1px solid #e2e8f0;
+
+    color: #64748b;
+
+    font-size: 9px;
+}
+
+
+/* ------------------------------------------------------------
+   BOTÓN MENÚ RESPONSIVE
+   ------------------------------------------------------------ */
+
+.sidebar-toggle {
+    display: none;
+
+    width: 36px;
+    height: 36px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+}
+
+
+.sidebar-overlay {
+    display: none;
+}
+
+
+/* ============================================================
+   TABLET Y MÓVIL
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        transform: translateX(-100%);
+
+        transition: transform 0.25s ease;
+    }
+
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+
+    .main-wrapper {
+        width: 100%;
+
+        margin-left: 0;
+    }
+
+
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    .sidebar-overlay {
+        position: fixed;
+
+        inset: 0;
+
+        display: none;
+
+        background: rgba(15, 23, 42, 0.55);
+
+        z-index: 900;
+    }
+
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+}
+
+
+@media (max-width: 620px) {
+
+    .topbar {
+        padding: 0 14px;
+    }
+
+
+    .topbar-subtitle {
+        display: none;
+    }
+
+
+    .user-info {
+        display: none;
+    }
+
+
+    .logout-button {
+        padding: 0 9px;
+
+        font-size: 10px;
+    }
+
+
+    .main-content {
+        padding: 18px 14px;
+    }
+
+
+    .app-footer {
+        padding: 10px 14px;
+
+        flex-direction: column;
+
+        gap: 4px;
+    }
+
+}

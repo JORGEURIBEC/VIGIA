@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="VIGIA - Plataforma Web de Monitoreo, Análisis y Gestión de Eventos de Seguridad Informática"
+    >
+
+    <title>
+        {% block title %}
+            {{ titulo|default("VIGIA") }} | VIGIA
+        {% endblock %}
+    </title>
+
+
+    <!-- =====================================================
+         HOJA DE ESTILOS PRINCIPAL
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/styles.css') }}"
+    >
+
+
+    {% block extra_css %}
+    {% endblock %}
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         CONTENEDOR GENERAL
+         ===================================================== -->
+
+    <div class="app-container">
+
+
+        <!-- =================================================
+             SIDEBAR
+             ================================================= -->
+
+        <aside
+            class="sidebar"
+            id="sidebar"
+        >
+
+
+            <!-- =============================================
+                 LOGO
+                 ============================================= -->
+
+            <div class="sidebar-header">
+
+                <a
+                    href="/dashboard"
+                    class="sidebar-brand"
+                    aria-label="Ir al Dashboard"
+                >
+
+                    <div class="logo-icon">
+                        V
+                    </div>
+
+
+                    <div class="logo-text">
+
+                        <div class="logo-title">
+                            VIGIA
+                        </div>
+
+                        <div class="logo-subtitle">
+                            Seguridad Informática
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+
+            <!-- =============================================
+                 NAVEGACIÓN
+                 ============================================= -->
+
+            <nav
+                class="sidebar-nav"
+                aria-label="Menú principal"
+            >
+
+
+                <!-- =========================================
+                     MONITOREO
+                     ========================================= -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        MONITOREO
+                    </div>
+
+
+                    <!-- DASHBOARD -->
+
+                    <a
+                        href="/dashboard"
+                        class="nav-link
+                        {% if request.path == '/dashboard' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ▣
+                        </span>
+
+                        <span class="nav-text">
+                            Dashboard
+                        </span>
+
+                    </a>
+
+
+                    <!-- EVENTOS -->
+
+                    <a
+                        href="/eventos"
+                        class="nav-link
+                        {% if request.path == '/eventos' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ◎
+                        </span>
+
+                        <span class="nav-text">
+                            Eventos
+                        </span>
+
+                    </a>
+
+
+                    <!-- ALERTAS -->
+
+                    <a
+                        href="/alertas"
+                        class="nav-link
+                        {% if request.path == '/alertas' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            △
+                        </span>
+
+                        <span class="nav-text">
+                            Alertas
+                        </span>
+
+
+                        <span
+                            class="nav-badge"
+                            id="sidebarAlertCount"
+                        >
+                            0
+                        </span>
+
+                    </a>
+
+
+                    <!-- INCIDENTES -->
+
+                    <a
+                        href="/incidentes"
+                        class="nav-link
+                        {% if request.path == '/incidentes' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ◇
+                        </span>
+
+                        <span class="nav-text">
+                            Incidentes
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+                <!-- =========================================
+                     ADMINISTRACIÓN
+                     ========================================= -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        ADMINISTRACIÓN
+                    </div>
+
+
+                    <!-- FUENTES -->
+
+                    <a
+                        href="/fuentes"
+                        class="nav-link
+                        {% if request.path == '/fuentes' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ▤
+                        </span>
+
+                        <span class="nav-text">
+                            Fuentes
+                        </span>
+
+                    </a>
+
+
+                    <!-- TIPOS DE EVENTOS -->
+
+                    <a
+                        href="/tipos-eventos"
+                        class="nav-link
+                        {% if request.path == '/tipos-eventos' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ≡
+                        </span>
+
+                        <span class="nav-text">
+                            Tipos de eventos
+                        </span>
+
+                    </a>
+
+
+                    <!-- REGLAS -->
+
+                    <a
+                        href="/reglas"
+                        class="nav-link
+                        {% if request.path == '/reglas' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ⚙
+                        </span>
+
+                        <span class="nav-text">
+                            Reglas de detección
+                        </span>
+
+                    </a>
+
+
+                    <!-- USUARIOS -->
+
+                    <a
+                        href="/usuarios"
+                        class="nav-link
+                        {% if request.path == '/usuarios' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ♙
+                        </span>
+
+                        <span class="nav-text">
+                            Usuarios
+                        </span>
+
+                    </a>
+
+
+                    <!-- AUDITORÍA -->
+
+                    <a
+                        href="/auditoria"
+                        class="nav-link
+                        {% if request.path == '/auditoria' %}
+                            active
+                        {% endif %}"
+                    >
+
+                        <span class="nav-icon">
+                            ☷
+                        </span>
+
+                        <span class="nav-text">
+                            Auditoría
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </nav>
+
+
+            <!-- =============================================
+                 ESTADO DEL SISTEMA
+                 ============================================= -->
+
+            <div class="sidebar-footer">
+
+                <div class="system-status">
+
+                    <span class="status-dot"></span>
+
+
+                    <div class="status-text">
+
+                        <strong>
+                            Sistema operativo
+                        </strong>
+
+                        <span>
+                            VIGIA en funcionamiento
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =================================================
+             OVERLAY RESPONSIVE
+             ================================================= -->
+
+        <div
+            class="sidebar-overlay"
+            id="sidebarOverlay"
+        ></div>
+
+
+        <!-- =================================================
+             CONTENIDO PRINCIPAL
+             ================================================= -->
+
+        <div class="main-wrapper">
+
+
+            <!-- =============================================
+                 BARRA SUPERIOR
+                 ============================================= -->
+
+            <header class="topbar">
+
+
+                <!-- =========================================
+                     PARTE IZQUIERDA
+                     ========================================= -->
+
+                <div class="topbar-left">
+
+
+                    <!-- BOTÓN RESPONSIVE -->
+
+                    <button
+                        type="button"
+                        class="sidebar-toggle"
+                        id="sidebarToggle"
+                        aria-label="Abrir menú"
+                        title="Abrir menú"
+                    >
+                        ☰
+                    </button>
+
+
+                    <div class="topbar-title-wrapper">
+
+                        <h1 class="topbar-title">
+
+                            {{ titulo|default("Dashboard") }}
+
+                        </h1>
+
+
+                        <div class="topbar-subtitle">
+
+                            {% if request.path == '/dashboard' %}
+
+                                Centro de monitoreo de seguridad
+
+                            {% elif request.path == '/eventos' %}
+
+                                Gestión de eventos de seguridad
+
+                            {% elif request.path == '/alertas' %}
+
+                                Monitoreo y revisión de alertas
+
+                            {% elif request.path == '/incidentes' %}
+
+                                Seguimiento de incidentes
+
+                            {% elif request.path == '/fuentes' %}
+
+                                Administración de fuentes de eventos
+
+                            {% elif request.path == '/tipos-eventos' %}
+
+                                Clasificación de eventos
+
+                            {% elif request.path == '/reglas' %}
+
+                                Configuración de detección
+
+                            {% elif request.path == '/usuarios' %}
+
+                                Administración de usuarios
+
+                            {% elif request.path == '/auditoria' %}
+
+                                Trazabilidad del sistema
+
+                            {% else %}
+
+                                Plataforma de seguridad informática
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     PARTE DERECHA
+                     ========================================= -->
+
+                <div class="topbar-right">
+
+
+                    <!-- ALERTAS -->
+
+                    <a
+                        href="/alertas"
+                        class="topbar-alert-button"
+                        id="notificationButton"
+                        aria-label="Ver alertas"
+                        title="Ver alertas"
+                    >
+
+                        <span class="topbar-alert-icon">
+                            △
+                        </span>
+
+                        <span
+                            class="topbar-alert-badge"
+                            id="topbarAlertCount"
+                        >
+                            0
+                        </span>
+
+                    </a>
+
+
+                    <!-- USUARIO -->
+
+                    <div class="topbar-user">
+
+                        <div
+                            class="user-avatar"
+                            id="userAvatar"
+                        >
+                            A
+                        </div>
+
+
+                        <div class="user-info">
+
+                            <strong
+                                class="user-name"
+                                id="userName"
+                            >
+                                Usuario VIGIA
+                            </strong>
+
+                            <span
+                                class="user-status"
+                                id="userStatus"
+                            >
+                                Sesión activa
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CERRAR SESIÓN -->
+
+                    <button
+                        type="button"
+                        class="logout-button"
+                        id="logoutButton"
+                    >
+                        Cerrar sesión
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- =============================================
+                 CONTENIDO
+                 ============================================= -->
+
+            <main
+                class="main-content"
+                id="mainContent"
+            >
+
+                {% block content %}
+
+                    {% block contenido %}
+                    {% endblock %}
+
+                {% endblock %}
+
+            </main>
+
+
+            <!-- =============================================
+                 FOOTER
+                 ============================================= -->
+
+            <footer class="app-footer">
+
+                <div>
+                    VIGIA
+                </div>
+
+                <div>
+                    Visualización Integrada y Gestión de
+                    Incidentes y Alertas
+                </div>
+
+                <div>
+                    NovaTech SpA
+                </div>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT PRINCIPAL
+         ===================================================== -->
+
+    <script
+        src="{{ url_for('static', filename='js/app.js') }}"
+    ></script>
+
+
+    <!-- =====================================================
+         FALLBACK DE NAVEGACIÓN Y CIERRE DE SESIÓN
+         ===================================================== -->
+
+    <script>
+
+        "use strict";
+
+
+        /*
+         * Esta sección garantiza que las funciones
+         * principales continúen funcionando incluso
+         * si alguna función específica de app.js falla.
+         */
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+
+                /* =============================================
+                   MENÚ RESPONSIVE
+                   ============================================= */
+
+                const sidebar =
+                    document.getElementById("sidebar");
+
+                const sidebarToggle =
+                    document.getElementById("sidebarToggle");
+
+                const sidebarOverlay =
+                    document.getElementById("sidebarOverlay");
+
+
+                if (
+                    sidebar &&
+                    sidebarToggle
+                ) {
+
+                    sidebarToggle.addEventListener(
+                        "click",
+                        () => {
+
+                            sidebar.classList.toggle(
+                                "open"
+                            );
+
+
+                            if (sidebarOverlay) {
+
+                                sidebarOverlay.classList.toggle(
+                                    "active"
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+
+
+                if (
+                    sidebar &&
+                    sidebarOverlay
+                ) {
+
+                    sidebarOverlay.addEventListener(
+                        "click",
+                        () => {
+
+                            sidebar.classList.remove(
+                                "open"
+                            );
+
+                            sidebarOverlay.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                /* =============================================
+                   CERRAR SESIÓN
+                   ============================================= */
+
+                const logoutButton =
+                    document.getElementById(
+                        "logoutButton"
+                    );
+
+
+                if (logoutButton) {
+
+                    logoutButton.addEventListener(
+                        "click",
+                        () => {
+
+                            localStorage.removeItem(
+                                "vigia_access_token"
+                            );
+
+                            localStorage.removeItem(
+                                "vigia_usuario"
+                            );
+
+                            window.location.href =
+                                "/login";
+
+                        }
+                    );
+
+                }
+
+
+                /* =============================================
+                   INFORMACIÓN DEL USUARIO
+                   ============================================= */
+
+                const usuarioGuardado =
+                    localStorage.getItem(
+                        "vigia_usuario"
+                    );
+
+
+                if (usuarioGuardado) {
+
+                    try {
+
+                        const usuario =
+                            JSON.parse(
+                                usuarioGuardado
+                            );
+
+
+                        const userName =
+                            document.getElementById(
+                                "userName"
+                            );
+
+                        const userAvatar =
+                            document.getElementById(
+                                "userAvatar"
+                            );
+
+
+                        if (userName) {
+
+                            const nombre =
+                                usuario.nombre
+                                ||
+                                "";
+
+                            const apellido =
+                                usuario.apellido
+                                ||
+                                "";
+
+                            const rol =
+                                usuario.rol
+                                ||
+                                usuario.rol_token
+                                ||
+                                "";
+
+
+                            const nombreCompleto =
+                                `${nombre} ${apellido}`
+                                    .trim();
+
+
+                            userName.textContent =
+                                nombreCompleto
+                                ||
+                                rol
+                                ||
+                                "Usuario VIGIA";
+
+                        }
+
+
+                        if (userAvatar) {
+
+                            const inicial =
+                                (
+                                    usuario.nombre
+                                    ||
+                                    usuario.rol
+                                    ||
+                                    "V"
+                                )
+                                .charAt(0)
+                                .toUpperCase();
+
+
+                            userAvatar.textContent =
+                                inicial;
+
+                        }
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            "No fue posible cargar los datos del usuario:",
+                            error
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+from app.services.auditoria_service import registrar_auditoria

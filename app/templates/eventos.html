@@ -1,0 +1,3884 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Eventos de Seguridad | VIGIA
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* ============================================================
+       EVENTOS - VIGIA
+       ============================================================ */
+
+    .events-page {
+        width: 100%;
+    }
+
+
+    /* ============================================================
+       CABECERA
+       ============================================================ */
+
+    .events-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        margin-bottom: 22px;
+    }
+
+
+    .events-header-left {
+        min-width: 0;
+    }
+
+
+    .events-eyebrow {
+        margin-bottom: 6px;
+
+        color: #2563eb;
+
+        font-size: 11px;
+        font-weight: 700;
+
+        letter-spacing: 0.08em;
+
+        text-transform: uppercase;
+    }
+
+
+    .events-title {
+        margin: 0;
+
+        color: #0f172a;
+
+        font-size: 28px;
+        font-weight: 750;
+
+        letter-spacing: -0.025em;
+    }
+
+
+    .events-description {
+        margin: 6px 0 0;
+
+        color: #64748b;
+
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+
+    .events-actions {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+
+        flex-wrap: wrap;
+    }
+
+
+    /* ============================================================
+       BOTONES
+       ============================================================ */
+
+    .events-button {
+        min-height: 38px;
+
+        padding: 0 14px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        border: 1px solid #dbe3ed;
+        border-radius: 8px;
+
+        cursor: pointer;
+
+        color: #334155;
+        background: #ffffff;
+
+        font-size: 12px;
+        font-weight: 650;
+
+        text-decoration: none;
+
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            transform 0.15s ease;
+    }
+
+
+    .events-button:hover {
+        background: #f8fafc;
+
+        border-color: #cbd5e1;
+    }
+
+
+    .events-button.primary {
+        border-color: #2563eb;
+
+        color: #ffffff;
+
+        background:
+            linear-gradient(
+                135deg,
+                #2563eb,
+                #0ea5e9
+            );
+    }
+
+
+    .events-button.primary:hover {
+        transform: translateY(-1px);
+    }
+
+
+    .events-button.success {
+        border-color: #0f9f70;
+
+        color: #ffffff;
+
+        background: #0f9f70;
+    }
+
+
+    .events-button:disabled {
+        cursor: not-allowed;
+
+        opacity: 0.55;
+    }
+
+
+    /* ============================================================
+       INDICADORES
+       ============================================================ */
+
+    .events-summary {
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 14px;
+
+        margin-bottom: 18px;
+    }
+
+
+    .events-summary-card {
+        padding: 17px;
+
+        background: #ffffff;
+
+        border: 1px solid #e2e8f0;
+        border-radius: 11px;
+
+        box-shadow:
+            0 2px 5px rgba(15, 23, 42, 0.03);
+    }
+
+
+    .events-summary-label {
+        color: #64748b;
+
+        font-size: 11px;
+        font-weight: 650;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.04em;
+    }
+
+
+    .events-summary-value {
+        margin-top: 7px;
+
+        color: #0f172a;
+
+        font-size: 25px;
+        font-weight: 750;
+    }
+
+
+    .events-summary-subtext {
+        margin-top: 4px;
+
+        color: #94a3b8;
+
+        font-size: 10px;
+    }
+
+
+    /* ============================================================
+       PANEL
+       ============================================================ */
+
+    .events-panel {
+        width: 100%;
+
+        margin-bottom: 18px;
+
+        background: #ffffff;
+
+        border: 1px solid #e2e8f0;
+        border-radius: 11px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 2px 5px rgba(15, 23, 42, 0.03);
+    }
+
+
+    .events-panel-header {
+        padding: 15px 17px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+
+    .events-panel-title {
+        margin: 0;
+
+        color: #0f172a;
+
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+
+    .events-panel-subtitle {
+        margin-top: 3px;
+
+        color: #64748b;
+
+        font-size: 11px;
+    }
+
+
+    /* ============================================================
+       FILTROS
+       ============================================================ */
+
+    .events-filters {
+        padding: 17px;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(160px, 1fr));
+
+        gap: 14px;
+    }
+
+
+    .events-field {
+        min-width: 0;
+    }
+
+
+    .events-field label {
+        display: block;
+
+        margin-bottom: 6px;
+
+        color: #334155;
+
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+
+    .events-input,
+    .events-select {
+        width: 100%;
+        height: 38px;
+
+        padding: 0 10px;
+
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+
+        outline: none;
+
+        color: #0f172a;
+        background: #ffffff;
+
+        font-size: 12px;
+    }
+
+
+    .events-input:focus,
+    .events-select:focus {
+        border-color: #2563eb;
+
+        box-shadow:
+            0 0 0 3px rgba(37, 99, 235, 0.08);
+    }
+
+
+    .events-filter-actions {
+        padding: 0 17px 17px;
+
+        display: flex;
+
+        gap: 9px;
+    }
+
+
+    /* ============================================================
+       TABLA
+       ============================================================ */
+
+    .events-table-wrapper {
+        width: 100%;
+
+        overflow-x: auto;
+    }
+
+
+    .events-table {
+        width: 100%;
+
+        border-collapse: collapse;
+
+        min-width: 1050px;
+    }
+
+
+    .events-table th {
+        padding: 11px 12px;
+
+        text-align: left;
+
+        color: #64748b;
+        background: #f8fafc;
+
+        border-bottom: 1px solid #e2e8f0;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        letter-spacing: 0.04em;
+
+        text-transform: uppercase;
+
+        white-space: nowrap;
+    }
+
+
+    .events-table td {
+        padding: 12px;
+
+        color: #334155;
+
+        border-bottom: 1px solid #edf2f7;
+
+        font-size: 11px;
+
+        vertical-align: middle;
+    }
+
+
+    .events-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+
+    .events-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+
+    .event-id {
+        color: #64748b;
+
+        font-weight: 650;
+    }
+
+
+    .event-ip {
+        font-family:
+            Consolas,
+            "Courier New",
+            monospace;
+
+        color: #334155;
+
+        font-size: 10px;
+    }
+
+
+    .event-description-cell {
+        max-width: 280px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+
+    /* ============================================================
+       BADGES
+       ============================================================ */
+
+    .severity-badge,
+    .result-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-width: 61px;
+
+        padding: 4px 7px;
+
+        border-radius: 999px;
+
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+
+    .severity-baja {
+        color: #166534;
+
+        background: #dcfce7;
+    }
+
+
+    .severity-media {
+        color: #854d0e;
+
+        background: #fef9c3;
+    }
+
+
+    .severity-alta {
+        color: #9a3412;
+
+        background: #ffedd5;
+    }
+
+
+    .severity-critica {
+        color: #991b1b;
+
+        background: #fee2e2;
+    }
+
+
+    .result-exitoso {
+        color: #166534;
+
+        background: #dcfce7;
+    }
+
+
+    .result-fallido {
+        color: #991b1b;
+
+        background: #fee2e2;
+    }
+
+
+    .result-bloqueado {
+        color: #7c2d12;
+
+        background: #ffedd5;
+    }
+
+
+    .result-default {
+        color: #475569;
+
+        background: #e2e8f0;
+    }
+
+
+    /* ============================================================
+       ACCIONES TABLA
+       ============================================================ */
+
+    .table-action {
+        width: 30px;
+        height: 30px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border: 1px solid #dbe3ed;
+        border-radius: 6px;
+
+        cursor: pointer;
+
+        color: #334155;
+        background: #ffffff;
+
+        font-size: 12px;
+    }
+
+
+    .table-action:hover {
+        color: #2563eb;
+
+        border-color: #93c5fd;
+
+        background: #eff6ff;
+    }
+
+
+    /* ============================================================
+       ESTADOS DE CARGA
+       ============================================================ */
+
+    .events-table-message {
+        padding: 35px 15px !important;
+
+        text-align: center;
+
+        color: #64748b !important;
+
+        font-size: 12px !important;
+    }
+
+
+    /* ============================================================
+       PAGINACIÓN
+       ============================================================ */
+
+    .events-pagination {
+        min-height: 58px;
+
+        padding: 12px 17px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        border-top: 1px solid #e2e8f0;
+    }
+
+
+    .pagination-info {
+        color: #64748b;
+
+        font-size: 11px;
+    }
+
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+
+        gap: 6px;
+    }
+
+
+    .pagination-button {
+        min-width: 32px;
+        height: 32px;
+
+        padding: 0 8px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border: 1px solid #dbe3ed;
+        border-radius: 6px;
+
+        cursor: pointer;
+
+        color: #334155;
+        background: #ffffff;
+
+        font-size: 11px;
+    }
+
+
+    .pagination-button:hover:not(:disabled) {
+        background: #f8fafc;
+    }
+
+
+    .pagination-button:disabled {
+        cursor: not-allowed;
+
+        opacity: 0.45;
+    }
+
+
+    .pagination-current {
+        min-width: 44px;
+
+        text-align: center;
+
+        color: #0f172a;
+
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+
+    /* ============================================================
+       MODALES
+       ============================================================ */
+
+    .events-modal-backdrop {
+        position: fixed;
+
+        inset: 0;
+
+        display: none;
+
+        align-items: center;
+        justify-content: center;
+
+        padding: 22px;
+
+        background:
+            rgba(15, 23, 42, 0.60);
+
+        z-index: 3000;
+    }
+
+
+    .events-modal-backdrop.active {
+        display: flex;
+    }
+
+
+    .events-modal {
+        width: 100%;
+        max-width: 650px;
+
+        max-height: calc(100vh - 44px);
+
+        overflow-y: auto;
+
+        background: #ffffff;
+
+        border-radius: 13px;
+
+        box-shadow:
+            0 25px 70px rgba(15, 23, 42, 0.30);
+    }
+
+
+    .events-modal-header {
+        padding: 17px 19px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+
+    .events-modal-title {
+        margin: 0;
+
+        color: #0f172a;
+
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+
+    .events-modal-close {
+        width: 31px;
+        height: 31px;
+
+        border: none;
+        border-radius: 7px;
+
+        cursor: pointer;
+
+        color: #64748b;
+        background: transparent;
+
+        font-size: 17px;
+    }
+
+
+    .events-modal-close:hover {
+        background: #f1f5f9;
+    }
+
+
+    .events-modal-body {
+        padding: 19px;
+    }
+
+
+    .events-modal-footer {
+        padding: 14px 19px;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        gap: 9px;
+
+        border-top: 1px solid #e2e8f0;
+    }
+
+
+    /* ============================================================
+       FORMULARIO MODAL
+       ============================================================ */
+
+    .event-form-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 14px;
+    }
+
+
+    .event-form-field.full {
+        grid-column: 1 / -1;
+    }
+
+
+    .event-form-field label {
+        display: block;
+
+        margin-bottom: 6px;
+
+        color: #334155;
+
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+
+    .event-form-control {
+        width: 100%;
+        min-height: 40px;
+
+        padding: 9px 10px;
+
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+
+        outline: none;
+
+        color: #0f172a;
+        background: #ffffff;
+
+        font-size: 12px;
+    }
+
+
+    textarea.event-form-control {
+        min-height: 90px;
+
+        resize: vertical;
+    }
+
+
+    .event-form-control:focus {
+        border-color: #2563eb;
+
+        box-shadow:
+            0 0 0 3px rgba(37, 99, 235, 0.08);
+    }
+
+
+    /* ============================================================
+       DETALLE
+       ============================================================ */
+
+    .event-detail-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 12px;
+    }
+
+
+    .event-detail-item {
+        padding: 11px;
+
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+
+        background: #f8fafc;
+    }
+
+
+    .event-detail-item.full {
+        grid-column: 1 / -1;
+    }
+
+
+    .event-detail-label {
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #64748b;
+
+        font-size: 9px;
+        font-weight: 700;
+
+        letter-spacing: 0.04em;
+
+        text-transform: uppercase;
+    }
+
+
+    .event-detail-value {
+        color: #0f172a;
+
+        font-size: 12px;
+        line-height: 1.5;
+
+        word-break: break-word;
+    }
+
+
+    /* ============================================================
+       MENSAJES
+       ============================================================ */
+
+    .events-message {
+        display: none;
+
+        margin-bottom: 17px;
+
+        padding: 11px 13px;
+
+        border-radius: 8px;
+
+        font-size: 11px;
+    }
+
+
+    .events-message.error {
+        display: block;
+
+        color: #991b1b;
+
+        background: #fef2f2;
+
+        border: 1px solid #fecaca;
+    }
+
+
+    .events-message.success {
+        display: block;
+
+        color: #166534;
+
+        background: #f0fdf4;
+
+        border: 1px solid #bbf7d0;
+    }
+
+
+    .events-message.info {
+        display: block;
+
+        color: #1e40af;
+
+        background: #eff6ff;
+
+        border: 1px solid #bfdbfe;
+    }
+
+
+    /* ============================================================
+       IMPORTACIÓN
+       ============================================================ */
+
+    .import-box {
+        padding: 25px;
+
+        text-align: center;
+
+        border: 2px dashed #cbd5e1;
+        border-radius: 10px;
+
+        background: #f8fafc;
+    }
+
+
+    .import-box-title {
+        margin-bottom: 7px;
+
+        color: #0f172a;
+
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+
+    .import-box-text {
+        margin-bottom: 17px;
+
+        color: #64748b;
+
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+
+    .import-result {
+        margin-top: 15px;
+
+        text-align: left;
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+
+    @media (max-width: 1100px) {
+
+        .events-summary {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+
+        .events-filters {
+            grid-template-columns:
+                repeat(2, minmax(150px, 1fr));
+        }
+
+    }
+
+
+    @media (max-width: 650px) {
+
+        .events-header {
+            flex-direction: column;
+        }
+
+
+        .events-actions {
+            width: 100%;
+        }
+
+
+        .events-button {
+            flex: 1;
+        }
+
+
+        .events-summary {
+            grid-template-columns: 1fr;
+        }
+
+
+        .events-filters {
+            grid-template-columns: 1fr;
+        }
+
+
+        .event-form-grid,
+        .event-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+
+        .event-form-field.full,
+        .event-detail-item.full {
+            grid-column: auto;
+        }
+
+
+        .events-pagination {
+            flex-direction: column;
+
+            align-items: stretch;
+        }
+
+
+        .pagination-controls {
+            justify-content: center;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="events-page">
+
+
+    <!-- ========================================================
+         CABECERA
+         ======================================================== -->
+
+    <div class="events-header">
+
+        <div class="events-header-left">
+
+            <div class="events-eyebrow">
+                Monitoreo
+            </div>
+
+            <h2 class="events-title">
+                Eventos de Seguridad
+            </h2>
+
+            <p class="events-description">
+                Consulta, registro, filtrado e importación
+                de eventos de seguridad procesados por VIGIA.
+            </p>
+
+        </div>
+
+
+        <div class="events-actions">
+
+            <button
+                type="button"
+                class="events-button"
+                id="importButton"
+            >
+                ↑ Importar CSV
+            </button>
+
+
+            <button
+                type="button"
+                class="events-button primary"
+                id="newEventButton"
+            >
+                + Registrar evento
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         MENSAJES
+         ======================================================== -->
+
+    <div
+        id="eventsMessage"
+        class="events-message"
+    ></div>
+
+
+    <!-- ========================================================
+         INDICADORES
+         ======================================================== -->
+
+    <div class="events-summary">
+
+        <article class="events-summary-card">
+
+            <div class="events-summary-label">
+                Total de eventos
+            </div>
+
+            <div
+                class="events-summary-value"
+                id="summaryTotal"
+            >
+                --
+            </div>
+
+            <div class="events-summary-subtext">
+                Registros almacenados en VIGIA
+            </div>
+
+        </article>
+
+
+        <article class="events-summary-card">
+
+            <div class="events-summary-label">
+                EVENTOS CRÍTICOS VISIBLES
+            </div>
+
+            <div
+                class="events-summary-value"
+                id="summaryCritical"
+            >
+                --
+            </div>
+
+            <div class="events-summary-subtext">
+                En los registros de esta página
+            </div>
+
+        </article>
+
+
+        <article class="events-summary-card">
+
+            <div class="events-summary-label">
+                Página actual
+            </div>
+
+            <div
+                class="events-summary-value"
+                id="summaryPage"
+            >
+                --
+            </div>
+
+            <div class="events-summary-subtext">
+                Navegación del conjunto de datos
+            </div>
+
+        </article>
+
+
+        <article class="events-summary-card">
+
+            <div class="events-summary-label">
+                Registros visibles
+            </div>
+
+            <div
+                class="events-summary-value"
+                id="summaryVisible"
+            >
+                --
+            </div>
+
+            <div class="events-summary-subtext">
+                Eventos mostrados actualmente
+            </div>
+
+        </article>
+
+    </div>
+
+
+    <!-- ========================================================
+         FILTROS
+         ======================================================== -->
+
+    <section class="events-panel">
+
+        <div class="events-panel-header">
+
+            <div>
+
+                <h3 class="events-panel-title">
+                    Filtros de búsqueda
+                </h3>
+
+                <div class="events-panel-subtitle">
+                    Utilice uno o más criterios para localizar eventos.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="events-filters">
+
+
+            <div class="events-field">
+
+                <label for="filterSeverity">
+                    Severidad
+                </label>
+
+                <select
+                    id="filterSeverity"
+                    class="events-select"
+                >
+
+                    <option value="">
+                        Todas
+                    </option>
+
+                    <option value="BAJA">
+                        Baja
+                    </option>
+
+                    <option value="MEDIA">
+                        Media
+                    </option>
+
+                    <option value="ALTA">
+                        Alta
+                    </option>
+
+                    <option value="CRITICA">
+                        Crítica
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterType">
+                    Tipo de evento
+                </label>
+
+                <select
+                    id="filterType"
+                    class="events-select"
+                >
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterSource">
+                    Fuente
+                </label>
+
+                <select
+                    id="filterSource"
+                    class="events-select"
+                >
+
+                    <option value="">
+                        Todas
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterResult">
+                    Resultado
+                </label>
+
+                <input
+                    type="text"
+                    id="filterResult"
+                    class="events-input"
+                    placeholder="Ej.: EXITOSO"
+                >
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterUser">
+                    Usuario de origen
+                </label>
+
+                <input
+                    type="text"
+                    id="filterUser"
+                    class="events-input"
+                    placeholder="Ej.: usuario01"
+                >
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterIp">
+                    Dirección IP
+                </label>
+
+                <input
+                    type="text"
+                    id="filterIp"
+                    class="events-input"
+                    placeholder="Ej.: 192.168.1.10"
+                >
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterDateFrom">
+                    Fecha desde
+                </label>
+
+                <input
+                    type="datetime-local"
+                    id="filterDateFrom"
+                    class="events-input"
+                >
+
+            </div>
+
+
+            <div class="events-field">
+
+                <label for="filterDateTo">
+                    Fecha hasta
+                </label>
+
+                <input
+                    type="datetime-local"
+                    id="filterDateTo"
+                    class="events-input"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="events-filter-actions">
+
+            <button
+                type="button"
+                class="events-button primary"
+                id="applyFiltersButton"
+            >
+                Aplicar filtros
+            </button>
+
+
+            <button
+                type="button"
+                class="events-button"
+                id="clearFiltersButton"
+            >
+                Limpiar
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================
+         TABLA
+         ======================================================== -->
+
+    <section class="events-panel">
+
+        <div class="events-panel-header">
+
+            <div>
+
+                <h3 class="events-panel-title">
+                    Registro de eventos
+                </h3>
+
+                <div
+                    class="events-panel-subtitle"
+                    id="tableSubtitle"
+                >
+                    Cargando información...
+                </div>
+
+            </div>
+
+
+            <select
+                id="pageSize"
+                class="events-select"
+                style="width: 110px;"
+            >
+
+                <option value="10">
+                    10 por pág.
+                </option>
+
+                <option value="25">
+                    25 por pág.
+                </option>
+
+                <option value="50" selected>
+                    50 por pág.
+                </option>
+
+                <option value="100">
+                    100 por pág.
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="events-table-wrapper">
+
+            <table class="events-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Fecha / hora</th>
+
+                        <th>Tipo</th>
+
+                        <th>Fuente</th>
+
+                        <th>Usuario</th>
+
+                        <th>IP</th>
+
+                        <th>Severidad</th>
+
+                        <th>Resultado</th>
+
+                        <th>Descripción</th>
+
+                        <th>Acción</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="eventsTableBody">
+
+                    <tr>
+
+                        <td
+                            colspan="10"
+                            class="events-table-message"
+                        >
+                            Cargando eventos de seguridad...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- PAGINACIÓN -->
+
+        <div class="events-pagination">
+
+            <div
+                class="pagination-info"
+                id="paginationInfo"
+            >
+                --
+            </div>
+
+
+            <div class="pagination-controls">
+
+                <button
+                    type="button"
+                    class="pagination-button"
+                    id="firstPageButton"
+                >
+                    «
+                </button>
+
+
+                <button
+                    type="button"
+                    class="pagination-button"
+                    id="previousPageButton"
+                >
+                    ‹
+                </button>
+
+
+                <div
+                    class="pagination-current"
+                    id="currentPageText"
+                >
+                    1 / 1
+                </div>
+
+
+                <button
+                    type="button"
+                    class="pagination-button"
+                    id="nextPageButton"
+                >
+                    ›
+                </button>
+
+
+                <button
+                    type="button"
+                    class="pagination-button"
+                    id="lastPageButton"
+                >
+                    »
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- ============================================================
+     MODAL DETALLE
+     ============================================================ -->
+
+<div
+    class="events-modal-backdrop"
+    id="detailModal"
+>
+
+    <div class="events-modal">
+
+        <div class="events-modal-header">
+
+            <h3 class="events-modal-title">
+                Detalle del evento
+            </h3>
+
+            <button
+                type="button"
+                class="events-modal-close"
+                data-close-modal="detailModal"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            class="events-modal-body"
+            id="detailModalBody"
+        >
+            Cargando...
+        </div>
+
+
+        <div class="events-modal-footer">
+
+            <button
+                type="button"
+                class="events-button"
+                data-close-modal="detailModal"
+            >
+                Cerrar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     MODAL REGISTRAR EVENTO
+     ============================================================ -->
+
+<div
+    class="events-modal-backdrop"
+    id="newEventModal"
+>
+
+    <div class="events-modal">
+
+        <div class="events-modal-header">
+
+            <h3 class="events-modal-title">
+                Registrar evento de seguridad
+            </h3>
+
+            <button
+                type="button"
+                class="events-modal-close"
+                data-close-modal="newEventModal"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="newEventForm">
+
+            <div class="events-modal-body">
+
+                <div class="event-form-grid">
+
+
+                    <div class="event-form-field">
+
+                        <label for="eventSource">
+                            Fuente *
+                        </label>
+
+                        <select
+                            id="eventSource"
+                            class="event-form-control"
+                            required
+                        ></select>
+
+                    </div>
+
+
+                    <div class="event-form-field">
+
+                        <label for="eventType">
+                            Tipo de evento *
+                        </label>
+
+                        <select
+                            id="eventType"
+                            class="event-form-control"
+                            required
+                        ></select>
+
+                    </div>
+
+
+                    <div class="event-form-field">
+
+                        <label for="eventDate">
+                            Fecha y hora *
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="eventDate"
+                            class="event-form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="event-form-field">
+
+                        <label for="eventSeverity">
+                            Severidad *
+                        </label>
+
+                        <select
+                            id="eventSeverity"
+                            class="event-form-control"
+                            required
+                        >
+
+                            <option value="">
+                                Seleccione...
+                            </option>
+
+                            <option value="BAJA">
+                                Baja
+                            </option>
+
+                            <option value="MEDIA">
+                                Media
+                            </option>
+
+                            <option value="ALTA">
+                                Alta
+                            </option>
+
+                            <option value="CRITICA">
+                                Crítica
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="event-form-field">
+
+                        <label for="eventUser">
+                            Usuario origen
+                        </label>
+
+                        <input
+                            type="text"
+                            id="eventUser"
+                            class="event-form-control"
+                        >
+
+                    </div>
+
+
+                    <div class="event-form-field">
+
+                        <label for="eventIp">
+                            Dirección IP
+                        </label>
+
+                        <input
+                            type="text"
+                            id="eventIp"
+                            class="event-form-control"
+                            placeholder="192.168.1.10"
+                        >
+
+                    </div>
+
+
+                    <div class="event-form-field full">
+
+                        <label for="eventResult">
+                            Resultado *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="eventResult"
+                            class="event-form-control"
+                            placeholder="Ej.: EXITOSO, FALLIDO o BLOQUEADO"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="event-form-field full">
+
+                        <label for="eventDescription">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            id="eventDescription"
+                            class="event-form-control"
+                            placeholder="Descripción del evento..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="events-modal-footer">
+
+                <button
+                    type="button"
+                    class="events-button"
+                    data-close-modal="newEventModal"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="events-button primary"
+                    id="saveEventButton"
+                >
+                    Registrar evento
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     MODAL IMPORTACIÓN
+     ============================================================ -->
+
+<div
+    class="events-modal-backdrop"
+    id="importModal"
+>
+
+    <div class="events-modal">
+
+        <div class="events-modal-header">
+
+            <h3 class="events-modal-title">
+                Importar eventos desde CSV
+            </h3>
+
+            <button
+                type="button"
+                class="events-modal-close"
+                data-close-modal="importModal"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="events-modal-body">
+
+            <div class="import-box">
+
+                <div class="import-box-title">
+                    Seleccione un archivo CSV
+                </div>
+
+
+                <div class="import-box-text">
+                    VIGIA validará la estructura antes de almacenar
+                    los eventos válidos en la base de datos.
+                </div>
+
+
+                <input
+                    type="file"
+                    id="importFile"
+                    accept=".csv,text/csv"
+                >
+
+            </div>
+
+
+            <div
+                class="import-result"
+                id="importResult"
+            ></div>
+
+        </div>
+
+
+        <div class="events-modal-footer">
+
+            <button
+                type="button"
+                class="events-button"
+                data-close-modal="importModal"
+            >
+                Cancelar
+            </button>
+
+
+            <button
+                type="button"
+                class="events-button success"
+                id="executeImportButton"
+            >
+                Importar archivo
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+(() => {
+
+    "use strict";
+
+
+    /* ============================================================
+       CONFIGURACIÓN
+       ============================================================ */
+
+    const API = {
+
+        EVENTOS:
+            "/api/v1/eventos",
+
+        IMPORTAR:
+            "/api/v1/eventos/importar",
+
+        FUENTES:
+            "/api/v1/fuentes",
+
+        TIPOS:
+            "/api/v1/tipos-eventos"
+
+    };
+
+
+    const TOKEN_KEY =
+        "vigia_access_token";
+
+
+    /* ============================================================
+       ESTADO
+       ============================================================ */
+
+    const estado = {
+
+        pagina: 1,
+
+        porPagina: 50,
+
+        paginas: 1,
+
+        total: 0,
+
+        filtros: {}
+
+    };
+
+
+    /* ============================================================
+       ELEMENTOS
+       ============================================================ */
+
+    const tabla =
+        document.getElementById(
+            "eventsTableBody"
+        );
+
+    const mensaje =
+        document.getElementById(
+            "eventsMessage"
+        );
+
+    const pageSize =
+        document.getElementById(
+            "pageSize"
+        );
+
+
+    /* ============================================================
+       TOKEN
+       ============================================================ */
+
+    function obtenerToken() {
+
+        return localStorage.getItem(
+            TOKEN_KEY
+        );
+
+    }
+
+
+    /* ============================================================
+       PETICIÓN AUTENTICADA
+       ============================================================ */
+
+    async function apiFetch(
+        url,
+        opciones = {}
+    ) {
+
+        const token =
+            obtenerToken();
+
+
+        if (!token) {
+
+            window.location.href =
+                "/login";
+
+            throw new Error(
+                "No existe una sesión autenticada."
+            );
+
+        }
+
+
+        const headers =
+            new Headers(
+                opciones.headers || {}
+            );
+
+
+        headers.set(
+            "Authorization",
+            `Bearer ${token}`
+        );
+
+
+        headers.set(
+            "Accept",
+            "application/json"
+        );
+
+
+        const respuesta =
+            await fetch(
+                url,
+                {
+                    ...opciones,
+                    headers
+                }
+            );
+
+
+        if (
+            respuesta.status === 401
+        ) {
+
+            localStorage.removeItem(
+                TOKEN_KEY
+            );
+
+            localStorage.removeItem(
+                "vigia_usuario"
+            );
+
+            window.location.href =
+                "/login";
+
+            throw new Error(
+                "La sesión expiró."
+            );
+
+        }
+
+
+        return respuesta;
+
+    }
+
+
+    /* ============================================================
+       MENSAJES
+       ============================================================ */
+
+    function mostrarMensaje(
+        texto,
+        tipo = "info"
+    ) {
+
+        mensaje.textContent =
+            texto;
+
+        mensaje.className =
+            `events-message ${tipo}`;
+
+    }
+
+
+    function limpiarMensaje() {
+
+        mensaje.textContent = "";
+
+        mensaje.className =
+            "events-message";
+
+    }
+
+
+    /* ============================================================
+       ESCAPAR HTML
+       ============================================================ */
+
+    function escapar(valor) {
+
+        if (
+            valor === null ||
+            valor === undefined
+        ) {
+
+            return "—";
+
+        }
+
+
+        return String(valor)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* ============================================================
+       FORMATO FECHA
+       ============================================================ */
+
+    function formatearFecha(valor) {
+
+        if (!valor) {
+            return "—";
+        }
+
+
+        const fecha =
+            new Date(valor);
+
+
+        if (
+            Number.isNaN(
+                fecha.getTime()
+            )
+        ) {
+
+            return escapar(valor);
+
+        }
+
+
+        return fecha.toLocaleString(
+            "es-CL"
+        );
+
+    }
+
+
+    /* ============================================================
+       NORMALIZAR DATOS API
+       ============================================================ */
+
+    function obtenerLista(datos) {
+
+        if (
+            Array.isArray(datos)
+        ) {
+
+            return datos;
+
+        }
+
+
+        if (
+            Array.isArray(datos?.data)
+        ) {
+
+            return datos.data;
+
+        }
+
+
+        if (
+            Array.isArray(datos?.items)
+        ) {
+
+            return datos.items;
+
+        }
+
+
+        return [];
+
+    }
+
+
+    /* ============================================================
+       BADGE SEVERIDAD
+       ============================================================ */
+
+    function badgeSeveridad(
+        severidad
+    ) {
+
+        const valor =
+            String(
+                severidad || ""
+            ).toUpperCase();
+
+
+        let clase =
+            "severity-media";
+
+
+        if (valor === "BAJA") {
+
+            clase =
+                "severity-baja";
+
+        }
+        else if (
+            valor === "ALTA"
+        ) {
+
+            clase =
+                "severity-alta";
+
+        }
+        else if (
+            valor === "CRITICA"
+        ) {
+
+            clase =
+                "severity-critica";
+
+        }
+
+
+        return `
+            <span class="severity-badge ${clase}">
+                ${escapar(valor || "—")}
+            </span>
+        `;
+
+    }
+
+
+    /* ============================================================
+       BADGE RESULTADO
+       ============================================================ */
+
+    function badgeResultado(
+        resultado
+    ) {
+
+        const valor =
+            String(
+                resultado || ""
+            ).toUpperCase();
+
+
+        let clase =
+            "result-default";
+
+
+        if (
+            valor.includes("EXIT")
+        ) {
+
+            clase =
+                "result-exitoso";
+
+        }
+        else if (
+            valor.includes("FALL")
+        ) {
+
+            clase =
+                "result-fallido";
+
+        }
+        else if (
+            valor.includes("BLOQUE")
+        ) {
+
+            clase =
+                "result-bloqueado";
+
+        }
+
+
+        return `
+            <span class="result-badge ${clase}">
+                ${escapar(valor || "—")}
+            </span>
+        `;
+
+    }
+
+
+    /* ============================================================
+       OBTENER CAMPOS
+       Permite tolerar pequeñas diferencias en to_dict().
+       ============================================================ */
+
+    function obtenerId(
+        evento
+    ) {
+
+        return (
+            evento.id_evento
+            ??
+            evento.id
+            ??
+            "—"
+        );
+
+    }
+
+
+    function obtenerTipo(
+        evento
+    ) {
+
+        return (
+            evento.tipo_evento
+            ??
+            evento.tipo
+            ??
+            evento.nombre_tipo
+            ??
+            evento.id_tipo_evento
+            ??
+            "—"
+        );
+
+    }
+
+
+    function obtenerFuente(
+        evento
+    ) {
+
+        return (
+            evento.fuente
+            ??
+            evento.nombre_fuente
+            ??
+            evento.id_fuente
+            ??
+            "—"
+        );
+
+    }
+
+
+    /* ============================================================
+       CARGAR EVENTOS
+       ============================================================ */
+
+    async function cargarEventos() {
+
+        limpiarMensaje();
+
+
+        tabla.innerHTML = `
+            <tr>
+                <td
+                    colspan="10"
+                    class="events-table-message"
+                >
+                    Cargando eventos de seguridad...
+                </td>
+            </tr>
+        `;
+
+
+        try {
+
+            const params =
+                new URLSearchParams();
+
+
+            params.set(
+                "pagina",
+                estado.pagina
+            );
+
+
+            params.set(
+                "por_pagina",
+                estado.porPagina
+            );
+
+
+            Object.entries(
+                estado.filtros
+            ).forEach(
+                ([clave, valor]) => {
+
+                    if (valor) {
+
+                        params.set(
+                            clave,
+                            valor
+                        );
+
+                    }
+
+                }
+            );
+
+
+            const respuesta =
+                await apiFetch(
+                    `${API.EVENTOS}?${params.toString()}`
+                );
+
+
+            const datos =
+                await respuesta.json();
+
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    datos?.mensaje
+                    ||
+                    "No fue posible obtener los eventos."
+                );
+
+            }
+
+
+            const eventos =
+                obtenerLista(datos);
+
+
+            estado.total =
+                datos.total
+                ??
+                eventos.length;
+
+
+            estado.pagina =
+                datos.pagina
+                ??
+                estado.pagina;
+
+
+            estado.paginas =
+                datos.paginas
+                ??
+                1;
+
+
+            renderizarEventos(
+                eventos
+            );
+
+
+            actualizarPaginacion(
+                eventos.length
+            );
+
+
+            actualizarResumen(
+                eventos
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            tabla.innerHTML = `
+                <tr>
+                    <td
+                        colspan="10"
+                        class="events-table-message"
+                    >
+                        No fue posible cargar los eventos.
+                    </td>
+                </tr>
+            `;
+
+
+            mostrarMensaje(
+                error.message,
+                "error"
+            );
+
+        }
+
+    }
+
+
+    /* ============================================================
+       RENDER TABLA
+       ============================================================ */
+
+    function renderizarEventos(
+        eventos
+    ) {
+
+        if (
+            eventos.length === 0
+        ) {
+
+            tabla.innerHTML = `
+                <tr>
+                    <td
+                        colspan="10"
+                        class="events-table-message"
+                    >
+                        No se encontraron eventos con los filtros seleccionados.
+                    </td>
+                </tr>
+            `;
+
+            return;
+
+        }
+
+
+        tabla.innerHTML =
+            eventos.map(
+                evento => {
+
+                    const id =
+                        obtenerId(
+                            evento
+                        );
+
+
+                    const descripcion =
+                        evento.descripcion
+                        ??
+                        "—";
+
+
+                    return `
+                        <tr>
+
+                            <td class="event-id">
+                                #${escapar(id)}
+                            </td>
+
+                            <td>
+                                ${formatearFecha(
+                                    evento.fecha_hora
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapar(
+                                    obtenerTipo(evento)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapar(
+                                    obtenerFuente(evento)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapar(
+                                    evento.usuario_origen
+                                    ??
+                                    "—"
+                                )}
+                            </td>
+
+                            <td class="event-ip">
+                                ${escapar(
+                                    evento.direccion_ip
+                                    ??
+                                    "—"
+                                )}
+                            </td>
+
+                            <td>
+                                ${badgeSeveridad(
+                                    evento.severidad
+                                )}
+                            </td>
+
+                            <td>
+                                ${badgeResultado(
+                                    evento.resultado
+                                )}
+                            </td>
+
+                            <td
+                                class="event-description-cell"
+                                title="${escapar(descripcion)}"
+                            >
+                                ${escapar(descripcion)}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="table-action"
+                                    data-event-id="${escapar(id)}"
+                                    title="Ver detalle"
+                                >
+                                    ◉
+                                </button>
+
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
+
+
+        document
+            .querySelectorAll(
+                "[data-event-id]"
+            )
+            .forEach(
+                boton => {
+
+                    boton.addEventListener(
+                        "click",
+                        () => {
+
+                            abrirDetalle(
+                                boton.dataset.eventId
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+    }
+
+
+    /* ============================================================
+       RESUMEN
+       ============================================================ */
+
+    function actualizarResumen(
+        eventos
+    ) {
+
+        document.getElementById(
+            "summaryTotal"
+        ).textContent =
+            Number(
+                estado.total
+            ).toLocaleString(
+                "es-CL"
+            );
+
+
+        const criticos =
+            eventos.filter(
+                evento =>
+                    String(
+                        evento.severidad || ""
+                    ).toUpperCase()
+                    ===
+                    "CRITICA"
+            ).length;
+
+
+        document.getElementById(
+            "summaryCritical"
+        ).textContent =
+            criticos.toLocaleString(
+                "es-CL"
+            );
+
+
+        document.getElementById(
+            "summaryPage"
+        ).textContent =
+            estado.pagina;
+
+
+        document.getElementById(
+            "summaryVisible"
+        ).textContent =
+            eventos.length;
+
+
+        document.getElementById(
+            "tableSubtitle"
+        ).textContent =
+            `${Number(
+                estado.total
+            ).toLocaleString(
+                "es-CL"
+            )} eventos encontrados`;
+
+    }
+
+
+    /* ============================================================
+       PAGINACIÓN
+       ============================================================ */
+
+    function actualizarPaginacion(
+        cantidadVisible
+    ) {
+
+        const inicio =
+            estado.total === 0
+                ? 0
+                :
+                (
+                    (
+                        estado.pagina - 1
+                    )
+                    *
+                    estado.porPagina
+                )
+                +
+                1;
+
+
+        const fin =
+            Math.min(
+                inicio
+                +
+                cantidadVisible
+                -
+                1,
+
+                estado.total
+            );
+
+
+        document.getElementById(
+            "paginationInfo"
+        ).textContent =
+            estado.total === 0
+                ?
+                "Sin registros"
+                :
+                `Mostrando ${inicio.toLocaleString(
+                    "es-CL"
+                )} - ${fin.toLocaleString(
+                    "es-CL"
+                )} de ${Number(
+                    estado.total
+                ).toLocaleString(
+                    "es-CL"
+                )}`;
+
+
+        document.getElementById(
+            "currentPageText"
+        ).textContent =
+            `${estado.pagina} / ${estado.paginas || 1}`;
+
+
+        document.getElementById(
+            "firstPageButton"
+        ).disabled =
+            estado.pagina <= 1;
+
+
+        document.getElementById(
+            "previousPageButton"
+        ).disabled =
+            estado.pagina <= 1;
+
+
+        document.getElementById(
+            "nextPageButton"
+        ).disabled =
+            estado.pagina >=
+            estado.paginas;
+
+
+        document.getElementById(
+            "lastPageButton"
+        ).disabled =
+            estado.pagina >=
+            estado.paginas;
+
+    }
+
+
+    /* ============================================================
+       FILTROS
+       ============================================================ */
+
+    function leerFiltros() {
+
+        estado.filtros = {
+
+            severidad:
+                document.getElementById(
+                    "filterSeverity"
+                ).value,
+
+            id_tipo_evento:
+                document.getElementById(
+                    "filterType"
+                ).value,
+
+            id_fuente:
+                document.getElementById(
+                    "filterSource"
+                ).value,
+
+            resultado:
+                document.getElementById(
+                    "filterResult"
+                ).value.trim(),
+
+            usuario_origen:
+                document.getElementById(
+                    "filterUser"
+                ).value.trim(),
+
+            direccion_ip:
+                document.getElementById(
+                    "filterIp"
+                ).value.trim(),
+
+            fecha_desde:
+                document.getElementById(
+                    "filterDateFrom"
+                ).value,
+
+            fecha_hasta:
+                document.getElementById(
+                    "filterDateTo"
+                ).value
+
+        };
+
+    }
+
+
+    function limpiarFiltros() {
+
+        [
+            "filterSeverity",
+            "filterType",
+            "filterSource",
+            "filterResult",
+            "filterUser",
+            "filterIp",
+            "filterDateFrom",
+            "filterDateTo"
+        ]
+        .forEach(
+            id => {
+
+                const elemento =
+                    document.getElementById(id);
+
+                if (elemento) {
+
+                    elemento.value = "";
+
+                }
+
+            }
+        );
+
+
+        estado.filtros = {};
+
+        estado.pagina = 1;
+
+
+        cargarEventos();
+
+    }
+
+
+    /* ============================================================
+       CARGAR FUENTES
+       ============================================================ */
+
+    async function cargarFuentes() {
+
+        try {
+
+            const respuesta =
+                await apiFetch(
+                    API.FUENTES
+                );
+
+
+            if (!respuesta.ok) {
+                return;
+            }
+
+
+            const datos =
+                await respuesta.json();
+
+
+            const fuentes =
+                obtenerLista(
+                    datos
+                );
+
+
+            const filter =
+                document.getElementById(
+                    "filterSource"
+                );
+
+
+            const form =
+                document.getElementById(
+                    "eventSource"
+                );
+
+
+            filter.innerHTML =
+                `<option value="">Todas</option>`;
+
+
+            form.innerHTML =
+                `<option value="">Seleccione...</option>`;
+
+
+            fuentes.forEach(
+                fuente => {
+
+                    const id =
+                        fuente.id_fuente
+                        ??
+                        fuente.id;
+
+
+                    const nombre =
+                        fuente.nombre
+                        ??
+                        fuente.nombre_fuente
+                        ??
+                        `Fuente ${id}`;
+
+
+                    const option =
+                        `<option value="${escapar(id)}">${escapar(nombre)}</option>`;
+
+
+                    filter.insertAdjacentHTML(
+                        "beforeend",
+                        option
+                    );
+
+
+                    form.insertAdjacentHTML(
+                        "beforeend",
+                        option
+                    );
+
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Error cargando fuentes:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* ============================================================
+       CARGAR TIPOS
+       ============================================================ */
+
+    async function cargarTipos() {
+
+        try {
+
+            const respuesta =
+                await apiFetch(
+                    API.TIPOS
+                );
+
+
+            if (!respuesta.ok) {
+                return;
+            }
+
+
+            const datos =
+                await respuesta.json();
+
+
+            const tipos =
+                obtenerLista(
+                    datos
+                );
+
+
+            const filter =
+                document.getElementById(
+                    "filterType"
+                );
+
+
+            const form =
+                document.getElementById(
+                    "eventType"
+                );
+
+
+            filter.innerHTML =
+                `<option value="">Todos</option>`;
+
+
+            form.innerHTML =
+                `<option value="">Seleccione...</option>`;
+
+
+            tipos.forEach(
+                tipo => {
+
+                    const id =
+                        tipo.id_tipo_evento
+                        ??
+                        tipo.id;
+
+
+                    const nombre =
+                        tipo.nombre_tipo
+                        ??
+                        tipo.nombre
+                        ??
+                        `Tipo ${id}`;
+
+
+                    const option =
+                        `<option value="${escapar(id)}">${escapar(nombre)}</option>`;
+
+
+                    filter.insertAdjacentHTML(
+                        "beforeend",
+                        option
+                    );
+
+
+                    form.insertAdjacentHTML(
+                        "beforeend",
+                        option
+                    );
+
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Error cargando tipos:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* ============================================================
+       DETALLE
+       ============================================================ */
+
+    async function abrirDetalle(
+        id
+    ) {
+
+        abrirModal(
+            "detailModal"
+        );
+
+
+        const cuerpo =
+            document.getElementById(
+                "detailModalBody"
+            );
+
+
+        cuerpo.innerHTML =
+            "Cargando detalle del evento...";
+
+
+        try {
+
+            const respuesta =
+                await apiFetch(
+                    `${API.EVENTOS}/${id}`
+                );
+
+
+            const datos =
+                await respuesta.json();
+
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    datos?.mensaje
+                    ||
+                    "Evento no encontrado."
+                );
+
+            }
+
+
+            const evento =
+                datos.data
+                ??
+                datos;
+
+
+            cuerpo.innerHTML = `
+
+                <div class="event-detail-grid">
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            ID
+                        </span>
+
+                        <div class="event-detail-value">
+                            #${escapar(
+                                obtenerId(evento)
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Fecha / hora
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${formatearFecha(
+                                evento.fecha_hora
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Fuente
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${escapar(
+                                obtenerFuente(evento)
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Tipo
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${escapar(
+                                obtenerTipo(evento)
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Usuario
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${escapar(
+                                evento.usuario_origen
+                                ??
+                                "—"
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Dirección IP
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${escapar(
+                                evento.direccion_ip
+                                ??
+                                "—"
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Severidad
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${badgeSeveridad(
+                                evento.severidad
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item">
+
+                        <span class="event-detail-label">
+                            Resultado
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${badgeResultado(
+                                evento.resultado
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-detail-item full">
+
+                        <span class="event-detail-label">
+                            Descripción
+                        </span>
+
+                        <div class="event-detail-value">
+                            ${escapar(
+                                evento.descripcion
+                                ??
+                                "Sin descripción"
+                            )}
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        }
+        catch (error) {
+
+            cuerpo.innerHTML =
+                `<div class="events-message error">
+                    ${escapar(error.message)}
+                </div>`;
+
+        }
+
+    }
+
+
+    /* ============================================================
+       CREAR EVENTO
+       ============================================================ */
+
+    document.getElementById(
+        "newEventForm"
+    ).addEventListener(
+        "submit",
+        async eventoFormulario => {
+
+            eventoFormulario.preventDefault();
+
+
+            const boton =
+                document.getElementById(
+                    "saveEventButton"
+                );
+
+
+            boton.disabled = true;
+
+
+            const body = {
+
+                id_fuente:
+                    Number(
+                        document.getElementById(
+                            "eventSource"
+                        ).value
+                    ),
+
+                id_tipo_evento:
+                    Number(
+                        document.getElementById(
+                            "eventType"
+                        ).value
+                    ),
+
+                fecha_hora:
+                    document.getElementById(
+                        "eventDate"
+                    ).value,
+
+                usuario_origen:
+                    document.getElementById(
+                        "eventUser"
+                    ).value.trim()
+                    ||
+                    null,
+
+                direccion_ip:
+                    document.getElementById(
+                        "eventIp"
+                    ).value.trim()
+                    ||
+                    null,
+
+                severidad:
+                    document.getElementById(
+                        "eventSeverity"
+                    ).value,
+
+                resultado:
+                    document.getElementById(
+                        "eventResult"
+                    ).value.trim(),
+
+                descripcion:
+                    document.getElementById(
+                        "eventDescription"
+                    ).value.trim()
+                    ||
+                    null
+
+            };
+
+
+            try {
+
+                const respuesta =
+                    await apiFetch(
+                        API.EVENTOS,
+                        {
+                            method:
+                                "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    body
+                                )
+                        }
+                    );
+
+
+                const datos =
+                    await respuesta.json();
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        datos?.mensaje
+                        ||
+                        "No fue posible registrar el evento."
+                    );
+
+                }
+
+
+                cerrarModal(
+                    "newEventModal"
+                );
+
+
+                eventoFormulario.reset();
+
+
+                mostrarMensaje(
+                    "Evento de seguridad registrado correctamente.",
+                    "success"
+                );
+
+
+                estado.pagina = 1;
+
+
+                await cargarEventos();
+
+            }
+            catch (error) {
+
+                mostrarMensaje(
+                    error.message,
+                    "error"
+                );
+
+            }
+            finally {
+
+                boton.disabled = false;
+
+            }
+
+        }
+    );
+
+
+    /* ============================================================
+       IMPORTAR CSV
+       ============================================================ */
+
+    document.getElementById(
+        "executeImportButton"
+    ).addEventListener(
+        "click",
+        async () => {
+
+            const archivo =
+                document.getElementById(
+                    "importFile"
+                ).files[0];
+
+
+            if (!archivo) {
+
+                document.getElementById(
+                    "importResult"
+                ).innerHTML =
+                    `
+                    <div class="events-message error">
+                        Debe seleccionar un archivo CSV.
+                    </div>
+                    `;
+
+                return;
+
+            }
+
+
+            const boton =
+                document.getElementById(
+                    "executeImportButton"
+                );
+
+
+            boton.disabled = true;
+
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "archivo",
+                archivo
+            );
+
+
+            try {
+
+                const respuesta =
+                    await apiFetch(
+                        API.IMPORTAR,
+                        {
+                            method:
+                                "POST",
+
+                            body:
+                                formData
+                        }
+                    );
+
+
+                const datos =
+                    await respuesta.json();
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        datos?.mensaje
+                        ||
+                        "No fue posible importar el archivo."
+                    );
+
+                }
+
+
+                const detalle =
+                    datos.data
+                    ??
+                    datos;
+
+
+                document.getElementById(
+                    "importResult"
+                ).innerHTML = `
+
+                    <div class="events-message success">
+
+                        <strong>
+                            Importación completada.
+                        </strong>
+
+                        <br>
+
+                        Registros procesados:
+                        ${escapar(
+                            detalle.registros_procesados
+                            ??
+                            "—"
+                        )}
+
+                        <br>
+
+                        Registros importados:
+                        ${escapar(
+                            detalle.registros_importados
+                            ??
+                            "—"
+                        )}
+
+                        <br>
+
+                        Registros rechazados:
+                        ${escapar(
+                            detalle.registros_rechazados
+                            ??
+                            "—"
+                        )}
+
+                    </div>
+                `;
+
+
+                estado.pagina = 1;
+
+
+                await cargarEventos();
+
+            }
+            catch (error) {
+
+                document.getElementById(
+                    "importResult"
+                ).innerHTML =
+                    `
+                    <div class="events-message error">
+                        ${escapar(error.message)}
+                    </div>
+                    `;
+
+            }
+            finally {
+
+                boton.disabled = false;
+
+            }
+
+        }
+    );
+
+
+    /* ============================================================
+       MODALES
+       ============================================================ */
+
+    function abrirModal(
+        id
+    ) {
+
+        document.getElementById(
+            id
+        ).classList.add(
+            "active"
+        );
+
+    }
+
+
+    function cerrarModal(
+        id
+    ) {
+
+        document.getElementById(
+            id
+        ).classList.remove(
+            "active"
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(
+            "[data-close-modal]"
+        )
+        .forEach(
+            boton => {
+
+                boton.addEventListener(
+                    "click",
+                    () => {
+
+                        cerrarModal(
+                            boton.dataset.closeModal
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    document
+        .querySelectorAll(
+            ".events-modal-backdrop"
+        )
+        .forEach(
+            modal => {
+
+                modal.addEventListener(
+                    "click",
+                    evento => {
+
+                        if (
+                            evento.target
+                            ===
+                            modal
+                        ) {
+
+                            modal.classList.remove(
+                                "active"
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* ============================================================
+       BOTONES
+       ============================================================ */
+
+    document.getElementById(
+        "newEventButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            abrirModal(
+                "newEventModal"
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "importButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            document.getElementById(
+                "importResult"
+            ).innerHTML = "";
+
+            document.getElementById(
+                "importFile"
+            ).value = "";
+
+            abrirModal(
+                "importModal"
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "applyFiltersButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            leerFiltros();
+
+            estado.pagina = 1;
+
+            cargarEventos();
+
+        }
+    );
+
+
+    document.getElementById(
+        "clearFiltersButton"
+    ).addEventListener(
+        "click",
+        limpiarFiltros
+    );
+
+
+    pageSize.addEventListener(
+        "change",
+        () => {
+
+            estado.porPagina =
+                Number(
+                    pageSize.value
+                );
+
+            estado.pagina = 1;
+
+            cargarEventos();
+
+        }
+    );
+
+
+    /* ============================================================
+       BOTONES PAGINACIÓN
+       ============================================================ */
+
+    document.getElementById(
+        "firstPageButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            estado.pagina = 1;
+
+            cargarEventos();
+
+        }
+    );
+
+
+    document.getElementById(
+        "previousPageButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            if (
+                estado.pagina > 1
+            ) {
+
+                estado.pagina--;
+
+                cargarEventos();
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "nextPageButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            if (
+                estado.pagina <
+                estado.paginas
+            ) {
+
+                estado.pagina++;
+
+                cargarEventos();
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "lastPageButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            estado.pagina =
+                estado.paginas;
+
+            cargarEventos();
+
+        }
+    );
+
+
+    /* ============================================================
+       INICIALIZACIÓN
+       ============================================================ */
+
+    async function inicializarEventos() {
+
+        /*
+         * Se ejecutan en paralelo porque son
+         * operaciones independientes.
+         */
+
+        await Promise.allSettled([
+            cargarFuentes(),
+            cargarTipos()
+        ]);
+
+
+        await cargarEventos();
+
+    }
+
+
+    inicializarEventos();
+
+})();
+
+</script>
+
+{% endblock %}
