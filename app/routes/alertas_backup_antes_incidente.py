@@ -443,6 +443,10 @@ def obtener_alerta(id_alerta):
                 str(error)
         }), 500
 
+
+# ============================================================
+# ACTUALIZAR ESTADO DE UNA ALERTA
+# ============================================================
 # ============================================================
 # ACTUALIZAR ESTADO DE UNA ALERTA
 # ============================================================
@@ -452,18 +456,6 @@ def obtener_alerta(id_alerta):
 def actualizar_estado_alerta(id_alerta):
 
     usuario = obtener_usuario_actual()
-
-    # --------------------------------------------------------
-    # VALIDAR USUARIO AUTENTICADO
-    # --------------------------------------------------------
-
-    if usuario is None:
-
-        return jsonify({
-            "estado": "ERROR",
-            "mensaje":
-                "No fue posible identificar al usuario autenticado."
-        }), 401
 
     # --------------------------------------------------------
     # VALIDAR PERMISOS
@@ -552,8 +544,9 @@ def actualizar_estado_alerta(id_alerta):
 
     estado_actual = str(
         alerta.estado or "PENDIENTE"
-    ).strip().upper()
+    ).upper()
 
+    # Compatibilidad con registros antiguos.
     if estado_actual == "ESCALADA_INCIDENTE":
         estado_actual = "ESCALADA"
 
@@ -577,6 +570,7 @@ def actualizar_estado_alerta(id_alerta):
 
         "ESCALADA":
             set()
+
     }
 
     if nuevo_estado not in (
@@ -602,38 +596,13 @@ def actualizar_estado_alerta(id_alerta):
     try:
 
         # ----------------------------------------------------
-        # SI SE ESCALA, EVITAR INCIDENTES DUPLICADOS
-        # ----------------------------------------------------
-
-        incidente = None
-
-        if nuevo_estado == "ESCALADA":
-
-            incidente_existente = (
-                Incidente.query
-                .filter_by(
-                    id_alerta=id_alerta
-                )
-                .first()
-            )
-
-            if incidente_existente:
-
-                return jsonify({
-                    "estado": "ERROR",
-                    "mensaje": (
-                        "La alerta ya posee un incidente asociado."
-                    ),
-                    "id_incidente":
-                        incidente_existente.id_incidente
-                }), 409
-
-        # ----------------------------------------------------
         # ACTUALIZAR ALERTA
         # ----------------------------------------------------
 
         alerta.estado = nuevo_estado
 
+        # El revisor y la fecha corresponden al inicio
+        # de la revisión. Si ya existen, se conservan.
         if nuevo_estado == "EN_REVISION":
 
             alerta.id_usuario_revisor = (
@@ -651,13 +620,11 @@ def actualizar_estado_alerta(id_alerta):
         else:
 
             if alerta.id_usuario_revisor is None:
-
                 alerta.id_usuario_revisor = (
                     usuario.id_usuario
                 )
 
             if alerta.fecha_revision is None:
-
                 alerta.fecha_revision = (
                     datetime.now(
                         timezone.utc
@@ -683,78 +650,6 @@ def actualizar_estado_alerta(id_alerta):
             for relacion
             in eventos_relacionados
         ]
-
-        # ----------------------------------------------------
-        # CREAR INCIDENTE AUTOMÁTICAMENTE SI SE ESCALA
-        # ----------------------------------------------------
-
-        if nuevo_estado == "ESCALADA":
-
-            prioridad_incidente = str(
-                alerta.severidad or "MEDIA"
-            ).strip().upper()
-
-            prioridades_validas = {
-                "BAJA",
-                "MEDIA",
-                "ALTA",
-                "CRITICA"
-            }
-
-            if (
-                prioridad_incidente
-                not in prioridades_validas
-            ):
-                prioridad_incidente = "MEDIA"
-
-            descripcion_alerta = str(
-                alerta.descripcion or ""
-            ).strip()
-
-            if not descripcion_alerta:
-
-                descripcion_alerta = (
-                    f"Incidente generado automáticamente "
-                    f"a partir de la alerta #{id_alerta}."
-                )
-
-            incidente = Incidente(
-
-                id_alerta=id_alerta,
-
-                id_responsable=(
-                    usuario.id_usuario
-                ),
-
-                titulo=(
-                    f"Incidente derivado de "
-                    f"Alerta #{id_alerta}"
-                ),
-
-                descripcion=(
-                    descripcion_alerta
-                ),
-
-                clasificacion=None,
-
-                prioridad=(
-                    prioridad_incidente
-                ),
-
-                estado="ABIERTO",
-
-                observaciones=(
-                    "Incidente generado automáticamente "
-                    "por VIGIA a partir del escalamiento "
-                    "de una alerta de seguridad."
-                )
-            )
-
-            db.session.add(
-                incidente
-            )
-
-            db.session.flush()
 
         # ----------------------------------------------------
         # DEFINIR ACCIÓN DE AUDITORÍA
@@ -789,7 +684,6 @@ def actualizar_estado_alerta(id_alerta):
         )
 
         if accion_auditoria is None:
-
             db.session.rollback()
 
             return jsonify({
@@ -801,10 +695,18 @@ def actualizar_estado_alerta(id_alerta):
             }), 500
 
         # ----------------------------------------------------
-        # AUDITORÍA DE LA ALERTA
+        # REGISTRAR AUDITORÍA Y GUARDAR TRANSACCIÓN
+        # ----------------------------------------------------
+        #
+        # registrar_auditoria() agrega el registro de auditoría
+        # y realiza db.session.commit(). Como la modificación
+        # de la alerta todavía pertenece a la misma sesión,
+        # ambos cambios se persisten juntos.
+        #
+        # Si la auditoría falla, el servicio realiza rollback.
         # ----------------------------------------------------
 
-        auditoria_alerta = registrar_auditoria(
+        auditoria_registrada = registrar_auditoria(
 
             accion=accion_auditoria,
 
@@ -820,72 +722,25 @@ def actualizar_estado_alerta(id_alerta):
                 f"a {nuevo_estado}."
             ),
 
-            id_usuario=usuario.id_usuario,
+            id_usuario=usuario.id_usuario
 
-            confirmar=False
         )
 
-        if not auditoria_alerta:
+        if not auditoria_registrada:
 
             return jsonify({
                 "estado": "ERROR",
                 "mensaje": (
                     "No fue posible registrar la "
-                    "trazabilidad de la alerta."
+                    "trazabilidad de la operación."
                 )
             }), 500
-
-        # ----------------------------------------------------
-        # AUDITORÍA DEL INCIDENTE CREADO
-        # ----------------------------------------------------
-
-        if incidente is not None:
-
-            auditoria_incidente = registrar_auditoria(
-
-                accion="CREAR_INCIDENTE",
-
-                entidad_afectada="INCIDENTE",
-
-                id_registro_afectado=(
-                    incidente.id_incidente
-                ),
-
-                resultado="OK",
-
-                detalle=(
-                    f"Se creó el Incidente "
-                    f"{incidente.id_incidente} "
-                    f"a partir de la Alerta "
-                    f"{id_alerta}."
-                ),
-
-                id_usuario=usuario.id_usuario,
-
-                confirmar=False
-            )
-
-            if not auditoria_incidente:
-
-                return jsonify({
-                    "estado": "ERROR",
-                    "mensaje": (
-                        "No fue posible registrar la "
-                        "trazabilidad del incidente."
-                    )
-                }), 500
-
-        # ----------------------------------------------------
-        # CONFIRMAR TRANSACCIÓN COMPLETA
-        # ----------------------------------------------------
-
-        db.session.commit()
 
         # ----------------------------------------------------
         # RESPUESTA
         # ----------------------------------------------------
 
-        respuesta = {
+        return jsonify({
 
             "estado":
                 "OK",
@@ -898,22 +753,8 @@ def actualizar_estado_alerta(id_alerta):
                     alerta,
                     eventos
                 )
-        }
 
-        if incidente is not None:
-
-            respuesta["mensaje"] = (
-                "Alerta escalada e incidente "
-                "creado correctamente."
-            )
-
-            respuesta["incidente"] = (
-                incidente.to_dict()
-            )
-
-        return jsonify(
-            respuesta
-        ), 200
+        }), 200
 
     except Exception as error:
 

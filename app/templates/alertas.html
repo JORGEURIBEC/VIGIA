@@ -1,0 +1,2853 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Alertas | VIGIA
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       ALERTAS - VIGIA
+       ========================================================= */
+
+    .alerts-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+
+    .alerts-summary-card {
+        padding: 18px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+    }
+
+
+    .alerts-summary-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+
+    .alerts-summary-value {
+        color: #0f172a;
+        font-size: 27px;
+        font-weight: 800;
+    }
+
+
+    .alerts-card {
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+
+    .alerts-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+
+    .alerts-card-header h2 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 17px;
+    }
+
+
+    .alerts-card-header p {
+        margin: 5px 0 0;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       FILTROS
+       ========================================================= */
+
+    .alerts-filters {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(170px, 1fr))
+            auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+
+    .alerts-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+
+    .alerts-filter-group label {
+        color: #475569;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+
+    .alerts-filter-group select {
+        width: 100%;
+        height: 40px;
+        padding: 0 10px;
+
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+
+        color: #0f172a;
+        background: #ffffff;
+
+        font-size: 12px;
+        outline: none;
+    }
+
+
+    .alerts-filter-group select:focus {
+        border-color: #168bd2;
+        box-shadow:
+            0 0 0 3px rgba(22, 139, 210, 0.10);
+    }
+
+
+    .alerts-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+
+    /* =========================================================
+       BOTONES
+       ========================================================= */
+
+    .alerts-btn {
+        min-height: 38px;
+        padding: 0 14px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border: 1px solid transparent;
+        border-radius: 8px;
+
+        cursor: pointer;
+
+        font-size: 11px;
+        font-weight: 650;
+
+        transition: 0.2s ease;
+    }
+
+
+    .alerts-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+
+    .alerts-btn-primary {
+        color: #ffffff;
+        background: #168bd2;
+    }
+
+
+    .alerts-btn-primary:hover:not(:disabled) {
+        background: #0f75b6;
+    }
+
+
+    .alerts-btn-secondary {
+        color: #334155;
+        background: #ffffff;
+        border-color: #cbd5e1;
+    }
+
+
+    .alerts-btn-secondary:hover:not(:disabled) {
+        background: #f8fafc;
+    }
+
+
+    .alerts-btn-warning {
+        color: #854d0e;
+        background: #fef9c3;
+        border-color: #fde68a;
+    }
+
+
+    .alerts-btn-danger {
+        color: #991b1b;
+        background: #fee2e2;
+        border-color: #fecaca;
+    }
+
+
+    .alerts-btn-info {
+        color: #075985;
+        background: #e0f2fe;
+        border-color: #bae6fd;
+    }
+
+
+    .alerts-btn-small {
+        min-height: 31px;
+        padding: 0 10px;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       TABLA
+       ========================================================= */
+
+    .alerts-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+
+    .alerts-table {
+        width: 100%;
+        min-width: 1050px;
+
+        border-collapse: collapse;
+    }
+
+
+    .alerts-table th {
+        padding: 11px 10px;
+
+        text-align: left;
+
+        color: #64748b;
+        background: #f8fafc;
+
+        border-bottom: 1px solid #e2e8f0;
+
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+
+    .alerts-table td {
+        padding: 12px 10px;
+
+        vertical-align: middle;
+
+        color: #334155;
+
+        border-bottom: 1px solid #eef2f7;
+
+        font-size: 11px;
+    }
+
+
+    .alerts-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+
+    .alerts-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+
+    .alerts-description {
+        max-width: 300px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       BADGES
+       ========================================================= */
+
+    .alerts-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 24px;
+        padding: 3px 9px;
+
+        border-radius: 999px;
+
+        font-size: 9px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+
+    .alerts-badge-pendiente {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+
+    .alerts-badge-revision {
+        color: #1e40af;
+        background: #dbeafe;
+    }
+
+
+    .alerts-badge-descartada {
+        color: #475569;
+        background: #e2e8f0;
+    }
+
+
+    .alerts-badge-escalada {
+        color: #9f1239;
+        background: #ffe4e6;
+    }
+
+
+    .alerts-badge-critica {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+
+    .alerts-badge-alta {
+        color: #9a3412;
+        background: #ffedd5;
+    }
+
+
+    .alerts-badge-media {
+        color: #854d0e;
+        background: #fef9c3;
+    }
+
+
+    .alerts-badge-baja {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+
+    /* =========================================================
+       MENSAJES
+       ========================================================= */
+
+    .alerts-message {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+
+        border-radius: 8px;
+
+        font-size: 11px;
+    }
+
+
+    .alerts-message.success {
+        color: #166534;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+    }
+
+
+    .alerts-message.error {
+        color: #991b1b;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+    }
+
+
+    .alerts-message.info {
+        color: #075985;
+        background: #e0f2fe;
+        border: 1px solid #bae6fd;
+    }
+
+
+    /* =========================================================
+       PAGINACIÓN
+       ========================================================= */
+
+    .alerts-pagination {
+        margin-top: 18px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        gap: 15px;
+    }
+
+
+    .alerts-pagination-info {
+        color: #64748b;
+        font-size: 10px;
+    }
+
+
+    .alerts-pagination-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+
+    /* =========================================================
+       MODAL
+       ========================================================= */
+
+    .alerts-modal {
+        position: fixed;
+        inset: 0;
+
+        z-index: 3000;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 20px;
+
+        background: rgba(15, 23, 42, 0.65);
+    }
+
+
+    .alerts-modal.hidden {
+        display: none;
+    }
+
+
+    .alerts-modal-box {
+        width: min(720px, 100%);
+        max-height: 90vh;
+
+        overflow-y: auto;
+
+        border-radius: 14px;
+        background: #ffffff;
+
+        box-shadow:
+            0 24px 60px rgba(15, 23, 42, 0.25);
+    }
+
+
+    .alerts-modal-header {
+        padding: 18px 20px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+
+    .alerts-modal-header h2 {
+        margin: 0;
+
+        color: #0f172a;
+
+        font-size: 17px;
+    }
+
+
+    .alerts-modal-close {
+        width: 34px;
+        height: 34px;
+
+        border: 0;
+        border-radius: 8px;
+
+        cursor: pointer;
+
+        color: #64748b;
+        background: #f1f5f9;
+
+        font-size: 17px;
+    }
+
+
+    .alerts-modal-body {
+        padding: 20px;
+    }
+
+
+    .alerts-detail-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 14px;
+    }
+
+
+    .alerts-detail-item {
+        padding: 12px;
+
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+
+        background: #f8fafc;
+    }
+
+
+    .alerts-detail-item.full {
+        grid-column: 1 / -1;
+    }
+
+
+    .alerts-detail-label {
+        display: block;
+
+        margin-bottom: 5px;
+
+        color: #64748b;
+
+        font-size: 9px;
+        font-weight: 700;
+
+        text-transform: uppercase;
+    }
+
+
+    .alerts-detail-value {
+        color: #0f172a;
+
+        font-size: 11px;
+
+        word-break: break-word;
+    }
+
+
+    .alerts-event-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+
+    .alerts-event-chip {
+        padding: 5px 8px;
+
+        border-radius: 6px;
+
+        color: #075985;
+        background: #e0f2fe;
+
+        font-size: 10px;
+        font-weight: 650;
+    }
+
+
+    .alerts-modal-actions {
+        padding: 16px 20px;
+
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+        border-top: 1px solid #e2e8f0;
+    }
+
+
+    .alerts-empty {
+        padding: 30px;
+
+        text-align: center;
+
+        color: #64748b;
+
+        font-size: 11px;
+    }
+
+
+    @media (max-width: 1000px) {
+
+        .alerts-summary {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+
+        .alerts-filters {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+    }
+
+
+    @media (max-width: 650px) {
+
+        .alerts-summary {
+            grid-template-columns: 1fr;
+        }
+
+
+        .alerts-filters {
+            grid-template-columns: 1fr;
+        }
+
+
+        .alerts-filter-actions {
+            flex-direction: column;
+        }
+
+
+        .alerts-filter-actions button {
+            width: 100%;
+        }
+
+
+        .alerts-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+
+        .alerts-detail-item.full {
+            grid-column: auto;
+        }
+
+
+        .alerts-pagination {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+
+        .alerts-pagination-buttons {
+            width: 100%;
+        }
+
+
+        .alerts-pagination-buttons button {
+            flex: 1;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<!-- =========================================================
+     ENCABEZADO
+     ========================================================= -->
+
+<section class="page-header">
+
+    <div>
+
+        <p class="page-eyebrow">
+            MONITOREO Y DETECCIÓN
+        </p>
+
+        <h1>
+            Alertas de Seguridad
+        </h1>
+
+        <p class="page-description">
+            Revisión, clasificación y seguimiento de las
+            alertas generadas automáticamente por el motor
+            de reglas de VIGIA.
+        </p>
+
+    </div>
+
+
+    <div class="page-actions">
+
+        <button
+            type="button"
+            class="alerts-btn alerts-btn-secondary"
+            id="refreshAlertsButton"
+        >
+            Actualizar
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MENSAJE
+     ========================================================= -->
+
+<div
+    id="alertsMessage"
+    class="alerts-message info"
+    hidden
+>
+</div>
+
+
+<!-- =========================================================
+     RESUMEN
+     ========================================================= -->
+
+<section class="alerts-summary">
+
+    <article class="alerts-summary-card">
+
+        <span class="alerts-summary-label">
+            Total de alertas
+        </span>
+
+        <strong
+            class="alerts-summary-value"
+            id="totalAlertsValue"
+        >
+            --
+        </strong>
+
+    </article>
+
+
+    <article class="alerts-summary-card">
+
+        <span class="alerts-summary-label">
+            Pendientes
+        </span>
+
+        <strong
+            class="alerts-summary-value"
+            id="pendingAlertsValue"
+        >
+            --
+        </strong>
+
+    </article>
+
+
+    <article class="alerts-summary-card">
+
+        <span class="alerts-summary-label">
+            En revisión
+        </span>
+
+        <strong
+            class="alerts-summary-value"
+            id="reviewAlertsValue"
+        >
+            --
+        </strong>
+
+    </article>
+
+
+    <article class="alerts-summary-card">
+
+        <span class="alerts-summary-label">
+            Escaladas
+        </span>
+
+        <strong
+            class="alerts-summary-value"
+            id="escalatedAlertsValue"
+        >
+            --
+        </strong>
+
+    </article>
+
+</section>
+
+
+<!-- =========================================================
+     FILTROS
+     ========================================================= -->
+
+<section class="alerts-card">
+
+    <div class="alerts-card-header">
+
+        <div>
+
+            <h2>
+                Filtros de consulta
+            </h2>
+
+            <p>
+                Permite localizar alertas por estado,
+                severidad o regla de detección.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form
+        id="alertsFilterForm"
+        class="alerts-filters"
+    >
+
+        <!-- ESTADO -->
+
+        <div class="alerts-filter-group">
+
+            <label for="alertStateFilter">
+                Estado
+            </label>
+
+            <select id="alertStateFilter">
+
+                <option value="">
+                    Todos los estados
+                </option>
+
+                <option value="PENDIENTE">
+                    Pendiente
+                </option>
+
+                <option value="EN_REVISION">
+                    En revisión
+                </option>
+
+                <option value="DESCARTADA">
+                    Descartada
+                </option>
+
+                <option value="ESCALADA">
+                    Escalada a incidente
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- SEVERIDAD -->
+
+        <div class="alerts-filter-group">
+
+            <label for="alertSeverityFilter">
+                Severidad
+            </label>
+
+            <select id="alertSeverityFilter">
+
+                <option value="">
+                    Todas las severidades
+                </option>
+
+                <option value="CRITICA">
+                    Crítica
+                </option>
+
+                <option value="ALTA">
+                    Alta
+                </option>
+
+                <option value="MEDIA">
+                    Media
+                </option>
+
+                <option value="BAJA">
+                    Baja
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- REGLA -->
+
+        <div class="alerts-filter-group">
+
+            <label for="alertRuleFilter">
+                Regla de detección
+            </label>
+
+            <select id="alertRuleFilter">
+
+                <option value="">
+                    Todas las reglas
+                </option>
+
+                <option value="1">
+                    R1 - Autenticación fallida
+                </option>
+
+                <option value="2">
+                    R2 - Concentración de IP
+                </option>
+
+                <option value="3">
+                    R3 - Evento crítico
+                </option>
+
+                <option value="4">
+                    R4 - Fuera de horario
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- ACCIONES -->
+
+        <div class="alerts-filter-actions">
+
+            <button
+                type="submit"
+                class="alerts-btn alerts-btn-primary"
+            >
+                Aplicar filtros
+            </button>
+
+
+            <button
+                type="button"
+                class="alerts-btn alerts-btn-secondary"
+                id="clearAlertsFiltersButton"
+            >
+                Limpiar
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+
+<!-- =========================================================
+     LISTADO
+     ========================================================= -->
+
+<section class="alerts-card">
+
+    <div class="alerts-card-header">
+
+        <div>
+
+            <h2>
+                Alertas registradas
+            </h2>
+
+            <p id="alertsResultDescription">
+                Consultando información...
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="alerts-table-wrapper">
+
+        <table class="alerts-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        ID
+                    </th>
+
+                    <th>
+                        Fecha
+                    </th>
+
+                    <th>
+                        Regla
+                    </th>
+
+                    <th>
+                        Severidad
+                    </th>
+
+                    <th>
+                        Estado
+                    </th>
+
+                    <th>
+                        Descripción
+                    </th>
+
+                    <th>
+                        Eventos
+                    </th>
+
+                    <th>
+                        Revisor
+                    </th>
+
+                    <th>
+                        Acción
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="alertsTableBody">
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        class="alerts-empty"
+                    >
+                        Cargando alertas...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAGINACIÓN -->
+
+    <div class="alerts-pagination">
+
+        <div
+            class="alerts-pagination-info"
+            id="alertsPaginationInfo"
+        >
+            Página -- de --
+        </div>
+
+
+        <div class="alerts-pagination-buttons">
+
+            <button
+                type="button"
+                class="alerts-btn alerts-btn-secondary"
+                id="previousAlertsPageButton"
+            >
+                ← Anterior
+            </button>
+
+
+            <button
+                type="button"
+                class="alerts-btn alerts-btn-secondary"
+                id="nextAlertsPageButton"
+            >
+                Siguiente →
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MODAL DETALLE
+     ========================================================= -->
+
+<div
+    class="alerts-modal hidden"
+    id="alertDetailModal"
+    role="dialog"
+    aria-modal="true"
+>
+
+    <div class="alerts-modal-box">
+
+
+        <!-- HEADER -->
+
+        <div class="alerts-modal-header">
+
+            <h2 id="alertDetailTitle">
+                Detalle de alerta
+            </h2>
+
+
+            <button
+                type="button"
+                class="alerts-modal-close"
+                id="closeAlertModalButton"
+                aria-label="Cerrar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- BODY -->
+
+        <div
+            class="alerts-modal-body"
+            id="alertDetailBody"
+        >
+
+            Cargando información...
+
+        </div>
+
+
+        <!-- ACCIONES -->
+
+        <div
+            class="alerts-modal-actions"
+            id="alertDetailActions"
+        >
+
+            <button
+                type="button"
+                class="alerts-btn alerts-btn-secondary"
+                id="closeAlertModalFooterButton"
+            >
+                Cerrar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+"use strict";
+
+
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+
+const ALERTS_API =
+    "/api/v1/alertas";
+
+const DASHBOARD_API =
+    "/api/v1/dashboard/resumen";
+
+const ALERTS_PER_PAGE =
+    25;
+
+
+let currentAlertsPage =
+    1;
+
+let totalAlertsPages =
+    1;
+
+let selectedAlertId =
+    null;
+
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        verificarSesionAlertas();
+
+        cargarResumenAlertas();
+
+        cargarAlertas(
+            1
+        );
+
+
+        document.getElementById(
+            "alertsFilterForm"
+        ).addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+                cargarAlertas(
+                    1
+                );
+
+            }
+        );
+
+
+        document.getElementById(
+            "clearAlertsFiltersButton"
+        ).addEventListener(
+            "click",
+            limpiarFiltrosAlertas
+        );
+
+
+        document.getElementById(
+            "refreshAlertsButton"
+        ).addEventListener(
+            "click",
+            () => {
+
+                cargarResumenAlertas();
+
+                cargarAlertas(
+                    currentAlertsPage
+                );
+
+            }
+        );
+
+
+        document.getElementById(
+            "previousAlertsPageButton"
+        ).addEventListener(
+            "click",
+            () => {
+
+                if (
+                    currentAlertsPage > 1
+                ) {
+
+                    cargarAlertas(
+                        currentAlertsPage - 1
+                    );
+
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            "nextAlertsPageButton"
+        ).addEventListener(
+            "click",
+            () => {
+
+                if (
+                    currentAlertsPage <
+                    totalAlertsPages
+                ) {
+
+                    cargarAlertas(
+                        currentAlertsPage + 1
+                    );
+
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            "alertsTableBody"
+        ).addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        "[data-alert-id]"
+                    );
+
+                if (!button) {
+                    return;
+                }
+
+                const id =
+                    Number(
+                        button.dataset.alertId
+                    );
+
+                abrirDetalleAlerta(
+                    id
+                );
+
+            }
+        );
+
+
+        document.getElementById(
+            "closeAlertModalButton"
+        ).addEventListener(
+            "click",
+            cerrarDetalleAlerta
+        );
+
+
+        document.getElementById(
+            "closeAlertModalFooterButton"
+        ).addEventListener(
+            "click",
+            cerrarDetalleAlerta
+        );
+
+
+        document.getElementById(
+            "alertDetailModal"
+        ).addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.id ===
+                    "alertDetailModal"
+                ) {
+
+                    cerrarDetalleAlerta();
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ============================================================
+   TOKEN
+   ============================================================ */
+
+function obtenerTokenAlertas() {
+
+    return localStorage.getItem(
+        "vigia_access_token"
+    );
+
+}
+
+
+/* ============================================================
+   VALIDAR SESIÓN
+   ============================================================ */
+
+function verificarSesionAlertas() {
+
+    const token =
+        obtenerTokenAlertas();
+
+    if (!token) {
+
+        window.location.href =
+            "/login";
+
+    }
+
+}
+
+
+/* ============================================================
+   SOLICITUD API
+   ============================================================ */
+
+async function solicitudAlertas(
+    url,
+    options = {}
+) {
+
+    const token =
+        obtenerTokenAlertas();
+
+
+    const headers = {
+
+        "Accept":
+            "application/json",
+
+        ...options.headers
+
+    };
+
+
+    if (token) {
+
+        headers.Authorization =
+            `Bearer ${token}`;
+
+    }
+
+
+    if (
+        options.body &&
+        !headers["Content-Type"]
+    ) {
+
+        headers["Content-Type"] =
+            "application/json";
+
+    }
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                ...options,
+                headers
+            }
+        );
+
+
+    let result = null;
+
+
+    try {
+
+        result =
+            await response.json();
+
+    }
+    catch {
+
+        result = null;
+
+    }
+
+
+    if (
+        response.status === 401
+    ) {
+
+        localStorage.removeItem(
+            "vigia_access_token"
+        );
+
+        localStorage.removeItem(
+            "vigia_usuario"
+        );
+
+        window.location.href =
+            "/login";
+
+        throw new Error(
+            "La sesión ha expirado."
+        );
+
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            result?.mensaje
+            ||
+            `Error HTTP ${response.status}`
+        );
+
+    }
+
+
+    return result;
+
+}
+
+
+/* ============================================================
+   RESUMEN DE ALERTAS
+   ============================================================ */
+
+async function cargarResumenAlertas() {
+
+    try {
+
+        const result =
+            await solicitudAlertas(
+                DASHBOARD_API
+            );
+
+
+        const data =
+            result?.data || {};
+
+
+        /*
+         * El servicio del dashboard puede entregar los indicadores
+         * principales directamente en data o dentro de data.indicadores.
+         * Se soportan ambas estructuras para mantener compatibilidad.
+         */
+        const indicadores =
+            data.indicadores || {};
+
+
+        const states =
+            data.alertas_por_estado
+            || indicadores.alertas_por_estado
+            || {};
+
+
+        const total =
+            data.total_alertas
+            ??
+            indicadores.total_alertas
+            ??
+            Object.values(states).reduce(
+                (acumulado, cantidad) =>
+                    acumulado + Number(cantidad || 0),
+                0
+            );
+
+
+        const pending =
+            states.PENDIENTE
+            ??
+            indicadores.alertas_pendientes
+            ??
+            0;
+
+
+        const review =
+            states.EN_REVISION
+            ??
+            indicadores.alertas_en_revision
+            ??
+            0;
+
+
+        const escalated =
+            (
+                states.ESCALADA
+                ?? 0
+            )
+            +
+            (
+                states.ESCALADA_INCIDENTE
+                ?? 0
+            );
+
+
+        document.getElementById(
+            "totalAlertsValue"
+        ).textContent =
+            formatearNumero(
+                total
+            );
+
+
+        document.getElementById(
+            "pendingAlertsValue"
+        ).textContent =
+            formatearNumero(
+                pending
+            );
+
+
+        document.getElementById(
+            "reviewAlertsValue"
+        ).textContent =
+            formatearNumero(
+                review
+            );
+
+
+        document.getElementById(
+            "escalatedAlertsValue"
+        ).textContent =
+            formatearNumero(
+                escalated
+            );
+
+
+        actualizarContadoresGlobales(
+            pending
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error resumen alertas:",
+            error
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   CARGAR ALERTAS
+   ============================================================ */
+
+async function cargarAlertas(
+    page = 1
+) {
+
+    const tbody =
+        document.getElementById(
+            "alertsTableBody"
+        );
+
+
+    tbody.innerHTML =
+        `
+        <tr>
+            <td
+                colspan="9"
+                class="alerts-empty"
+            >
+                Cargando alertas...
+            </td>
+        </tr>
+        `;
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        page
+    );
+
+
+    params.set(
+        "per_page",
+        ALERTS_PER_PAGE
+    );
+
+
+    const state =
+        document.getElementById(
+            "alertStateFilter"
+        ).value;
+
+
+    const severity =
+        document.getElementById(
+            "alertSeverityFilter"
+        ).value;
+
+
+    const rule =
+        document.getElementById(
+            "alertRuleFilter"
+        ).value;
+
+
+    if (state) {
+
+        params.set(
+            "estado",
+            state
+        );
+
+    }
+
+
+    if (severity) {
+
+        params.set(
+            "severidad",
+            severity
+        );
+
+    }
+
+
+    if (rule) {
+
+        params.set(
+            "id_regla",
+            rule
+        );
+
+    }
+
+
+    try {
+
+        const result =
+            await solicitudAlertas(
+                `${ALERTS_API}?${params.toString()}`
+            );
+
+
+        currentAlertsPage =
+            result.pagina || 1;
+
+
+        totalAlertsPages =
+            Math.max(
+                result.total_paginas || 1,
+                1
+            );
+
+
+        renderizarAlertas(
+            result.data || []
+        );
+
+
+        actualizarPaginacionAlertas(
+            result
+        );
+
+
+        document.getElementById(
+            "alertsResultDescription"
+        ).textContent =
+            `${formatearNumero(
+                result.total || 0
+            )} alerta(s) coincidente(s) con la consulta.`;
+
+
+        ocultarMensajeAlertas();
+
+    }
+    catch (error) {
+
+        tbody.innerHTML =
+            `
+            <tr>
+                <td
+                    colspan="9"
+                    class="alerts-empty"
+                >
+                    No fue posible cargar las alertas.
+                </td>
+            </tr>
+            `;
+
+
+        mostrarMensajeAlertas(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   RENDERIZAR TABLA
+   ============================================================ */
+
+function renderizarAlertas(
+    alerts
+) {
+
+    const tbody =
+        document.getElementById(
+            "alertsTableBody"
+        );
+
+
+    if (!alerts.length) {
+
+        tbody.innerHTML =
+            `
+            <tr>
+                <td
+                    colspan="9"
+                    class="alerts-empty"
+                >
+                    No existen alertas para los filtros seleccionados.
+                </td>
+            </tr>
+            `;
+
+        return;
+
+    }
+
+
+    tbody.innerHTML =
+        alerts.map(
+            alert => {
+
+                const events =
+                    Array.isArray(
+                        alert.eventos
+                    )
+                        ?
+                        alert.eventos.length
+                        :
+                        0;
+
+
+                const reviewer =
+                    alert.id_usuario_revisor
+                        ?
+                        `Usuario #${alert.id_usuario_revisor}`
+                        :
+                        "Sin asignar";
+
+
+                return `
+                    <tr>
+
+                        <td>
+                            <span class="alerts-id">
+                                #${escaparAlertas(
+                                    alert.id_alerta
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escaparAlertas(
+                                formatearFechaAlerta(
+                                    alert.fecha_generacion
+                                )
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparAlertas(
+                                nombreRegla(
+                                    alert.id_regla
+                                )
+                            )}
+                        </td>
+
+                        <td>
+                            ${badgeSeveridadAlerta(
+                                alert.severidad
+                            )}
+                        </td>
+
+                        <td>
+                            ${badgeEstadoAlerta(
+                                alert.estado
+                            )}
+                        </td>
+
+                        <td
+                            class="alerts-description"
+                            title="${escaparAlertas(
+                                alert.descripcion
+                                || ""
+                            )}"
+                        >
+                            ${escaparAlertas(
+                                alert.descripcion
+                                || "Sin descripción"
+                            )}
+                        </td>
+
+                        <td>
+                            ${events}
+                        </td>
+
+                        <td>
+                            ${escaparAlertas(
+                                reviewer
+                            )}
+                        </td>
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="
+                                    alerts-btn
+                                    alerts-btn-info
+                                    alerts-btn-small
+                                "
+                                data-alert-id="${alert.id_alerta}"
+                            >
+                                Ver detalle
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/* ============================================================
+   DETALLE
+   ============================================================ */
+
+async function abrirDetalleAlerta(
+    id
+) {
+
+    selectedAlertId =
+        id;
+
+
+    const modal =
+        document.getElementById(
+            "alertDetailModal"
+        );
+
+
+    const body =
+        document.getElementById(
+            "alertDetailBody"
+        );
+
+
+    const actions =
+        document.getElementById(
+            "alertDetailActions"
+        );
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    body.innerHTML =
+        "Cargando información...";
+
+
+    actions.innerHTML =
+        `
+        <button
+            type="button"
+            class="
+                alerts-btn
+                alerts-btn-secondary
+            "
+            onclick="cerrarDetalleAlerta()"
+        >
+            Cerrar
+        </button>
+        `;
+
+
+    try {
+
+        const result =
+            await solicitudAlertas(
+                `${ALERTS_API}/${id}`
+            );
+
+
+        const alert =
+            result.data;
+
+
+        document.getElementById(
+            "alertDetailTitle"
+        ).textContent =
+            `Alerta #${alert.id_alerta}`;
+
+
+        const events =
+            Array.isArray(
+                alert.eventos
+            )
+                ?
+                alert.eventos
+                :
+                [];
+
+
+        const eventsHtml =
+            events.length
+                ?
+                events.map(
+                    eventId =>
+                        `
+                        <span class="alerts-event-chip">
+                            Evento #${escaparAlertas(
+                                eventId
+                            )}
+                        </span>
+                        `
+                ).join("")
+                :
+                `
+                <span>
+                    Sin eventos asociados.
+                </span>
+                `;
+
+
+        body.innerHTML =
+            `
+            <div class="alerts-detail-grid">
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Identificador
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        #${escaparAlertas(
+                            alert.id_alerta
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Regla
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${escaparAlertas(
+                            nombreRegla(
+                                alert.id_regla
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Severidad
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${badgeSeveridadAlerta(
+                            alert.severidad
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Estado
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${badgeEstadoAlerta(
+                            alert.estado
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Fecha de generación
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${escaparAlertas(
+                            formatearFechaAlerta(
+                                alert.fecha_generacion
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Fecha de revisión
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${escaparAlertas(
+                            alert.fecha_revision
+                                ?
+                                formatearFechaAlerta(
+                                    alert.fecha_revision
+                                )
+                                :
+                                "Aún no revisada"
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Usuario revisor
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${
+                            alert.id_usuario_revisor
+                                ?
+                                `Usuario #${escaparAlertas(
+                                    alert.id_usuario_revisor
+                                )}`
+                                :
+                                "Sin asignar"
+                        }
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item">
+
+                    <span class="alerts-detail-label">
+                        Eventos relacionados
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${events.length}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item full">
+
+                    <span class="alerts-detail-label">
+                        Descripción
+                    </span>
+
+                    <div class="alerts-detail-value">
+                        ${escaparAlertas(
+                            alert.descripcion
+                            || "Sin descripción"
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="alerts-detail-item full">
+
+                    <span class="alerts-detail-label">
+                        Eventos asociados
+                    </span>
+
+                    <div class="alerts-event-list">
+                        ${eventsHtml}
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+
+
+        renderizarAccionesAlerta(
+            alert
+        );
+
+    }
+    catch (error) {
+
+        body.innerHTML =
+            `
+            <div class="alerts-message error">
+                ${escaparAlertas(
+                    error.message
+                )}
+            </div>
+            `;
+
+    }
+
+}
+
+
+/* ============================================================
+   ACCIONES DE ALERTA
+   ============================================================ */
+
+function renderizarAccionesAlerta(
+    alert
+) {
+
+    const actions =
+        document.getElementById(
+            "alertDetailActions"
+        );
+
+
+    const state =
+        String(
+            alert.estado || ""
+        ).toUpperCase();
+
+
+    let html =
+        `
+        <button
+            type="button"
+            class="
+                alerts-btn
+                alerts-btn-secondary
+            "
+            onclick="cerrarDetalleAlerta()"
+        >
+            Cerrar
+        </button>
+        `;
+
+
+    if (
+        state === "PENDIENTE"
+    ) {
+
+        html +=
+            `
+            <button
+                type="button"
+                class="
+                    alerts-btn
+                    alerts-btn-primary
+                "
+                onclick="
+                    cambiarEstadoAlerta(
+                        ${alert.id_alerta},
+                        'EN_REVISION'
+                    )
+                "
+            >
+                Iniciar revisión
+            </button>
+            `;
+
+    }
+
+
+    if (
+        state === "EN_REVISION"
+    ) {
+
+        html +=
+            `
+            <button
+                type="button"
+                class="
+                    alerts-btn
+                    alerts-btn-secondary
+                "
+                onclick="
+                    cambiarEstadoAlerta(
+                        ${alert.id_alerta},
+                        'DESCARTADA'
+                    )
+                "
+            >
+                Descartar alerta
+            </button>
+
+
+            <button
+                type="button"
+                class="
+                    alerts-btn
+                    alerts-btn-danger
+                "
+                onclick="
+                    cambiarEstadoAlerta(
+                        ${alert.id_alerta},
+                        'ESCALADA'
+                    )
+                "
+            >
+                Escalar a incidente
+            </button>
+            `;
+
+    }
+
+
+    actions.innerHTML =
+        html;
+
+}
+
+
+/* ============================================================
+   CAMBIAR ESTADO
+   ============================================================ */
+
+async function cambiarEstadoAlerta(
+    id,
+    newState
+) {
+
+    const messages = {
+
+        EN_REVISION:
+            "¿Desea iniciar la revisión de esta alerta?",
+
+        DESCARTADA:
+            "¿Desea descartar esta alerta?",
+
+        ESCALADA:
+            "¿Desea escalar esta alerta para su gestión como incidente?"
+
+    };
+
+
+    if (
+        !window.confirm(
+            messages[newState]
+            ||
+            "¿Desea continuar?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const result =
+            await solicitudAlertas(
+                `${ALERTS_API}/${id}/estado`,
+                {
+                    method:
+                        "PUT",
+
+                    body:
+                        JSON.stringify({
+                            estado:
+                                newState
+                        })
+                }
+            );
+
+
+        cerrarDetalleAlerta();
+
+
+        mostrarMensajeAlertas(
+            result.mensaje
+            ||
+            "La alerta fue actualizada correctamente.",
+            "success"
+        );
+
+
+        await cargarResumenAlertas();
+
+
+        await cargarAlertas(
+            currentAlertsPage
+        );
+
+    }
+    catch (error) {
+
+        mostrarMensajeAlertas(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   CERRAR MODAL
+   ============================================================ */
+
+function cerrarDetalleAlerta() {
+
+    document.getElementById(
+        "alertDetailModal"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    selectedAlertId =
+        null;
+
+}
+
+
+/* ============================================================
+   PAGINACIÓN
+   ============================================================ */
+
+function actualizarPaginacionAlertas(
+    result
+) {
+
+    const current =
+        result.pagina || 1;
+
+
+    const pages =
+        Math.max(
+            result.total_paginas || 1,
+            1
+        );
+
+
+    document.getElementById(
+        "alertsPaginationInfo"
+    ).textContent =
+        `Página ${current} de ${pages} · ${
+            formatearNumero(
+                result.total || 0
+            )
+        } resultados`;
+
+
+    document.getElementById(
+        "previousAlertsPageButton"
+    ).disabled =
+        current <= 1;
+
+
+    document.getElementById(
+        "nextAlertsPageButton"
+    ).disabled =
+        current >= pages;
+
+}
+
+
+/* ============================================================
+   LIMPIAR FILTROS
+   ============================================================ */
+
+function limpiarFiltrosAlertas() {
+
+    document.getElementById(
+        "alertStateFilter"
+    ).value =
+        "";
+
+
+    document.getElementById(
+        "alertSeverityFilter"
+    ).value =
+        "";
+
+
+    document.getElementById(
+        "alertRuleFilter"
+    ).value =
+        "";
+
+
+    cargarAlertas(
+        1
+    );
+
+}
+
+
+/* ============================================================
+   CONTADORES DE BASE.HTML
+   ============================================================ */
+
+function actualizarContadoresGlobales(
+    amount
+) {
+
+    const sidebar =
+        document.getElementById(
+            "sidebarAlertCount"
+        );
+
+
+    const topbar =
+        document.getElementById(
+            "topbarAlertCount"
+        );
+
+
+    const text =
+        amount > 999
+            ?
+            "999+"
+            :
+            String(amount);
+
+
+    if (sidebar) {
+
+        sidebar.textContent =
+            text;
+
+    }
+
+
+    if (topbar) {
+
+        topbar.textContent =
+            text;
+
+    }
+
+}
+
+
+/* ============================================================
+   NOMBRE DE REGLA
+   ============================================================ */
+
+function nombreRegla(
+    id
+) {
+
+    const rules = {
+
+        1:
+            "R1 · Autenticación fallida",
+
+        2:
+            "R2 · Concentración de IP",
+
+        3:
+            "R3 · Evento crítico",
+
+        4:
+            "R4 · Fuera de horario"
+
+    };
+
+
+    return rules[id]
+        ||
+        `Regla #${id}`;
+
+}
+
+
+/* ============================================================
+   BADGE DE SEVERIDAD
+   ============================================================ */
+
+function badgeSeveridadAlerta(
+    severity
+) {
+
+    const value =
+        String(
+            severity || ""
+        ).toUpperCase();
+
+
+    const classes = {
+
+        CRITICA:
+            "alerts-badge-critica",
+
+        "CRÍTICA":
+            "alerts-badge-critica",
+
+        ALTA:
+            "alerts-badge-alta",
+
+        MEDIA:
+            "alerts-badge-media",
+
+        BAJA:
+            "alerts-badge-baja"
+
+    };
+
+
+    const cssClass =
+        classes[value]
+        ||
+        "alerts-badge-descartada";
+
+
+    return `
+        <span
+            class="
+                alerts-badge
+                ${cssClass}
+            "
+        >
+            ${escaparAlertas(
+                value || "SIN DEFINIR"
+            )}
+        </span>
+    `;
+
+}
+
+
+/* ============================================================
+   BADGE DE ESTADO
+   ============================================================ */
+
+function badgeEstadoAlerta(
+    state
+) {
+
+    const value =
+        String(
+            state || ""
+        ).toUpperCase();
+
+
+    const classes = {
+
+        PENDIENTE:
+            "alerts-badge-pendiente",
+
+        EN_REVISION:
+            "alerts-badge-revision",
+
+        DESCARTADA:
+            "alerts-badge-descartada",
+
+        ESCALADA:
+            "alerts-badge-escalada",
+
+        ESCALADA_INCIDENTE:
+            "alerts-badge-escalada"
+
+    };
+
+
+    const labels = {
+
+        PENDIENTE:
+            "Pendiente",
+
+        EN_REVISION:
+            "En revisión",
+
+        DESCARTADA:
+            "Descartada",
+
+        ESCALADA:
+            "Escalada",
+
+        ESCALADA_INCIDENTE:
+            "Escalada"
+
+    };
+
+
+    return `
+        <span
+            class="
+                alerts-badge
+                ${
+                    classes[value]
+                    ||
+                    "alerts-badge-descartada"
+                }
+            "
+        >
+            ${escaparAlertas(
+                labels[value]
+                ||
+                value
+                ||
+                "Sin definir"
+            )}
+        </span>
+    `;
+
+}
+
+
+/* ============================================================
+   FORMATEAR FECHA
+   ============================================================ */
+
+function formatearFechaAlerta(
+    value
+) {
+
+    if (!value) {
+
+        return "—";
+
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return value;
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+        "es-CL",
+        {
+            dateStyle:
+                "short",
+
+            timeStyle:
+                "medium"
+        }
+    ).format(
+        date
+    );
+
+}
+
+
+/* ============================================================
+   NÚMEROS
+   ============================================================ */
+
+function formatearNumero(
+    value
+) {
+
+    return Number(
+        value || 0
+    ).toLocaleString(
+        "es-CL"
+    );
+
+}
+
+
+/* ============================================================
+   ESCAPAR HTML
+   ============================================================ */
+
+function escaparAlertas(
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(value)
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+/* ============================================================
+   MENSAJES
+   ============================================================ */
+
+function mostrarMensajeAlertas(
+    text,
+    type = "info"
+) {
+
+    const element =
+        document.getElementById(
+            "alertsMessage"
+        );
+
+
+    element.className =
+        `alerts-message ${type}`;
+
+
+    element.textContent =
+        text;
+
+
+    element.hidden =
+        false;
+
+
+    window.scrollTo({
+        top:
+            0,
+        behavior:
+            "smooth"
+    });
+
+}
+
+
+function ocultarMensajeAlertas() {
+
+    const element =
+        document.getElementById(
+            "alertsMessage"
+        );
+
+
+    element.hidden =
+        true;
+
+}
+
+</script>
+
+{% endblock %}

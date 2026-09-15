@@ -99,3 +99,4 @@ class Incidente(db.Model):
                 else None
             ),
         }
+    

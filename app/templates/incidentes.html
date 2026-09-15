@@ -1,0 +1,2480 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Incidentes | VIGIA
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       INCIDENTES - VIGIA
+       ========================================================= */
+
+    .incidents-summary {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .incidents-summary-card {
+        padding: 18px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+    }
+
+    .incidents-summary-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .incidents-summary-value {
+        color: #0f172a;
+        font-size: 27px;
+        font-weight: 800;
+    }
+
+    .incidents-card {
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+    .incidents-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+    .incidents-card-header h2 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 17px;
+    }
+
+    .incidents-card-header p {
+        margin: 5px 0 0;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    /* =========================================================
+       FILTROS
+       ========================================================= */
+
+    .incidents-filters {
+        display: grid;
+        grid-template-columns:
+            minmax(160px, 1fr)
+            minmax(160px, 1fr)
+            minmax(150px, 1fr)
+            minmax(150px, 1fr)
+            auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .incidents-filter-group,
+    .incidents-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .incidents-filter-group label,
+    .incidents-form-group label {
+        color: #475569;
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+    .incidents-filter-group select,
+    .incidents-filter-group input,
+    .incidents-form-group select,
+    .incidents-form-group input,
+    .incidents-form-group textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        color: #0f172a;
+        background: #ffffff;
+        font-size: 12px;
+        outline: none;
+    }
+
+    .incidents-filter-group select,
+    .incidents-filter-group input,
+    .incidents-form-group select,
+    .incidents-form-group input {
+        height: 40px;
+        padding: 0 10px;
+    }
+
+    .incidents-form-group textarea {
+        min-height: 92px;
+        padding: 10px;
+        resize: vertical;
+    }
+
+    .incidents-filter-group select:focus,
+    .incidents-filter-group input:focus,
+    .incidents-form-group select:focus,
+    .incidents-form-group input:focus,
+    .incidents-form-group textarea:focus {
+        border-color: #168bd2;
+        box-shadow: 0 0 0 3px rgba(22, 139, 210, 0.10);
+    }
+
+    .incidents-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* =========================================================
+       BOTONES
+       ========================================================= */
+
+    .incidents-btn {
+        min-height: 38px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 650;
+        transition: 0.2s ease;
+    }
+
+    .incidents-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+    .incidents-btn-primary {
+        color: #ffffff;
+        background: #168bd2;
+    }
+
+    .incidents-btn-primary:hover:not(:disabled) {
+        background: #0f75b6;
+    }
+
+    .incidents-btn-secondary {
+        color: #334155;
+        background: #ffffff;
+        border-color: #cbd5e1;
+    }
+
+    .incidents-btn-secondary:hover:not(:disabled) {
+        background: #f8fafc;
+    }
+
+    .incidents-btn-success {
+        color: #166534;
+        background: #dcfce7;
+        border-color: #bbf7d0;
+    }
+
+    .incidents-btn-warning {
+        color: #854d0e;
+        background: #fef9c3;
+        border-color: #fde68a;
+    }
+
+    .incidents-btn-danger {
+        color: #991b1b;
+        background: #fee2e2;
+        border-color: #fecaca;
+    }
+
+    .incidents-btn-info {
+        color: #075985;
+        background: #e0f2fe;
+        border-color: #bae6fd;
+    }
+
+    .incidents-btn-small {
+        min-height: 31px;
+        padding: 0 10px;
+        font-size: 10px;
+    }
+
+    /* =========================================================
+       TABLA
+       ========================================================= */
+
+    .incidents-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .incidents-table {
+        width: 100%;
+        min-width: 1120px;
+        border-collapse: collapse;
+    }
+
+    .incidents-table th {
+        padding: 11px 10px;
+        text-align: left;
+        color: #64748b;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .incidents-table td {
+        padding: 12px 10px;
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #eef2f7;
+        font-size: 11px;
+    }
+
+    .incidents-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .incidents-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .incidents-title-cell {
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .incidents-empty {
+        padding: 28px !important;
+        text-align: center;
+        color: #64748b !important;
+    }
+
+    /* =========================================================
+       BADGES
+       ========================================================= */
+
+    .incidents-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 9px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .incidents-state-abierto {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+    .incidents-state-analisis {
+        color: #1e40af;
+        background: #dbeafe;
+    }
+
+    .incidents-state-tratamiento {
+        color: #075985;
+        background: #e0f2fe;
+    }
+
+    .incidents-state-resuelto {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    .incidents-state-cerrado {
+        color: #475569;
+        background: #e2e8f0;
+    }
+
+    .incidents-priority-baja {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    .incidents-priority-media {
+        color: #854d0e;
+        background: #fef9c3;
+    }
+
+    .incidents-priority-alta {
+        color: #9a3412;
+        background: #ffedd5;
+    }
+
+    .incidents-priority-critica {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    /* =========================================================
+       MENSAJES Y PAGINACIÓN
+       ========================================================= */
+
+    .incidents-message {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 11px;
+    }
+
+    .incidents-message.success {
+        color: #166534;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+    }
+
+    .incidents-message.error {
+        color: #991b1b;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+    }
+
+    .incidents-message.info {
+        color: #075985;
+        background: #e0f2fe;
+        border: 1px solid #bae6fd;
+    }
+
+    .incidents-pagination {
+        margin-top: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .incidents-pagination-info {
+        color: #64748b;
+        font-size: 10px;
+    }
+
+    .incidents-pagination-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* =========================================================
+       MODAL
+       ========================================================= */
+
+    .incidents-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.65);
+    }
+
+    .incidents-modal.hidden {
+        display: none;
+    }
+
+    .incidents-modal-box {
+        width: min(820px, 100%);
+        max-height: 92vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.30);
+    }
+
+    .incidents-modal-header {
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .incidents-modal-header h2 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 17px;
+    }
+
+    .incidents-modal-close {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 8px;
+        color: #64748b;
+        background: #f1f5f9;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .incidents-modal-body {
+        padding: 18px 20px;
+        overflow-y: auto;
+    }
+
+    .incidents-modal-actions {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        border-top: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+    .incidents-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .incidents-detail-item {
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        background: #f8fafc;
+    }
+
+    .incidents-detail-item.full {
+        grid-column: 1 / -1;
+    }
+
+    .incidents-detail-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .incidents-detail-value {
+        color: #0f172a;
+        font-size: 11px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+
+    .incidents-edit-panel {
+        margin-top: 16px;
+        padding: 16px;
+        border: 1px solid #bae6fd;
+        border-radius: 10px;
+        background: #f0f9ff;
+    }
+
+    .incidents-edit-panel h3 {
+        margin: 0 0 14px;
+        color: #0f172a;
+        font-size: 14px;
+    }
+
+    .incidents-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .incidents-form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .incidents-inline-note {
+        margin-top: 12px;
+        color: #64748b;
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 1250px) {
+
+        .incidents-summary {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .incidents-filters {
+            grid-template-columns: repeat(2, minmax(170px, 1fr));
+        }
+
+        .incidents-filter-actions {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 760px) {
+
+        .incidents-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .incidents-filters,
+        .incidents-detail-grid,
+        .incidents-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .incidents-detail-item.full,
+        .incidents-form-group.full,
+        .incidents-filter-actions {
+            grid-column: auto;
+        }
+
+        .incidents-pagination {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 460px) {
+
+        .incidents-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .incidents-filter-actions,
+        .incidents-modal-actions {
+            flex-direction: column;
+        }
+
+        .incidents-filter-actions .incidents-btn,
+        .incidents-modal-actions .incidents-btn {
+            width: 100%;
+        }
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<!-- =========================================================
+     ENCABEZADO
+     ========================================================= -->
+
+<section class="page-header">
+
+    <div>
+
+        <p class="page-eyebrow">
+            GESTIÓN Y RESPUESTA
+        </p>
+
+        <h1>
+            Gestión de Incidentes
+        </h1>
+
+        <p class="page-description">
+            Seguimiento del ciclo de vida de los incidentes de
+            seguridad generados a partir de alertas escaladas por VIGIA.
+        </p>
+
+    </div>
+
+    <div class="page-actions">
+
+        <button
+            type="button"
+            class="incidents-btn incidents-btn-secondary"
+            id="refreshIncidentsButton"
+        >
+            Actualizar
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MENSAJE
+     ========================================================= -->
+
+<div
+    id="incidentsMessage"
+    class="incidents-message info"
+    hidden
+>
+</div>
+
+
+<!-- =========================================================
+     RESUMEN
+     ========================================================= -->
+
+<section class="incidents-summary">
+
+    <article class="incidents-summary-card">
+        <span class="incidents-summary-label">Total</span>
+        <strong class="incidents-summary-value" id="totalIncidentsValue">--</strong>
+    </article>
+
+    <article class="incidents-summary-card">
+        <span class="incidents-summary-label">Abiertos</span>
+        <strong class="incidents-summary-value" id="openIncidentsValue">--</strong>
+    </article>
+
+    <article class="incidents-summary-card">
+        <span class="incidents-summary-label">En análisis</span>
+        <strong class="incidents-summary-value" id="analysisIncidentsValue">--</strong>
+    </article>
+
+    <article class="incidents-summary-card">
+        <span class="incidents-summary-label">En tratamiento</span>
+        <strong class="incidents-summary-value" id="treatmentIncidentsValue">--</strong>
+    </article>
+
+    <article class="incidents-summary-card">
+        <span class="incidents-summary-label">Resueltos</span>
+        <strong class="incidents-summary-value" id="resolvedIncidentsValue">--</strong>
+    </article>
+
+    <article class="incidents-summary-card">
+        <span class="incidents-summary-label">Cerrados</span>
+        <strong class="incidents-summary-value" id="closedIncidentsValue">--</strong>
+    </article>
+
+</section>
+
+
+<!-- =========================================================
+     FILTROS
+     ========================================================= -->
+
+<section class="incidents-card">
+
+    <div class="incidents-card-header">
+
+        <div>
+            <h2>Filtros de consulta</h2>
+            <p>
+                Permite localizar incidentes por estado, prioridad,
+                responsable o alerta de origen.
+            </p>
+        </div>
+
+    </div>
+
+    <form
+        id="incidentsFilterForm"
+        class="incidents-filters"
+    >
+
+        <div class="incidents-filter-group">
+            <label for="incidentStateFilter">Estado</label>
+            <select id="incidentStateFilter">
+                <option value="">Todos los estados</option>
+                <option value="ABIERTO">Abierto</option>
+                <option value="EN_ANALISIS">En análisis</option>
+                <option value="EN_TRATAMIENTO">En tratamiento</option>
+                <option value="RESUELTO">Resuelto</option>
+                <option value="CERRADO">Cerrado</option>
+            </select>
+        </div>
+
+        <div class="incidents-filter-group">
+            <label for="incidentPriorityFilter">Prioridad</label>
+            <select id="incidentPriorityFilter">
+                <option value="">Todas las prioridades</option>
+                <option value="CRITICA">Crítica</option>
+                <option value="ALTA">Alta</option>
+                <option value="MEDIA">Media</option>
+                <option value="BAJA">Baja</option>
+            </select>
+        </div>
+
+        <div class="incidents-filter-group">
+            <label for="incidentResponsibleFilter">ID responsable</label>
+            <input
+                type="number"
+                id="incidentResponsibleFilter"
+                min="1"
+                placeholder="Ej.: 2"
+            >
+        </div>
+
+        <div class="incidents-filter-group">
+            <label for="incidentAlertFilter">ID alerta</label>
+            <input
+                type="number"
+                id="incidentAlertFilter"
+                min="1"
+                placeholder="Ej.: 6809"
+            >
+        </div>
+
+        <div class="incidents-filter-actions">
+
+            <button
+                type="submit"
+                class="incidents-btn incidents-btn-primary"
+            >
+                Aplicar filtros
+            </button>
+
+            <button
+                type="button"
+                class="incidents-btn incidents-btn-secondary"
+                id="clearIncidentsFiltersButton"
+            >
+                Limpiar
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+
+<!-- =========================================================
+     LISTADO
+     ========================================================= -->
+
+<section class="incidents-card">
+
+    <div class="incidents-card-header">
+
+        <div>
+            <h2>Incidentes registrados</h2>
+            <p id="incidentsResultDescription">
+                Consultando información...
+            </p>
+        </div>
+
+    </div>
+
+    <div class="incidents-table-wrapper">
+
+        <table class="incidents-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Alerta</th>
+                    <th>Fecha</th>
+                    <th>Título</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th>Responsable</th>
+                    <th>Actualización</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody id="incidentsTableBody">
+                <tr>
+                    <td colspan="9" class="incidents-empty">
+                        Cargando incidentes...
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="incidents-pagination">
+
+        <div
+            class="incidents-pagination-info"
+            id="incidentsPaginationInfo"
+        >
+            Página -- de --
+        </div>
+
+        <div class="incidents-pagination-buttons">
+
+            <button
+                type="button"
+                class="incidents-btn incidents-btn-secondary"
+                id="previousIncidentsPageButton"
+            >
+                ← Anterior
+            </button>
+
+            <button
+                type="button"
+                class="incidents-btn incidents-btn-secondary"
+                id="nextIncidentsPageButton"
+            >
+                Siguiente →
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MODAL DETALLE
+     ========================================================= -->
+
+<div
+    class="incidents-modal hidden"
+    id="incidentDetailModal"
+    role="dialog"
+    aria-modal="true"
+>
+
+    <div class="incidents-modal-box">
+
+        <div class="incidents-modal-header">
+
+            <h2 id="incidentDetailTitle">
+                Detalle de incidente
+            </h2>
+
+            <button
+                type="button"
+                class="incidents-modal-close"
+                id="closeIncidentModalButton"
+                aria-label="Cerrar"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div
+            class="incidents-modal-body"
+            id="incidentDetailBody"
+        >
+            Cargando información...
+        </div>
+
+        <div
+            class="incidents-modal-actions"
+            id="incidentDetailActions"
+        >
+            <button
+                type="button"
+                class="incidents-btn incidents-btn-secondary"
+                id="closeIncidentModalFooterButton"
+            >
+                Cerrar
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+"use strict";
+
+
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+
+const INCIDENTS_API =
+    "/api/v1/incidentes";
+
+const INCIDENTS_PER_PAGE =
+    25;
+
+let currentIncidentsPage =
+    1;
+
+let totalIncidentsPages =
+    1;
+
+let currentIncidents =
+    [];
+
+let selectedIncident =
+    null;
+
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        verificarSesionIncidentes();
+
+        cargarResumenIncidentes();
+
+        cargarIncidentes(1);
+
+
+        document.getElementById(
+            "incidentsFilterForm"
+        ).addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+                cargarIncidentes(1);
+
+            }
+        );
+
+
+        document.getElementById(
+            "clearIncidentsFiltersButton"
+        ).addEventListener(
+            "click",
+            limpiarFiltrosIncidentes
+        );
+
+
+        document.getElementById(
+            "refreshIncidentsButton"
+        ).addEventListener(
+            "click",
+            () => {
+
+                cargarResumenIncidentes();
+                cargarIncidentes(currentIncidentsPage);
+
+            }
+        );
+
+
+        document.getElementById(
+            "previousIncidentsPageButton"
+        ).addEventListener(
+            "click",
+            () => {
+
+                if (currentIncidentsPage > 1) {
+                    renderizarPaginaIncidentes(
+                        currentIncidentsPage - 1
+                    );
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            "nextIncidentsPageButton"
+        ).addEventListener(
+            "click",
+            () => {
+
+                if (
+                    currentIncidentsPage <
+                    totalIncidentsPages
+                ) {
+                    renderizarPaginaIncidentes(
+                        currentIncidentsPage + 1
+                    );
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            "incidentsTableBody"
+        ).addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        "[data-incident-id]"
+                    );
+
+                if (!button) {
+                    return;
+                }
+
+                abrirDetalleIncidente(
+                    Number(
+                        button.dataset.incidentId
+                    )
+                );
+
+            }
+        );
+
+
+        document.getElementById(
+            "closeIncidentModalButton"
+        ).addEventListener(
+            "click",
+            cerrarDetalleIncidente
+        );
+
+
+        document.getElementById(
+            "closeIncidentModalFooterButton"
+        ).addEventListener(
+            "click",
+            cerrarDetalleIncidente
+        );
+
+
+        document.getElementById(
+            "incidentDetailModal"
+        ).addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.id ===
+                    "incidentDetailModal"
+                ) {
+                    cerrarDetalleIncidente();
+                }
+
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Escape") {
+                    cerrarDetalleIncidente();
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ============================================================
+   TOKEN Y SOLICITUD API
+   ============================================================ */
+
+function obtenerTokenIncidentes() {
+
+    return localStorage.getItem(
+        "vigia_access_token"
+    );
+
+}
+
+
+function verificarSesionIncidentes() {
+
+    if (!obtenerTokenIncidentes()) {
+        window.location.href = "/login";
+    }
+
+}
+
+
+async function solicitudIncidentes(
+    url,
+    options = {}
+) {
+
+    const token =
+        obtenerTokenIncidentes();
+
+    const headers = {
+        "Accept": "application/json",
+        ...options.headers
+    };
+
+    if (token) {
+        headers.Authorization =
+            `Bearer ${token}`;
+    }
+
+    if (
+        options.body &&
+        !headers["Content-Type"]
+    ) {
+        headers["Content-Type"] =
+            "application/json";
+    }
+
+    const response =
+        await fetch(
+            url,
+            {
+                ...options,
+                headers
+            }
+        );
+
+    let result = null;
+
+    try {
+        result = await response.json();
+    }
+    catch {
+        result = null;
+    }
+
+    if (response.status === 401) {
+
+        localStorage.removeItem(
+            "vigia_access_token"
+        );
+
+        localStorage.removeItem(
+            "vigia_usuario"
+        );
+
+        window.location.href =
+            "/login";
+
+        throw new Error(
+            "La sesión ha expirado."
+        );
+    }
+
+    if (!response.ok) {
+
+        throw new Error(
+            result?.mensaje
+            || result?.msg
+            || `Error HTTP ${response.status}`
+        );
+    }
+
+    return result;
+}
+
+
+/* ============================================================
+   RESUMEN
+   ============================================================ */
+
+async function cargarResumenIncidentes() {
+
+    try {
+
+        const result =
+            await solicitudIncidentes(
+                INCIDENTS_API
+            );
+
+        const data =
+            Array.isArray(result?.data)
+                ? result.data
+                : [];
+
+        const contar = estado =>
+            data.filter(
+                incident =>
+                    String(
+                        incident.estado || ""
+                    ).toUpperCase() === estado
+            ).length;
+
+        document.getElementById(
+            "totalIncidentsValue"
+        ).textContent =
+            formatearNumeroIncidentes(
+                data.length
+            );
+
+        document.getElementById(
+            "openIncidentsValue"
+        ).textContent =
+            formatearNumeroIncidentes(
+                contar("ABIERTO")
+            );
+
+        document.getElementById(
+            "analysisIncidentsValue"
+        ).textContent =
+            formatearNumeroIncidentes(
+                contar("EN_ANALISIS")
+            );
+
+        document.getElementById(
+            "treatmentIncidentsValue"
+        ).textContent =
+            formatearNumeroIncidentes(
+                contar("EN_TRATAMIENTO")
+            );
+
+        document.getElementById(
+            "resolvedIncidentsValue"
+        ).textContent =
+            formatearNumeroIncidentes(
+                contar("RESUELTO")
+            );
+
+        document.getElementById(
+            "closedIncidentsValue"
+        ).textContent =
+            formatearNumeroIncidentes(
+                contar("CERRADO")
+            );
+
+    }
+    catch (error) {
+
+        mostrarMensajeIncidentes(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* ============================================================
+   CARGAR LISTADO
+   ============================================================ */
+
+async function cargarIncidentes(
+    page = 1
+) {
+
+    const body =
+        document.getElementById(
+            "incidentsTableBody"
+        );
+
+    body.innerHTML = `
+        <tr>
+            <td colspan="9" class="incidents-empty">
+                Cargando incidentes...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const params =
+            construirFiltrosIncidentes();
+
+        const url =
+            params.toString()
+                ? `${INCIDENTS_API}?${params.toString()}`
+                : INCIDENTS_API;
+
+        const result =
+            await solicitudIncidentes(
+                url
+            );
+
+        currentIncidents =
+            Array.isArray(result?.data)
+                ? result.data
+                : [];
+
+        totalIncidentsPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    currentIncidents.length /
+                    INCIDENTS_PER_PAGE
+                )
+            );
+
+        const targetPage =
+            Math.min(
+                Math.max(1, page),
+                totalIncidentsPages
+            );
+
+        renderizarPaginaIncidentes(
+            targetPage
+        );
+
+        document.getElementById(
+            "incidentsResultDescription"
+        ).textContent =
+            `${formatearNumeroIncidentes(
+                currentIncidents.length
+            )} incidente(s) coincidente(s) con la consulta.`;
+
+    }
+    catch (error) {
+
+        currentIncidents = [];
+        currentIncidentsPage = 1;
+        totalIncidentsPages = 1;
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="9" class="incidents-empty">
+                    No fue posible cargar los incidentes.
+                </td>
+            </tr>
+        `;
+
+        actualizarPaginacionIncidentes();
+
+        mostrarMensajeIncidentes(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+function construirFiltrosIncidentes() {
+
+    const params =
+        new URLSearchParams();
+
+    const state =
+        document.getElementById(
+            "incidentStateFilter"
+        ).value;
+
+    const priority =
+        document.getElementById(
+            "incidentPriorityFilter"
+        ).value;
+
+    const responsible =
+        document.getElementById(
+            "incidentResponsibleFilter"
+        ).value.trim();
+
+    const alertId =
+        document.getElementById(
+            "incidentAlertFilter"
+        ).value.trim();
+
+    if (state) {
+        params.set("estado", state);
+    }
+
+    if (priority) {
+        params.set("prioridad", priority);
+    }
+
+    if (responsible) {
+        params.set(
+            "id_responsable",
+            responsible
+        );
+    }
+
+    if (alertId) {
+        params.set(
+            "id_alerta",
+            alertId
+        );
+    }
+
+    return params;
+}
+
+
+function limpiarFiltrosIncidentes() {
+
+    document.getElementById(
+        "incidentStateFilter"
+    ).value = "";
+
+    document.getElementById(
+        "incidentPriorityFilter"
+    ).value = "";
+
+    document.getElementById(
+        "incidentResponsibleFilter"
+    ).value = "";
+
+    document.getElementById(
+        "incidentAlertFilter"
+    ).value = "";
+
+    cargarIncidentes(1);
+}
+
+
+/* ============================================================
+   RENDERIZADO DE TABLA
+   ============================================================ */
+
+function renderizarPaginaIncidentes(
+    page
+) {
+
+    currentIncidentsPage =
+        Math.min(
+            Math.max(1, page),
+            totalIncidentsPages
+        );
+
+    const start =
+        (currentIncidentsPage - 1) *
+        INCIDENTS_PER_PAGE;
+
+    const end =
+        start + INCIDENTS_PER_PAGE;
+
+    const pageItems =
+        currentIncidents.slice(
+            start,
+            end
+        );
+
+    const body =
+        document.getElementById(
+            "incidentsTableBody"
+        );
+
+    if (!pageItems.length) {
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="9" class="incidents-empty">
+                    No existen incidentes que coincidan con la consulta.
+                </td>
+            </tr>
+        `;
+
+        actualizarPaginacionIncidentes();
+        return;
+    }
+
+    body.innerHTML =
+        pageItems.map(
+            incident => {
+
+                const responsible =
+                    incident.id_responsable
+                        ? `Usuario #${incident.id_responsable}`
+                        : "Sin asignar";
+
+                return `
+                    <tr>
+
+                        <td>
+                            <span class="incidents-id">
+                                #${escaparIncidentes(
+                                    incident.id_incidente
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            #${escaparIncidentes(
+                                incident.id_alerta
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparIncidentes(
+                                formatearFechaIncidente(
+                                    incident.fecha_creacion
+                                )
+                            )}
+                        </td>
+
+                        <td
+                            class="incidents-title-cell"
+                            title="${escaparIncidentes(
+                                incident.titulo || ""
+                            )}"
+                        >
+                            ${escaparIncidentes(
+                                incident.titulo || "Sin título"
+                            )}
+                        </td>
+
+                        <td>
+                            ${badgePrioridadIncidente(
+                                incident.prioridad
+                            )}
+                        </td>
+
+                        <td>
+                            ${badgeEstadoIncidente(
+                                incident.estado
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparIncidentes(
+                                responsible
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparIncidentes(
+                                formatearFechaIncidente(
+                                    incident.fecha_actualizacion
+                                )
+                            )}
+                        </td>
+
+                        <td>
+                            <button
+                                type="button"
+                                class="incidents-btn incidents-btn-info incidents-btn-small"
+                                data-incident-id="${incident.id_incidente}"
+                            >
+                                Ver detalle
+                            </button>
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+
+    actualizarPaginacionIncidentes();
+}
+
+
+function actualizarPaginacionIncidentes() {
+
+    const info =
+        document.getElementById(
+            "incidentsPaginationInfo"
+        );
+
+    const previous =
+        document.getElementById(
+            "previousIncidentsPageButton"
+        );
+
+    const next =
+        document.getElementById(
+            "nextIncidentsPageButton"
+        );
+
+    info.textContent =
+        currentIncidents.length
+            ? `Página ${currentIncidentsPage} de ${totalIncidentsPages}`
+            : "Página 0 de 0";
+
+    previous.disabled =
+        currentIncidentsPage <= 1 ||
+        !currentIncidents.length;
+
+    next.disabled =
+        currentIncidentsPage >= totalIncidentsPages ||
+        !currentIncidents.length;
+}
+
+
+/* ============================================================
+   DETALLE
+   ============================================================ */
+
+async function abrirDetalleIncidente(
+    id
+) {
+
+    const modal =
+        document.getElementById(
+            "incidentDetailModal"
+        );
+
+    const body =
+        document.getElementById(
+            "incidentDetailBody"
+        );
+
+    const actions =
+        document.getElementById(
+            "incidentDetailActions"
+        );
+
+    selectedIncident = null;
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+    document.body.style.overflow =
+        "hidden";
+
+    body.innerHTML =
+        "Cargando información...";
+
+    actions.innerHTML = `
+        <button
+            type="button"
+            class="incidents-btn incidents-btn-secondary"
+            onclick="cerrarDetalleIncidente()"
+        >
+            Cerrar
+        </button>
+    `;
+
+    try {
+
+        const result =
+            await solicitudIncidentes(
+                `${INCIDENTS_API}/${id}`
+            );
+
+        selectedIncident =
+            result.data;
+
+        renderizarDetalleIncidente(
+            selectedIncident
+        );
+
+    }
+    catch (error) {
+
+        body.innerHTML = `
+            <div class="incidents-message error">
+                ${escaparIncidentes(
+                    error.message
+                )}
+            </div>
+        `;
+    }
+}
+
+
+function renderizarDetalleIncidente(
+    incident
+) {
+
+    document.getElementById(
+        "incidentDetailTitle"
+    ).textContent =
+        `Incidente #${incident.id_incidente}`;
+
+    const responsible =
+        incident.id_responsable
+            ? `Usuario #${incident.id_responsable}`
+            : "Sin asignar";
+
+    const body =
+        document.getElementById(
+            "incidentDetailBody"
+        );
+
+    body.innerHTML = `
+
+        <div class="incidents-detail-grid">
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Identificador</span>
+                <div class="incidents-detail-value">
+                    #${escaparIncidentes(incident.id_incidente)}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Alerta de origen</span>
+                <div class="incidents-detail-value">
+                    #${escaparIncidentes(incident.id_alerta)}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Prioridad</span>
+                <div class="incidents-detail-value">
+                    ${badgePrioridadIncidente(incident.prioridad)}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Estado</span>
+                <div class="incidents-detail-value">
+                    ${badgeEstadoIncidente(incident.estado)}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Responsable</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(responsible)}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Clasificación</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        incident.clasificacion || "Sin clasificar"
+                    )}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Fecha de creación</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        formatearFechaIncidente(
+                            incident.fecha_creacion
+                        )
+                    )}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item">
+                <span class="incidents-detail-label">Última actualización</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        formatearFechaIncidente(
+                            incident.fecha_actualizacion
+                        )
+                    )}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item full">
+                <span class="incidents-detail-label">Título</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        incident.titulo || "Sin título"
+                    )}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item full">
+                <span class="incidents-detail-label">Descripción</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        incident.descripcion || "Sin descripción"
+                    )}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item full">
+                <span class="incidents-detail-label">Observaciones</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        incident.observaciones || "Sin observaciones"
+                    )}
+                </div>
+            </div>
+
+            <div class="incidents-detail-item full">
+                <span class="incidents-detail-label">Fecha de cierre</span>
+                <div class="incidents-detail-value">
+                    ${escaparIncidentes(
+                        incident.fecha_cierre
+                            ? formatearFechaIncidente(
+                                incident.fecha_cierre
+                              )
+                            : "Incidente aún no cerrado"
+                    )}
+                </div>
+            </div>
+
+        </div>
+
+        <div
+            class="incidents-edit-panel hidden"
+            id="incidentEditPanel"
+        >
+
+            <h3>Editar información del incidente</h3>
+
+            <form id="incidentEditForm">
+
+                <div class="incidents-form-grid">
+
+                    <div class="incidents-form-group full">
+                        <label for="incidentEditTitle">Título</label>
+                        <input
+                            type="text"
+                            id="incidentEditTitle"
+                            maxlength="150"
+                            required
+                            value="${escaparIncidentes(
+                                incident.titulo || ""
+                            )}"
+                        >
+                    </div>
+
+                    <div class="incidents-form-group full">
+                        <label for="incidentEditDescription">Descripción</label>
+                        <textarea
+                            id="incidentEditDescription"
+                            required
+                        >${escaparIncidentes(
+                            incident.descripcion || ""
+                        )}</textarea>
+                    </div>
+
+                    <div class="incidents-form-group">
+                        <label for="incidentEditClassification">Clasificación</label>
+                        <input
+                            type="text"
+                            id="incidentEditClassification"
+                            maxlength="100"
+                            placeholder="Ej.: Acceso no autorizado"
+                            value="${escaparIncidentes(
+                                incident.clasificacion || ""
+                            )}"
+                        >
+                    </div>
+
+                    <div class="incidents-form-group">
+                        <label for="incidentEditPriority">Prioridad</label>
+                        <select id="incidentEditPriority">
+                            ${opcionesPrioridadIncidente(
+                                incident.prioridad
+                            )}
+                        </select>
+                    </div>
+
+                    <div class="incidents-form-group">
+                        <label for="incidentEditResponsible">ID responsable</label>
+                        <input
+                            type="number"
+                            id="incidentEditResponsible"
+                            min="1"
+                            placeholder="Sin asignar"
+                            value="${escaparIncidentes(
+                                incident.id_responsable || ""
+                            )}"
+                        >
+                    </div>
+
+                    <div class="incidents-form-group full">
+                        <label for="incidentEditObservations">Observaciones</label>
+                        <textarea
+                            id="incidentEditObservations"
+                            placeholder="Registre acciones, hallazgos o antecedentes relevantes."
+                        >${escaparIncidentes(
+                            incident.observaciones || ""
+                        )}</textarea>
+                    </div>
+
+                </div>
+
+                <p class="incidents-inline-note">
+                    El estado del incidente se modifica mediante los botones
+                    de gestión del ciclo de vida ubicados al pie de esta ventana.
+                </p>
+
+            </form>
+
+        </div>
+    `;
+
+    renderizarAccionesIncidente(
+        incident
+    );
+}
+
+
+/* ============================================================
+   ACCIONES DEL MODAL
+   ============================================================ */
+
+function renderizarAccionesIncidente(
+    incident
+) {
+
+    const actions =
+        document.getElementById(
+            "incidentDetailActions"
+        );
+
+    const state =
+        String(
+            incident.estado || ""
+        ).toUpperCase();
+
+    let html = `
+        <button
+            type="button"
+            class="incidents-btn incidents-btn-secondary"
+            onclick="cerrarDetalleIncidente()"
+        >
+            Cerrar ventana
+        </button>
+    `;
+
+    if (state !== "CERRADO") {
+
+        html += `
+            <button
+                type="button"
+                class="incidents-btn incidents-btn-info"
+                onclick="alternarEdicionIncidente()"
+            >
+                Editar datos
+            </button>
+
+            <button
+                type="button"
+                class="incidents-btn incidents-btn-primary hidden"
+                id="saveIncidentEditButton"
+                onclick="guardarEdicionIncidente()"
+            >
+                Guardar cambios
+            </button>
+        `;
+    }
+
+    if (state === "ABIERTO") {
+
+        html += botonEstadoIncidente(
+            incident.id_incidente,
+            "EN_ANALISIS",
+            "Pasar a análisis",
+            "incidents-btn-primary"
+        );
+    }
+
+    if (state === "EN_ANALISIS") {
+
+        html += botonEstadoIncidente(
+            incident.id_incidente,
+            "EN_TRATAMIENTO",
+            "Pasar a tratamiento",
+            "incidents-btn-primary"
+        );
+    }
+
+    if (state === "EN_TRATAMIENTO") {
+
+        html += botonEstadoIncidente(
+            incident.id_incidente,
+            "RESUELTO",
+            "Marcar como resuelto",
+            "incidents-btn-success"
+        );
+    }
+
+    if (state === "RESUELTO") {
+
+        html += botonEstadoIncidente(
+            incident.id_incidente,
+            "EN_TRATAMIENTO",
+            "Reabrir tratamiento",
+            "incidents-btn-warning"
+        );
+
+        html += botonEstadoIncidente(
+            incident.id_incidente,
+            "CERRADO",
+            "Cerrar incidente",
+            "incidents-btn-danger"
+        );
+    }
+
+    actions.innerHTML = html;
+}
+
+
+function botonEstadoIncidente(
+    id,
+    state,
+    label,
+    cssClass
+) {
+
+    return `
+        <button
+            type="button"
+            class="incidents-btn ${cssClass}"
+            onclick="cambiarEstadoIncidente(
+                ${id},
+                '${state}'
+            )"
+        >
+            ${label}
+        </button>
+    `;
+}
+
+
+function alternarEdicionIncidente() {
+
+    const panel =
+        document.getElementById(
+            "incidentEditPanel"
+        );
+
+    const saveButton =
+        document.getElementById(
+            "saveIncidentEditButton"
+        );
+
+    if (!panel || !saveButton) {
+        return;
+    }
+
+    const willOpen =
+        panel.classList.contains(
+            "hidden"
+        );
+
+    panel.classList.toggle(
+        "hidden"
+    );
+
+    saveButton.classList.toggle(
+        "hidden"
+    );
+
+    if (willOpen) {
+        panel.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+    }
+}
+
+
+/* ============================================================
+   GUARDAR EDICIÓN
+   ============================================================ */
+
+async function guardarEdicionIncidente() {
+
+    if (!selectedIncident) {
+        return;
+    }
+
+    const title =
+        document.getElementById(
+            "incidentEditTitle"
+        ).value.trim();
+
+    const description =
+        document.getElementById(
+            "incidentEditDescription"
+        ).value.trim();
+
+    const classification =
+        document.getElementById(
+            "incidentEditClassification"
+        ).value.trim();
+
+    const priority =
+        document.getElementById(
+            "incidentEditPriority"
+        ).value;
+
+    const responsible =
+        document.getElementById(
+            "incidentEditResponsible"
+        ).value.trim();
+
+    const observations =
+        document.getElementById(
+            "incidentEditObservations"
+        ).value.trim();
+
+    if (!title || !description) {
+
+        mostrarMensajeIncidentes(
+            "El título y la descripción son obligatorios.",
+            "error"
+        );
+
+        return;
+    }
+
+    const payload = {
+        titulo: title,
+        descripcion: description,
+        clasificacion: classification || null,
+        prioridad: priority,
+        id_responsable:
+            responsible
+                ? Number(responsible)
+                : null,
+        observaciones: observations || null
+    };
+
+    try {
+
+        const result =
+            await solicitudIncidentes(
+                `${INCIDENTS_API}/${selectedIncident.id_incidente}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify(payload)
+                }
+            );
+
+        selectedIncident =
+            result.data;
+
+        mostrarMensajeIncidentes(
+            result.mensaje ||
+            "Incidente actualizado correctamente.",
+            "success"
+        );
+
+        renderizarDetalleIncidente(
+            selectedIncident
+        );
+
+        await Promise.all([
+            cargarResumenIncidentes(),
+            cargarIncidentes(currentIncidentsPage)
+        ]);
+
+    }
+    catch (error) {
+
+        mostrarMensajeIncidentes(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* ============================================================
+   CAMBIAR ESTADO
+   ============================================================ */
+
+async function cambiarEstadoIncidente(
+    id,
+    newState
+) {
+
+    const messages = {
+        EN_ANALISIS:
+            "¿Desea pasar este incidente a análisis?",
+        EN_TRATAMIENTO:
+            "¿Desea pasar este incidente a tratamiento?",
+        RESUELTO:
+            "¿Desea marcar este incidente como resuelto?",
+        CERRADO:
+            "¿Desea cerrar definitivamente este incidente?"
+    };
+
+    if (
+        !window.confirm(
+            messages[newState]
+            || "¿Desea continuar?"
+        )
+    ) {
+        return;
+    }
+
+    try {
+
+        const result =
+            await solicitudIncidentes(
+                `${INCIDENTS_API}/${id}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        estado: newState
+                    })
+                }
+            );
+
+        selectedIncident =
+            result.data;
+
+        mostrarMensajeIncidentes(
+            result.mensaje ||
+            "Estado del incidente actualizado correctamente.",
+            "success"
+        );
+
+        renderizarDetalleIncidente(
+            selectedIncident
+        );
+
+        await Promise.all([
+            cargarResumenIncidentes(),
+            cargarIncidentes(currentIncidentsPage)
+        ]);
+
+    }
+    catch (error) {
+
+        mostrarMensajeIncidentes(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* ============================================================
+   CERRAR MODAL
+   ============================================================ */
+
+function cerrarDetalleIncidente() {
+
+    const modal =
+        document.getElementById(
+            "incidentDetailModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add(
+        "hidden"
+    );
+
+    document.body.style.overflow =
+        "";
+
+    selectedIncident = null;
+}
+
+
+/* ============================================================
+   BADGES Y TEXTOS
+   ============================================================ */
+
+function badgeEstadoIncidente(
+    state
+) {
+
+    const value =
+        String(state || "").toUpperCase();
+
+    const map = {
+        ABIERTO: [
+            "Abierto",
+            "incidents-state-abierto"
+        ],
+        EN_ANALISIS: [
+            "En análisis",
+            "incidents-state-analisis"
+        ],
+        EN_TRATAMIENTO: [
+            "En tratamiento",
+            "incidents-state-tratamiento"
+        ],
+        RESUELTO: [
+            "Resuelto",
+            "incidents-state-resuelto"
+        ],
+        CERRADO: [
+            "Cerrado",
+            "incidents-state-cerrado"
+        ]
+    };
+
+    const item =
+        map[value] || [
+            value || "Sin estado",
+            "incidents-state-cerrado"
+        ];
+
+    return `
+        <span class="incidents-badge ${item[1]}">
+            ${escaparIncidentes(item[0])}
+        </span>
+    `;
+}
+
+
+function badgePrioridadIncidente(
+    priority
+) {
+
+    const value =
+        String(priority || "").toUpperCase();
+
+    const map = {
+        BAJA: [
+            "BAJA",
+            "incidents-priority-baja"
+        ],
+        MEDIA: [
+            "MEDIA",
+            "incidents-priority-media"
+        ],
+        ALTA: [
+            "ALTA",
+            "incidents-priority-alta"
+        ],
+        CRITICA: [
+            "CRÍTICA",
+            "incidents-priority-critica"
+        ]
+    };
+
+    const item =
+        map[value] || [
+            value || "SIN PRIORIDAD",
+            "incidents-state-cerrado"
+        ];
+
+    return `
+        <span class="incidents-badge ${item[1]}">
+            ${escaparIncidentes(item[0])}
+        </span>
+    `;
+}
+
+
+function opcionesPrioridadIncidente(
+    current
+) {
+
+    const actual =
+        String(current || "").toUpperCase();
+
+    const options = [
+        ["BAJA", "Baja"],
+        ["MEDIA", "Media"],
+        ["ALTA", "Alta"],
+        ["CRITICA", "Crítica"]
+    ];
+
+    return options.map(
+        ([value, label]) => `
+            <option
+                value="${value}"
+                ${actual === value ? "selected" : ""}
+            >
+                ${label}
+            </option>
+        `
+    ).join("");
+}
+
+
+/* ============================================================
+   MENSAJES
+   ============================================================ */
+
+function mostrarMensajeIncidentes(
+    message,
+    type = "info"
+) {
+
+    const box =
+        document.getElementById(
+            "incidentsMessage"
+        );
+
+    box.className =
+        `incidents-message ${type}`;
+
+    box.textContent =
+        message;
+
+    box.hidden = false;
+
+    window.clearTimeout(
+        mostrarMensajeIncidentes.timer
+    );
+
+    mostrarMensajeIncidentes.timer =
+        window.setTimeout(
+            () => {
+                box.hidden = true;
+            },
+            5500
+        );
+}
+
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+
+function formatearNumeroIncidentes(
+    value
+) {
+
+    return new Intl.NumberFormat(
+        "es-CL"
+    ).format(
+        Number(value || 0)
+    );
+}
+
+
+function formatearFechaIncidente(
+    value
+) {
+
+    if (!value) {
+        return "-";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
+
+    return new Intl.DateTimeFormat(
+        "es-CL",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }
+    ).format(date);
+}
+
+
+function escaparIncidentes(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+</script>
+
+{% endblock %}

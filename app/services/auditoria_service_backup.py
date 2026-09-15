@@ -52,8 +52,7 @@ def registrar_auditoria(
     id_registro_afectado=None,
     resultado="OK",
     detalle=None,
-    id_usuario=None,
-    confirmar=True
+    id_usuario=None
 ):
     """
     Registra automáticamente una operación relevante
@@ -81,19 +80,26 @@ def registrar_auditoria(
     - id_usuario:
         Permite indicar manualmente un usuario.
         Si no se proporciona, se obtiene desde el JWT.
-
-    - confirmar:
-        Si es True, realiza commit inmediatamente.
-        Si es False, realiza flush y deja la transacción
-        abierta para que el llamador la confirme.
     """
 
     try:
 
+        # ----------------------------------------------------
+        # Usuario autenticado
+        # ----------------------------------------------------
+
         if id_usuario is None:
             id_usuario = obtener_id_usuario_actual()
 
+        # ----------------------------------------------------
+        # Dirección IP
+        # ----------------------------------------------------
+
         direccion_ip = obtener_ip_cliente()
+
+        # ----------------------------------------------------
+        # Crear registro
+        # ----------------------------------------------------
 
         registro = Auditoria(
             id_usuario=id_usuario,
@@ -106,23 +112,19 @@ def registrar_auditoria(
         )
 
         db.session.add(registro)
-
-        if confirmar:
-            db.session.commit()
-
-        else:
-            db.session.flush()
+        db.session.commit()
 
         return True
 
-    except Exception as error:
+    except Exception as e:
 
         db.session.rollback()
 
         print(
             "ERROR AL REGISTRAR AUDITORÍA:",
-            type(error).__name__,
-            str(error)
+            type(e).__name__,
+            str(e)
         )
 
         return False
+    

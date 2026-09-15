@@ -8,3 +8,4 @@ from .alerta import Alerta
 from .alerta_evento import AlertaEvento
 from .incidente import Incidente
 from .auditoria import Auditoria
+from .recuperacion_password import RecuperacionPassword

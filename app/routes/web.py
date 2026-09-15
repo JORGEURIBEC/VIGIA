@@ -21,6 +21,7 @@ def inicio():
     Página principal de VIGIA.
 
     Redirige a la pantalla de inicio de sesión.
+
     La autenticación de la interfaz web utiliza
     el token JWT almacenado por el navegador.
     """
@@ -100,18 +101,20 @@ def eventos():
 @web_bp.route("/alertas")
 def alertas():
     """
-    Interfaz de revisión y gestión
-    de alertas de seguridad.
+    Interfaz web para consultar, revisar,
+    clasificar y gestionar las alertas
+    de seguridad generadas por VIGIA.
+
+    API principal:
+
+    GET /api/v1/alertas
+    GET /api/v1/alertas/<id_alerta>
+    PUT /api/v1/alertas/<id_alerta>/estado
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Alertas",
-        encabezado="Alertas de Seguridad",
-        descripcion=(
-            "Revisión, clasificación y seguimiento "
-            "de alertas generadas por VIGIA."
-        )
+        "alertas.html",
+        titulo="Alertas"
     )
 
 
@@ -122,18 +125,14 @@ def alertas():
 @web_bp.route("/incidentes")
 def incidentes():
     """
-    Interfaz de gestión del ciclo
-    de vida de los incidentes.
+    Interfaz de gestión y seguimiento
+    del ciclo de vida de los incidentes
+    de seguridad de VIGIA.
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Incidentes",
-        encabezado="Gestión de Incidentes",
-        descripcion=(
-            "Administración y seguimiento del ciclo "
-            "de vida de los incidentes de seguridad."
-        )
+        "incidentes.html",
+        titulo="Incidentes"
     )
 
 
@@ -144,18 +143,18 @@ def incidentes():
 @web_bp.route("/fuentes")
 def fuentes():
     """
-    Administración de fuentes
-    de eventos de seguridad.
+    Interfaz web para administrar y consultar
+    las fuentes de eventos de seguridad de VIGIA.
+
+    El Administrador puede crear, modificar,
+    activar y desactivar fuentes.
+
+    El Analista dispone de acceso de consulta.
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Fuentes",
-        encabezado="Fuentes de Eventos",
-        descripcion=(
-            "Administración de las fuentes desde las "
-            "cuales VIGIA recibe eventos de seguridad."
-        )
+        "fuentes.html",
+        titulo="Fuentes"
     )
 
 
@@ -245,4 +244,3 @@ def auditoria():
             "por los usuarios dentro de VIGIA."
         )
     )
-

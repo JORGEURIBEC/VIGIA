@@ -1,5 +1,4 @@
 from app import db
-from sqlalchemy.dialects.mysql import BIGINT, INTEGER
 
 
 class EventoSeguridad(db.Model):
@@ -10,20 +9,20 @@ class EventoSeguridad(db.Model):
     # ==========================================================
 
     id_evento = db.Column(
-        BIGINT(unsigned=True),
+        db.BigInteger,
         primary_key=True,
         autoincrement=True
     )
 
     id_fuente = db.Column(
-        INTEGER(unsigned=True),
+        db.Integer,
         db.ForeignKey("fuentes_eventos.id_fuente"),
         nullable=False,
         index=True
     )
 
     id_tipo_evento = db.Column(
-        INTEGER(unsigned=True),
+        db.Integer,
         db.ForeignKey("tipos_eventos.id_tipo_evento"),
         nullable=False,
         index=True

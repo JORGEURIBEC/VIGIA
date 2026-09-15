@@ -1,5 +1,4 @@
 from app import db
-from sqlalchemy.dialects.mysql import BIGINT, INTEGER
 
 
 class Auditoria(db.Model):
@@ -10,7 +9,7 @@ class Auditoria(db.Model):
     # ============================================================
 
     id_auditoria = db.Column(
-        BIGINT(unsigned=True),
+        db.BigInteger,
         primary_key=True,
         autoincrement=True
     )
@@ -20,7 +19,7 @@ class Auditoria(db.Model):
     # ============================================================
 
     id_usuario = db.Column(
-        INTEGER(unsigned=True),
+        db.Integer,
         db.ForeignKey(
             "usuarios.id_usuario",
             onupdate="CASCADE",
@@ -61,7 +60,7 @@ class Auditoria(db.Model):
     # ============================================================
 
     id_registro_afectado = db.Column(
-        BIGINT(unsigned=True),
+        db.BigInteger,
         nullable=True
     )
 

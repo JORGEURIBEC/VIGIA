@@ -1,0 +1,2471 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Fuentes | VIGIA
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       FUENTES DE EVENTOS
+       Estilos específicos del módulo
+       ========================================================= */
+
+    .fuentes-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    .fuentes-eyebrow {
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .fuentes-heading h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .fuentes-description {
+        margin-top: 5px;
+        color: #475569;
+        font-size: 13px;
+    }
+
+    .fuentes-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .fuentes-filter-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(220px, 1.4fr)
+            minmax(180px, 1fr)
+            minmax(160px, 0.8fr)
+            auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .fuentes-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .fuentes-table-card {
+        margin-top: 18px;
+    }
+
+    .fuentes-table-description {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .fuente-name {
+        color: #0f172a;
+        font-weight: 650;
+    }
+
+    .fuente-description {
+        display: block;
+        max-width: 330px;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 11px;
+        line-height: 1.35;
+    }
+
+    .fuente-type {
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .fuente-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .fuente-detail-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .fuente-detail-item {
+        padding: 13px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .fuente-detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .fuente-detail-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .fuente-detail-value {
+        color: #0f172a;
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .fuentes-role-note {
+        margin-bottom: 18px;
+        padding: 11px 14px;
+        border: 1px solid #bae6fd;
+        border-radius: 7px;
+        background: #f0f9ff;
+        color: #0369a1;
+        font-size: 12px;
+    }
+
+    .fuente-empty {
+        padding: 28px 15px !important;
+        color: #64748b !important;
+        text-align: center !important;
+    }
+
+    .fuente-loading {
+        padding: 28px 15px !important;
+        text-align: center !important;
+    }
+
+    .fuente-actions-cell {
+        white-space: nowrap;
+    }
+
+    .fuentes-counter {
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .fuentes-modal-description {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    @media (max-width: 1000px) {
+
+        .fuentes-filter-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 700px) {
+
+        .fuentes-heading {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .fuentes-toolbar {
+            width: 100%;
+        }
+
+        .fuentes-toolbar .btn {
+            width: 100%;
+        }
+
+        .fuentes-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fuentes-filter-actions {
+            flex-direction: column;
+        }
+
+        .fuentes-filter-actions .btn {
+            width: 100%;
+        }
+
+        .fuente-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fuente-detail-item.full-width {
+            grid-column: auto;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =========================================================
+     ENCABEZADO
+     ========================================================= -->
+
+<section class="fuentes-heading">
+
+    <div>
+
+        <div class="fuentes-eyebrow">
+            ADMINISTRACIÓN Y CONFIGURACIÓN
+        </div>
+
+        <h1>
+            Fuentes de Eventos
+        </h1>
+
+        <p class="fuentes-description">
+            Administración de los sistemas y servicios desde los
+            cuales VIGIA recibe eventos de seguridad.
+        </p>
+
+    </div>
+
+
+    <div class="fuentes-toolbar">
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            id="btnNuevaFuente"
+        >
+            + Nueva fuente
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MENSAJES
+     ========================================================= -->
+
+<div
+    id="globalMessage"
+    class="global-message hidden"
+></div>
+
+
+<!-- =========================================================
+     AVISO PARA ANALISTA
+     ========================================================= -->
+
+<div
+    id="fuentesRoleNote"
+    class="fuentes-role-note hidden"
+>
+    Su perfil posee acceso de consulta a las fuentes de eventos.
+    Las operaciones de creación, modificación, activación y
+    desactivación están reservadas al Administrador.
+</div>
+
+
+<!-- =========================================================
+     RESUMEN
+     ========================================================= -->
+
+<section class="stats-grid">
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-card-title">
+                Total de fuentes
+            </span>
+
+        </div>
+
+        <div
+            class="stat-card-value"
+            id="statFuentesTotal"
+        >
+            --
+        </div>
+
+        <span class="stat-card-detail">
+            Fuentes registradas
+        </span>
+
+    </article>
+
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-card-title">
+                Activas
+            </span>
+
+        </div>
+
+        <div
+            class="stat-card-value"
+            id="statFuentesActivas"
+        >
+            --
+        </div>
+
+        <span class="stat-card-detail">
+            Fuentes habilitadas
+        </span>
+
+    </article>
+
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-card-title">
+                Inactivas
+            </span>
+
+        </div>
+
+        <div
+            class="stat-card-value"
+            id="statFuentesInactivas"
+        >
+            --
+        </div>
+
+        <span class="stat-card-detail">
+            Fuentes deshabilitadas
+        </span>
+
+    </article>
+
+
+    <article class="stat-card">
+
+        <div class="stat-card-header">
+
+            <span class="stat-card-title">
+                Tipos registrados
+            </span>
+
+        </div>
+
+        <div
+            class="stat-card-value"
+            id="statTiposFuentes"
+        >
+            --
+        </div>
+
+        <span class="stat-card-detail">
+            Categorías diferentes
+        </span>
+
+    </article>
+
+</section>
+
+
+<!-- =========================================================
+     FILTROS
+     ========================================================= -->
+
+<section class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Filtros de consulta
+            </h2>
+
+            <p class="fuentes-table-description">
+                Permite localizar fuentes por nombre, tipo o estado.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="fuentes-filter-grid">
+
+
+            <div class="filter-group">
+
+                <label for="filtroFuenteTexto">
+                    Buscar
+                </label>
+
+                <input
+                    type="text"
+                    id="filtroFuenteTexto"
+                    class="form-control"
+                    placeholder="Nombre, tipo o descripción"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="filtroFuenteTipo">
+                    Tipo de fuente
+                </label>
+
+                <select
+                    id="filtroFuenteTipo"
+                    class="form-control"
+                >
+
+                    <option value="">
+                        Todos los tipos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="filtroFuenteEstado">
+                    Estado
+                </label>
+
+                <select
+                    id="filtroFuenteEstado"
+                    class="form-control"
+                >
+
+                    <option value="">
+                        Todos los estados
+                    </option>
+
+                    <option value="ACTIVA">
+                        Activas
+                    </option>
+
+                    <option value="INACTIVA">
+                        Inactivas
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="fuentes-filter-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="btnAplicarFiltrosFuentes"
+                >
+                    Aplicar filtros
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="btnLimpiarFiltrosFuentes"
+                >
+                    Limpiar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     TABLA
+     ========================================================= -->
+
+<section class="card fuentes-table-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Fuentes registradas
+            </h2>
+
+            <p
+                class="fuentes-table-description"
+                id="fuentesResultadoTexto"
+            >
+                Consultando información...
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            id="btnActualizarFuentes"
+        >
+            Actualizar
+        </button>
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        ID
+                    </th>
+
+                    <th>
+                        Nombre
+                    </th>
+
+                    <th>
+                        Tipo
+                    </th>
+
+                    <th>
+                        Estado
+                    </th>
+
+                    <th>
+                        Fecha de creación
+                    </th>
+
+                    <th>
+                        Acción
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="fuentesTableBody">
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="fuente-loading"
+                    >
+                        Consultando fuentes...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MODAL DETALLE
+     ========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="modalDetalleFuente"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h2
+                class="modal-title"
+                id="detalleFuenteTitulo"
+            >
+                Fuente de Eventos
+            </h2>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                data-modal-close
+                aria-label="Cerrar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="fuente-detail-grid">
+
+
+                <div class="fuente-detail-item">
+
+                    <span class="fuente-detail-label">
+                        Identificador
+                    </span>
+
+                    <span
+                        class="fuente-detail-value"
+                        id="detalleFuenteId"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="fuente-detail-item">
+
+                    <span class="fuente-detail-label">
+                        Estado
+                    </span>
+
+                    <div id="detalleFuenteEstado">
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="fuente-detail-item">
+
+                    <span class="fuente-detail-label">
+                        Nombre
+                    </span>
+
+                    <span
+                        class="fuente-detail-value"
+                        id="detalleFuenteNombre"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="fuente-detail-item">
+
+                    <span class="fuente-detail-label">
+                        Tipo
+                    </span>
+
+                    <span
+                        class="fuente-detail-value"
+                        id="detalleFuenteTipo"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="fuente-detail-item full-width">
+
+                    <span class="fuente-detail-label">
+                        Descripción
+                    </span>
+
+                    <span
+                        class="fuente-detail-value"
+                        id="detalleFuenteDescripcion"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="fuente-detail-item full-width">
+
+                    <span class="fuente-detail-label">
+                        Fecha de creación
+                    </span>
+
+                    <span
+                        class="fuente-detail-value"
+                        id="detalleFuenteFecha"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                data-modal-close
+            >
+                Cerrar
+            </button>
+
+
+            <button
+                type="button"
+                class="btn btn-outline admin-source-action"
+                id="btnEditarFuenteDetalle"
+            >
+                Editar
+            </button>
+
+
+            <button
+                type="button"
+                class="btn admin-source-action"
+                id="btnCambiarEstadoFuente"
+            >
+                Desactivar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL CREAR / EDITAR
+     ========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="modalFormularioFuente"
+>
+
+    <div class="modal">
+
+        <form id="formFuente">
+
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2
+                        class="modal-title"
+                        id="formFuenteTitulo"
+                    >
+                        Nueva Fuente
+                    </h2>
+
+                    <p
+                        class="fuentes-modal-description"
+                        id="formFuenteDescripcion"
+                    >
+                        Registre una nueva fuente de eventos.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    data-modal-close
+                    aria-label="Cerrar"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <input
+                    type="hidden"
+                    id="fuenteId"
+                >
+
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label for="fuenteNombre">
+                            Nombre *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="fuenteNombre"
+                            class="form-control"
+                            maxlength="100"
+                            required
+                            autocomplete="off"
+                            placeholder="Ej: Firewall Perimetral"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="fuenteTipo">
+                            Tipo de fuente *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="fuenteTipo"
+                            class="form-control"
+                            maxlength="100"
+                            required
+                            autocomplete="off"
+                            placeholder="Ej: FIREWALL"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group full-width">
+
+                        <label for="fuenteDescripcion">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            id="fuenteDescripcion"
+                            class="form-control"
+                            maxlength="255"
+                            placeholder="Descripción de la fuente de eventos"
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-modal-close
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="btnGuardarFuente"
+                >
+                    Guardar fuente
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+"use strict";
+
+
+/* =========================================================
+   ESTADO DEL MÓDULO
+   ========================================================= */
+
+let fuentesVigia = [];
+
+let fuentesFiltradas = [];
+
+let fuenteSeleccionada = null;
+
+let usuarioPuedeAdministrarFuentes = false;
+
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        inicializarModuloFuentes();
+
+    }
+);
+
+
+async function inicializarModuloFuentes() {
+
+    configurarPermisosFuentes();
+
+    configurarEventosFuentes();
+
+    await cargarFuentes();
+
+}
+
+
+/* =========================================================
+   PERMISOS
+   ========================================================= */
+
+function obtenerRolFuenteActual() {
+
+    const usuario =
+        typeof window.obtenerUsuario === "function"
+            ? window.obtenerUsuario()
+            : null;
+
+
+    if (!usuario) {
+
+        return "";
+    }
+
+
+    if (
+        typeof usuario.rol === "string"
+    ) {
+
+        return usuario.rol
+            .trim()
+            .toUpperCase();
+    }
+
+
+    if (
+        usuario.rol &&
+        typeof usuario.rol.nombre_rol === "string"
+    ) {
+
+        return usuario.rol.nombre_rol
+            .trim()
+            .toUpperCase();
+    }
+
+
+    if (
+        typeof usuario.nombre_rol === "string"
+    ) {
+
+        return usuario.nombre_rol
+            .trim()
+            .toUpperCase();
+    }
+
+
+    return "";
+
+}
+
+
+function configurarPermisosFuentes() {
+
+    const rol =
+        obtenerRolFuenteActual();
+
+
+    usuarioPuedeAdministrarFuentes =
+        rol === "ADMINISTRADOR";
+
+
+    const botonNueva =
+        document.getElementById(
+            "btnNuevaFuente"
+        );
+
+
+    const aviso =
+        document.getElementById(
+            "fuentesRoleNote"
+        );
+
+
+    if (botonNueva) {
+
+        botonNueva.classList.toggle(
+            "hidden",
+            !usuarioPuedeAdministrarFuentes
+        );
+
+    }
+
+
+    if (aviso) {
+
+        aviso.classList.toggle(
+            "hidden",
+            usuarioPuedeAdministrarFuentes
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(
+            ".admin-source-action"
+        )
+        .forEach((elemento) => {
+
+            elemento.classList.toggle(
+                "hidden",
+                !usuarioPuedeAdministrarFuentes
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   EVENTOS
+   ========================================================= */
+
+function configurarEventosFuentes() {
+
+    document
+        .getElementById(
+            "btnNuevaFuente"
+        )
+        ?.addEventListener(
+            "click",
+            prepararNuevaFuente
+        );
+
+
+    document
+        .getElementById(
+            "btnActualizarFuentes"
+        )
+        ?.addEventListener(
+            "click",
+            cargarFuentes
+        );
+
+
+    document
+        .getElementById(
+            "btnAplicarFiltrosFuentes"
+        )
+        ?.addEventListener(
+            "click",
+            aplicarFiltrosFuentes
+        );
+
+
+    document
+        .getElementById(
+            "btnLimpiarFiltrosFuentes"
+        )
+        ?.addEventListener(
+            "click",
+            limpiarFiltrosFuentes
+        );
+
+
+    document
+        .getElementById(
+            "filtroFuenteTexto"
+        )
+        ?.addEventListener(
+            "input",
+            aplicarFiltrosFuentes
+        );
+
+
+    document
+        .getElementById(
+            "formFuente"
+        )
+        ?.addEventListener(
+            "submit",
+            guardarFuente
+        );
+
+
+    document
+        .getElementById(
+            "btnEditarFuenteDetalle"
+        )
+        ?.addEventListener(
+            "click",
+            editarFuenteSeleccionada
+        );
+
+
+    document
+        .getElementById(
+            "btnCambiarEstadoFuente"
+        )
+        ?.addEventListener(
+            "click",
+            cambiarEstadoFuenteSeleccionada
+        );
+
+
+    document
+        .getElementById(
+            "fuentesTableBody"
+        )
+        ?.addEventListener(
+            "click",
+            manejarAccionTablaFuentes
+        );
+
+}
+
+
+/* =========================================================
+   OBTENER LISTA DESDE API
+   ========================================================= */
+
+async function cargarFuentes() {
+
+    const cuerpoTabla =
+        document.getElementById(
+            "fuentesTableBody"
+        );
+
+
+    if (cuerpoTabla) {
+
+        cuerpoTabla.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    class="fuente-loading"
+                >
+                    Consultando fuentes...
+                </td>
+            </tr>
+        `;
+
+    }
+
+
+    try {
+
+        const respuesta =
+            await window.apiGet(
+                "/fuentes"
+            );
+
+
+        fuentesVigia =
+            extraerListaFuentes(
+                respuesta
+            );
+
+
+        fuentesVigia.sort(
+            (a, b) =>
+                Number(b.id_fuente || 0) -
+                Number(a.id_fuente || 0)
+        );
+
+
+        actualizarResumenFuentes();
+
+        actualizarFiltroTiposFuentes();
+
+        aplicarFiltrosFuentes();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error al cargar fuentes:",
+            error
+        );
+
+
+        fuentesVigia = [];
+
+        fuentesFiltradas = [];
+
+
+        actualizarResumenFuentes();
+
+        renderizarFuentes();
+
+
+        window.mostrarMensaje?.(
+            error.message ||
+            "No fue posible cargar las fuentes de eventos.",
+            "error",
+            0
+        );
+
+
+        if (error.status === 401) {
+
+            window.setTimeout(
+                () => {
+                    window.location.href =
+                        "/login";
+                },
+                1200
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   NORMALIZAR RESPUESTA
+   ========================================================= */
+
+function extraerListaFuentes(
+    respuesta
+) {
+
+    if (
+        Array.isArray(
+            respuesta
+        )
+    ) {
+
+        return respuesta;
+    }
+
+
+    if (
+        Array.isArray(
+            respuesta?.data
+        )
+    ) {
+
+        return respuesta.data;
+    }
+
+
+    if (
+        Array.isArray(
+            respuesta?.data?.items
+        )
+    ) {
+
+        return respuesta.data.items;
+    }
+
+
+    if (
+        Array.isArray(
+            respuesta?.data?.fuentes
+        )
+    ) {
+
+        return respuesta.data.fuentes;
+    }
+
+
+    if (
+        Array.isArray(
+            respuesta?.fuentes
+        )
+    ) {
+
+        return respuesta.fuentes;
+    }
+
+
+    return [];
+
+}
+
+
+/* =========================================================
+   RESUMEN
+   ========================================================= */
+
+function actualizarResumenFuentes() {
+
+    const total =
+        fuentesVigia.length;
+
+
+    const activas =
+        fuentesVigia.filter(
+            (fuente) =>
+                fuente.estado === true
+        ).length;
+
+
+    const inactivas =
+        fuentesVigia.filter(
+            (fuente) =>
+                fuente.estado !== true
+        ).length;
+
+
+    const tipos =
+        new Set(
+            fuentesVigia
+                .map(
+                    (fuente) =>
+                        String(
+                            fuente.tipo_fuente || ""
+                        )
+                            .trim()
+                            .toUpperCase()
+                )
+                .filter(Boolean)
+        ).size;
+
+
+    asignarTexto(
+        "statFuentesTotal",
+        total
+    );
+
+    asignarTexto(
+        "statFuentesActivas",
+        activas
+    );
+
+    asignarTexto(
+        "statFuentesInactivas",
+        inactivas
+    );
+
+    asignarTexto(
+        "statTiposFuentes",
+        tipos
+    );
+
+}
+
+
+/* =========================================================
+   FILTRO DE TIPOS
+   ========================================================= */
+
+function actualizarFiltroTiposFuentes() {
+
+    const select =
+        document.getElementById(
+            "filtroFuenteTipo"
+        );
+
+
+    if (!select) {
+
+        return;
+    }
+
+
+    const valorAnterior =
+        select.value;
+
+
+    const tipos =
+        [
+            ...new Set(
+                fuentesVigia
+                    .map(
+                        (fuente) =>
+                            String(
+                                fuente.tipo_fuente || ""
+                            )
+                                .trim()
+                                .toUpperCase()
+                    )
+                    .filter(Boolean)
+            )
+        ].sort();
+
+
+    select.innerHTML =
+        '<option value="">Todos los tipos</option>';
+
+
+    tipos.forEach(
+        (tipo) => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                tipo;
+
+            option.textContent =
+                tipo;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (
+        tipos.includes(
+            valorAnterior
+        )
+    ) {
+
+        select.value =
+            valorAnterior;
+    }
+
+}
+
+
+/* =========================================================
+   FILTRAR
+   ========================================================= */
+
+function aplicarFiltrosFuentes() {
+
+    const texto =
+        normalizarFuenteTexto(
+            document
+                .getElementById(
+                    "filtroFuenteTexto"
+                )
+                ?.value
+        );
+
+
+    const tipo =
+        normalizarFuenteTexto(
+            document
+                .getElementById(
+                    "filtroFuenteTipo"
+                )
+                ?.value
+        );
+
+
+    const estado =
+        String(
+            document
+                .getElementById(
+                    "filtroFuenteEstado"
+                )
+                ?.value || ""
+        ).toUpperCase();
+
+
+    fuentesFiltradas =
+        fuentesVigia.filter(
+            (fuente) => {
+
+                const contenido =
+                    normalizarFuenteTexto(
+                        [
+                            fuente.nombre,
+                            fuente.tipo_fuente,
+                            fuente.descripcion,
+                            fuente.id_fuente
+                        ].join(" ")
+                    );
+
+
+                const coincideTexto =
+                    !texto ||
+                    contenido.includes(
+                        texto
+                    );
+
+
+                const coincideTipo =
+                    !tipo ||
+                    normalizarFuenteTexto(
+                        fuente.tipo_fuente
+                    ) === tipo;
+
+
+                const coincideEstado =
+                    !estado ||
+
+                    (
+                        estado === "ACTIVA" &&
+                        fuente.estado === true
+                    ) ||
+
+                    (
+                        estado === "INACTIVA" &&
+                        fuente.estado !== true
+                    );
+
+
+                return (
+                    coincideTexto &&
+                    coincideTipo &&
+                    coincideEstado
+                );
+
+            }
+        );
+
+
+    renderizarFuentes();
+
+}
+
+
+/* =========================================================
+   LIMPIAR FILTROS
+   ========================================================= */
+
+function limpiarFiltrosFuentes() {
+
+    asignarValor(
+        "filtroFuenteTexto",
+        ""
+    );
+
+    asignarValor(
+        "filtroFuenteTipo",
+        ""
+    );
+
+    asignarValor(
+        "filtroFuenteEstado",
+        ""
+    );
+
+
+    aplicarFiltrosFuentes();
+
+}
+
+
+/* =========================================================
+   RENDERIZAR TABLA
+   ========================================================= */
+
+function renderizarFuentes() {
+
+    const tbody =
+        document.getElementById(
+            "fuentesTableBody"
+        );
+
+
+    const textoResultado =
+        document.getElementById(
+            "fuentesResultadoTexto"
+        );
+
+
+    if (textoResultado) {
+
+        textoResultado.textContent =
+            `${fuentesFiltradas.length} fuente(s) coincidente(s) de ${fuentesVigia.length} registrada(s).`;
+
+    }
+
+
+    if (!tbody) {
+
+        return;
+    }
+
+
+    if (
+        fuentesFiltradas.length === 0
+    ) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    class="fuente-empty"
+                >
+                    No existen fuentes que coincidan con la consulta.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    tbody.innerHTML =
+        fuentesFiltradas
+            .map(
+                (fuente) => {
+
+                    const id =
+                        Number(
+                            fuente.id_fuente
+                        );
+
+
+                    const nombre =
+                        window.escaparHTML(
+                            fuente.nombre || "-"
+                        );
+
+
+                    const tipo =
+                        window.escaparHTML(
+                            fuente.tipo_fuente || "-"
+                        );
+
+
+                    const descripcion =
+                        window.escaparHTML(
+                            fuente.descripcion ||
+                            "Sin descripción"
+                        );
+
+
+                    const fecha =
+                        window.escaparHTML(
+                            fuente.fecha_creacion ||
+                            "-"
+                        );
+
+
+                    const badgeEstado =
+                        crearBadgeEstadoFuente(
+                            fuente.estado
+                        );
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                <span class="fuente-id">
+                                    #${id}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <span class="fuente-name">
+                                    ${nombre}
+                                </span>
+
+                                <span class="fuente-description">
+                                    ${descripcion}
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="fuente-type">
+                                    ${tipo}
+                                </span>
+                            </td>
+
+                            <td>
+                                ${badgeEstado}
+                            </td>
+
+                            <td>
+                                ${fecha}
+                            </td>
+
+                            <td class="fuente-actions-cell">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline btn-sm"
+                                    data-fuente-action="detalle"
+                                    data-fuente-id="${id}"
+                                >
+                                    Ver detalle
+                                </button>
+
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   ACCIONES TABLA
+   ========================================================= */
+
+function manejarAccionTablaFuentes(
+    event
+) {
+
+    const boton =
+        event.target.closest(
+            "[data-fuente-action]"
+        );
+
+
+    if (!boton) {
+
+        return;
+    }
+
+
+    const id =
+        Number(
+            boton.dataset.fuenteId
+        );
+
+
+    const accion =
+        boton.dataset.fuenteAction;
+
+
+    if (
+        accion === "detalle"
+    ) {
+
+        abrirDetalleFuente(
+            id
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DETALLE
+   ========================================================= */
+
+function abrirDetalleFuente(
+    idFuente
+) {
+
+    const fuente =
+        fuentesVigia.find(
+            (item) =>
+                Number(
+                    item.id_fuente
+                ) === Number(
+                    idFuente
+                )
+        );
+
+
+    if (!fuente) {
+
+        window.mostrarMensaje?.(
+            "No fue posible localizar la fuente seleccionada.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    fuenteSeleccionada =
+        fuente;
+
+
+    asignarTexto(
+        "detalleFuenteTitulo",
+        `Fuente #${fuente.id_fuente}`
+    );
+
+    asignarTexto(
+        "detalleFuenteId",
+        `#${fuente.id_fuente}`
+    );
+
+    asignarTexto(
+        "detalleFuenteNombre",
+        fuente.nombre || "-"
+    );
+
+    asignarTexto(
+        "detalleFuenteTipo",
+        fuente.tipo_fuente || "-"
+    );
+
+    asignarTexto(
+        "detalleFuenteDescripcion",
+        fuente.descripcion ||
+        "Sin descripción"
+    );
+
+    asignarTexto(
+        "detalleFuenteFecha",
+        fuente.fecha_creacion || "-"
+    );
+
+
+    const estadoContenedor =
+        document.getElementById(
+            "detalleFuenteEstado"
+        );
+
+
+    if (estadoContenedor) {
+
+        estadoContenedor.innerHTML =
+            crearBadgeEstadoFuente(
+                fuente.estado
+            );
+
+    }
+
+
+    configurarBotonEstadoDetalle(
+        fuente
+    );
+
+
+    window.abrirModal(
+        "modalDetalleFuente"
+    );
+
+}
+
+
+/* =========================================================
+   BOTÓN ACTIVAR / DESACTIVAR
+   ========================================================= */
+
+function configurarBotonEstadoDetalle(
+    fuente
+) {
+
+    const boton =
+        document.getElementById(
+            "btnCambiarEstadoFuente"
+        );
+
+
+    if (!boton) {
+
+        return;
+    }
+
+
+    if (
+        fuente.estado === true
+    ) {
+
+        boton.textContent =
+            "Desactivar";
+
+        boton.className =
+            "btn btn-danger admin-source-action";
+
+    }
+    else {
+
+        boton.textContent =
+            "Reactivar";
+
+        boton.className =
+            "btn btn-success admin-source-action";
+
+    }
+
+
+    boton.classList.toggle(
+        "hidden",
+        !usuarioPuedeAdministrarFuentes
+    );
+
+}
+
+
+/* =========================================================
+   NUEVA FUENTE
+   ========================================================= */
+
+function prepararNuevaFuente() {
+
+    if (
+        !usuarioPuedeAdministrarFuentes
+    ) {
+
+        return;
+    }
+
+
+    fuenteSeleccionada =
+        null;
+
+
+    document
+        .getElementById(
+            "formFuente"
+        )
+        ?.reset();
+
+
+    asignarValor(
+        "fuenteId",
+        ""
+    );
+
+
+    asignarTexto(
+        "formFuenteTitulo",
+        "Nueva Fuente"
+    );
+
+
+    asignarTexto(
+        "formFuenteDescripcion",
+        "Registre una nueva fuente de eventos de seguridad."
+    );
+
+
+    asignarTexto(
+        "btnGuardarFuente",
+        "Guardar fuente"
+    );
+
+
+    window.abrirModal(
+        "modalFormularioFuente"
+    );
+
+}
+
+
+/* =========================================================
+   EDITAR FUENTE
+   ========================================================= */
+
+function editarFuenteSeleccionada() {
+
+    if (
+        !usuarioPuedeAdministrarFuentes ||
+        !fuenteSeleccionada
+    ) {
+
+        return;
+    }
+
+
+    const fuente =
+        fuenteSeleccionada;
+
+
+    window.cerrarModal(
+        "modalDetalleFuente"
+    );
+
+
+    asignarValor(
+        "fuenteId",
+        fuente.id_fuente
+    );
+
+    asignarValor(
+        "fuenteNombre",
+        fuente.nombre || ""
+    );
+
+    asignarValor(
+        "fuenteTipo",
+        fuente.tipo_fuente || ""
+    );
+
+    asignarValor(
+        "fuenteDescripcion",
+        fuente.descripcion || ""
+    );
+
+
+    asignarTexto(
+        "formFuenteTitulo",
+        `Editar Fuente #${fuente.id_fuente}`
+    );
+
+
+    asignarTexto(
+        "formFuenteDescripcion",
+        "Modifique la información de la fuente seleccionada."
+    );
+
+
+    asignarTexto(
+        "btnGuardarFuente",
+        "Guardar cambios"
+    );
+
+
+    window.abrirModal(
+        "modalFormularioFuente"
+    );
+
+}
+
+
+/* =========================================================
+   GUARDAR FUENTE
+   ========================================================= */
+
+async function guardarFuente(
+    event
+) {
+
+    event.preventDefault();
+
+
+    if (
+        !usuarioPuedeAdministrarFuentes
+    ) {
+
+        window.mostrarMensaje?.(
+            "No tiene permisos para administrar fuentes.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const id =
+        Number(
+            document
+                .getElementById(
+                    "fuenteId"
+                )
+                ?.value || 0
+        );
+
+
+    const nombre =
+        String(
+            document
+                .getElementById(
+                    "fuenteNombre"
+                )
+                ?.value || ""
+        ).trim();
+
+
+    const tipo =
+        String(
+            document
+                .getElementById(
+                    "fuenteTipo"
+                )
+                ?.value || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    const descripcion =
+        String(
+            document
+                .getElementById(
+                    "fuenteDescripcion"
+                )
+                ?.value || ""
+        ).trim();
+
+
+    if (
+        !nombre ||
+        !tipo
+    ) {
+
+        window.mostrarMensaje?.(
+            "El nombre y el tipo de fuente son obligatorios.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    const boton =
+        document.getElementById(
+            "btnGuardarFuente"
+        );
+
+
+    window.bloquearBoton?.(
+        boton,
+        "Guardando..."
+    );
+
+
+    try {
+
+        const datos = {
+
+            nombre:
+                nombre,
+
+            tipo_fuente:
+                tipo,
+
+            descripcion:
+                descripcion || null
+
+        };
+
+
+        let respuesta;
+
+
+        if (
+            id > 0
+        ) {
+
+            respuesta =
+                await window.apiPut(
+                    `/fuentes/${id}`,
+                    datos
+                );
+
+        }
+        else {
+
+            respuesta =
+                await window.apiPost(
+                    "/fuentes",
+                    datos
+                );
+
+        }
+
+
+        window.cerrarModal(
+            "modalFormularioFuente"
+        );
+
+
+        window.mostrarMensaje?.(
+            respuesta?.mensaje ||
+            (
+                id > 0
+                    ? "Fuente actualizada correctamente."
+                    : "Fuente creada correctamente."
+            ),
+            "success"
+        );
+
+
+        await cargarFuentes();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error al guardar fuente:",
+            error
+        );
+
+
+        window.mostrarMensaje?.(
+            error.message ||
+            "No fue posible guardar la fuente.",
+            "error",
+            0
+        );
+
+    }
+    finally {
+
+        window.desbloquearBoton?.(
+            boton
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   ACTIVAR / DESACTIVAR
+   ========================================================= */
+
+async function cambiarEstadoFuenteSeleccionada() {
+
+    if (
+        !usuarioPuedeAdministrarFuentes ||
+        !fuenteSeleccionada
+    ) {
+
+        return;
+    }
+
+
+    const fuente =
+        fuenteSeleccionada;
+
+
+    const estaActiva =
+        fuente.estado === true;
+
+
+    const operacion =
+        estaActiva
+            ? "desactivar"
+            : "reactivar";
+
+
+    const confirmado =
+        window.confirmarAccion(
+            `¿Desea ${operacion} la fuente "${fuente.nombre}"?`
+        );
+
+
+    if (!confirmado) {
+
+        return;
+    }
+
+
+    const boton =
+        document.getElementById(
+            "btnCambiarEstadoFuente"
+        );
+
+
+    window.bloquearBoton?.(
+        boton,
+        estaActiva
+            ? "Desactivando..."
+            : "Reactivando..."
+    );
+
+
+    try {
+
+        let respuesta;
+
+
+        if (
+            estaActiva
+        ) {
+
+            respuesta =
+                await window.apiDelete(
+                    `/fuentes/${fuente.id_fuente}`
+                );
+
+        }
+        else {
+
+            respuesta =
+                await window.apiPut(
+                    `/fuentes/${fuente.id_fuente}`,
+                    {
+                        estado: true
+                    }
+                );
+
+        }
+
+
+        window.cerrarModal(
+            "modalDetalleFuente"
+        );
+
+
+        window.mostrarMensaje?.(
+            respuesta?.mensaje ||
+            (
+                estaActiva
+                    ? "Fuente desactivada correctamente."
+                    : "Fuente reactivada correctamente."
+            ),
+            "success"
+        );
+
+
+        fuenteSeleccionada =
+            null;
+
+
+        await cargarFuentes();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error al cambiar estado:",
+            error
+        );
+
+
+        window.mostrarMensaje?.(
+            error.message ||
+            "No fue posible actualizar el estado de la fuente.",
+            "error",
+            0
+        );
+
+    }
+    finally {
+
+        window.desbloquearBoton?.(
+            boton
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   BADGE DE ESTADO
+   ========================================================= */
+
+function crearBadgeEstadoFuente(
+    estado
+) {
+
+    if (
+        estado === true
+    ) {
+
+        return `
+            <span class="badge badge-success">
+                Activa
+            </span>
+        `;
+
+    }
+
+
+    return `
+        <span class="badge badge-neutral">
+            Inactiva
+        </span>
+    `;
+
+}
+
+
+/* =========================================================
+   AUXILIARES
+   ========================================================= */
+
+function normalizarFuenteTexto(
+    valor
+) {
+
+    return String(
+        valor ?? ""
+    )
+        .trim()
+        .toUpperCase();
+
+}
+
+
+function asignarTexto(
+    id,
+    valor
+) {
+
+    const elemento =
+        document.getElementById(
+            id
+        );
+
+
+    if (elemento) {
+
+        elemento.textContent =
+            valor ?? "";
+
+    }
+
+}
+
+
+function asignarValor(
+    id,
+    valor
+) {
+
+    const elemento =
+        document.getElementById(
+            id
+        );
+
+
+    if (elemento) {
+
+        elemento.value =
+            valor ?? "";
+
+    }
+
+}
+
+</script>
+
+{% endblock %}

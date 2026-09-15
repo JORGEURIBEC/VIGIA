@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
@@ -829,9 +829,13 @@ def actualizar_incidente(id_incidente):
 
         if nuevo_estado == "CERRADO":
 
-            incidente.fecha_cierre = (
-                datetime.now()
-            )
+         incidente.fecha_cierre = (
+        datetime.now(
+            timezone.utc
+        ).replace(
+            tzinfo=None
+        )
+    )
 
         elif estado_actual == "CERRADO":
 
