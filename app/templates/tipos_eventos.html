@@ -1,0 +1,866 @@
+{% extends "base.html" %}
+
+{% block title %}
+Tipos de Eventos | VIGIA
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tipos-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    .tipos-eyebrow {
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .tipos-heading h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .tipos-description {
+        margin-top: 5px;
+        color: #475569;
+        font-size: 13px;
+    }
+
+    .tipos-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .tipos-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(240px, 1.5fr) minmax(180px, .8fr) auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .tipos-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .tipos-table-card {
+        margin-top: 18px;
+    }
+
+    .tipos-table-description {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .tipo-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .tipo-name {
+        color: #0f172a;
+        font-weight: 650;
+    }
+
+    .tipo-description {
+        display: block;
+        max-width: 520px;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 11px;
+        line-height: 1.35;
+    }
+
+    .tipo-actions-cell {
+        white-space: nowrap;
+    }
+
+    .tipo-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .tipo-detail-item {
+        padding: 13px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .tipo-detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .tipo-detail-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .tipo-detail-value {
+        color: #0f172a;
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .tipos-role-note {
+        margin-bottom: 18px;
+        padding: 11px 14px;
+        border: 1px solid #bae6fd;
+        border-radius: 7px;
+        background: #f0f9ff;
+        color: #0369a1;
+        font-size: 12px;
+    }
+
+    .tipo-empty,
+    .tipo-loading {
+        padding: 28px 15px !important;
+        text-align: center !important;
+    }
+
+    .tipo-empty {
+        color: #64748b !important;
+    }
+
+    .tipos-modal-description {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+        .tipos-filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .tipos-filter-actions {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .tipos-heading {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .tipos-toolbar,
+        .tipos-toolbar .btn,
+        .tipos-filter-actions .btn {
+            width: 100%;
+        }
+
+        .tipos-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tipos-filter-actions {
+            grid-column: auto;
+            flex-direction: column;
+        }
+
+        .tipo-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tipo-detail-item.full-width {
+            grid-column: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="tipos-heading">
+    <div>
+        <div class="tipos-eyebrow">ADMINISTRACIÓN Y CONFIGURACIÓN</div>
+        <h1>Tipos de Eventos</h1>
+        <p class="tipos-description">
+            Administración de las categorías utilizadas por VIGIA para clasificar los eventos de seguridad.
+        </p>
+    </div>
+
+    <div class="tipos-toolbar">
+        <button type="button" class="btn btn-primary" id="btnNuevoTipo">
+            + Nuevo tipo
+        </button>
+    </div>
+</section>
+
+<div id="globalMessage" class="global-message hidden"></div>
+
+<div id="tiposRoleNote" class="tipos-role-note hidden">
+    Su perfil posee acceso de consulta a los tipos de eventos. Las operaciones de creación,
+    modificación, activación y desactivación están reservadas al Administrador.
+</div>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Total de tipos</span></div>
+        <div class="stat-card-value" id="statTiposTotal">--</div>
+        <span class="stat-card-detail">Clasificaciones registradas</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Activos</span></div>
+        <div class="stat-card-value" id="statTiposActivos">--</div>
+        <span class="stat-card-detail">Disponibles para clasificación</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Inactivos</span></div>
+        <div class="stat-card-value" id="statTiposInactivos">--</div>
+        <span class="stat-card-detail">Clasificaciones deshabilitadas</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Con descripción</span></div>
+        <div class="stat-card-value" id="statTiposConDescripcion">--</div>
+        <span class="stat-card-detail">Tipos documentados</span>
+    </article>
+</section>
+
+<section class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Filtros de consulta</h2>
+            <p class="tipos-table-description">Permite localizar tipos por nombre, descripción o estado.</p>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="tipos-filter-grid">
+            <div class="filter-group">
+                <label for="filtroTipoTexto">Buscar</label>
+                <input
+                    type="text"
+                    id="filtroTipoTexto"
+                    class="form-control"
+                    placeholder="Nombre o descripción"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="filtroTipoEstado">Estado</label>
+                <select id="filtroTipoEstado" class="form-control">
+                    <option value="">Todos los estados</option>
+                    <option value="ACTIVO">Activos</option>
+                    <option value="INACTIVO">Inactivos</option>
+                </select>
+            </div>
+
+            <div class="tipos-filter-actions">
+                <button type="button" class="btn btn-primary" id="btnAplicarFiltrosTipos">
+                    Aplicar filtros
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnLimpiarFiltrosTipos">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card tipos-table-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Tipos registrados</h2>
+            <p class="tipos-table-description" id="tiposResultadoTexto">Consultando información...</p>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="btnActualizarTipos">
+            Actualizar
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tiposTableBody">
+                <tr>
+                    <td colspan="5" class="tipo-loading">Consultando tipos de eventos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal-overlay" id="modalDetalleTipo">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="detalleTipoTitulo">Tipo de Evento</h2>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="tipo-detail-grid">
+                <div class="tipo-detail-item">
+                    <span class="tipo-detail-label">Identificador</span>
+                    <span class="tipo-detail-value" id="detalleTipoId">-</span>
+                </div>
+
+                <div class="tipo-detail-item">
+                    <span class="tipo-detail-label">Estado</span>
+                    <div id="detalleTipoEstado">-</div>
+                </div>
+
+                <div class="tipo-detail-item full-width">
+                    <span class="tipo-detail-label">Nombre</span>
+                    <span class="tipo-detail-value" id="detalleTipoNombre">-</span>
+                </div>
+
+                <div class="tipo-detail-item full-width">
+                    <span class="tipo-detail-label">Descripción</span>
+                    <span class="tipo-detail-value" id="detalleTipoDescripcion">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-modal-close>Cerrar</button>
+            <button type="button" class="btn btn-outline admin-type-action" id="btnEditarTipoDetalle">Editar</button>
+            <button type="button" class="btn admin-type-action" id="btnCambiarEstadoTipo">Desactivar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalFormularioTipo">
+    <div class="modal">
+        <form id="formTipoEvento">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="formTipoTitulo">Nuevo Tipo de Evento</h2>
+                    <p class="tipos-modal-description" id="formTipoDescripcion">
+                        Registre una nueva clasificación de eventos.
+                    </p>
+                </div>
+                <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="tipoEventoId">
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="tipoEventoNombre">Nombre *</label>
+                        <input
+                            type="text"
+                            id="tipoEventoNombre"
+                            class="form-control"
+                            maxlength="100"
+                            required
+                            autocomplete="off"
+                            placeholder="Ej: ACCESO_NO_AUTORIZADO"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="tipoEventoDescripcion">Descripción</label>
+                        <textarea
+                            id="tipoEventoDescripcion"
+                            class="form-control"
+                            maxlength="255"
+                            placeholder="Descripción del tipo de evento"
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btnGuardarTipo">Guardar tipo</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+"use strict";
+
+let tiposEventosVigia = [];
+let tiposEventosFiltrados = [];
+let tipoEventoSeleccionado = null;
+let usuarioPuedeAdministrarTipos = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarModuloTiposEventos();
+});
+
+async function inicializarModuloTiposEventos() {
+    configurarPermisosTipos();
+    configurarEventosTipos();
+    await cargarTiposEventos();
+}
+
+function obtenerRolTipoActual() {
+    const usuario = typeof window.obtenerUsuario === "function"
+        ? window.obtenerUsuario()
+        : null;
+
+    if (!usuario) return "";
+
+    if (typeof usuario.rol === "string") {
+        return usuario.rol.trim().toUpperCase();
+    }
+
+    if (usuario.rol && typeof usuario.rol.nombre_rol === "string") {
+        return usuario.rol.nombre_rol.trim().toUpperCase();
+    }
+
+    if (typeof usuario.nombre_rol === "string") {
+        return usuario.nombre_rol.trim().toUpperCase();
+    }
+
+    return "";
+}
+
+function configurarPermisosTipos() {
+    const rol = obtenerRolTipoActual();
+    usuarioPuedeAdministrarTipos = rol === "ADMINISTRADOR";
+
+    document.getElementById("btnNuevoTipo")?.classList.toggle(
+        "hidden",
+        !usuarioPuedeAdministrarTipos
+    );
+
+    document.getElementById("tiposRoleNote")?.classList.toggle(
+        "hidden",
+        usuarioPuedeAdministrarTipos
+    );
+
+    document.querySelectorAll(".admin-type-action").forEach((elemento) => {
+        elemento.classList.toggle("hidden", !usuarioPuedeAdministrarTipos);
+    });
+}
+
+function configurarEventosTipos() {
+    document.getElementById("btnNuevoTipo")?.addEventListener("click", prepararNuevoTipo);
+    document.getElementById("btnActualizarTipos")?.addEventListener("click", cargarTiposEventos);
+    document.getElementById("btnAplicarFiltrosTipos")?.addEventListener("click", aplicarFiltrosTipos);
+    document.getElementById("btnLimpiarFiltrosTipos")?.addEventListener("click", limpiarFiltrosTipos);
+    document.getElementById("filtroTipoTexto")?.addEventListener("input", aplicarFiltrosTipos);
+    document.getElementById("filtroTipoEstado")?.addEventListener("change", aplicarFiltrosTipos);
+    document.getElementById("formTipoEvento")?.addEventListener("submit", guardarTipoEvento);
+    document.getElementById("btnEditarTipoDetalle")?.addEventListener("click", editarTipoSeleccionado);
+    document.getElementById("btnCambiarEstadoTipo")?.addEventListener("click", cambiarEstadoTipoSeleccionado);
+    document.getElementById("tiposTableBody")?.addEventListener("click", manejarAccionTablaTipos);
+}
+
+async function cargarTiposEventos() {
+    const tbody = document.getElementById("tiposTableBody");
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="tipo-loading">Consultando tipos de eventos...</td>
+            </tr>
+        `;
+    }
+
+    try {
+        const respuesta = await window.apiGet("/tipos-eventos");
+        tiposEventosVigia = extraerListaTipos(respuesta);
+
+        tiposEventosVigia.sort(
+            (a, b) => Number(b.id_tipo_evento || 0) - Number(a.id_tipo_evento || 0)
+        );
+
+        actualizarResumenTipos();
+        aplicarFiltrosTipos();
+    }
+    catch (error) {
+        console.error("Error al cargar tipos de eventos:", error);
+
+        tiposEventosVigia = [];
+        tiposEventosFiltrados = [];
+        actualizarResumenTipos();
+        renderizarTipos();
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible cargar los tipos de eventos.",
+            "error",
+            0
+        );
+
+        if (error.status === 401) {
+            window.setTimeout(() => {
+                window.location.href = "/login";
+            }, 1200);
+        }
+    }
+}
+
+function extraerListaTipos(respuesta) {
+    if (Array.isArray(respuesta)) return respuesta;
+    if (Array.isArray(respuesta?.data)) return respuesta.data;
+    if (Array.isArray(respuesta?.data?.items)) return respuesta.data.items;
+    if (Array.isArray(respuesta?.data?.tipos)) return respuesta.data.tipos;
+    if (Array.isArray(respuesta?.tipos)) return respuesta.tipos;
+    return [];
+}
+
+function actualizarResumenTipos() {
+    const total = tiposEventosVigia.length;
+    const activos = tiposEventosVigia.filter((tipo) => tipo.estado === true).length;
+    const inactivos = tiposEventosVigia.filter((tipo) => tipo.estado !== true).length;
+    const conDescripcion = tiposEventosVigia.filter(
+        (tipo) => String(tipo.descripcion || "").trim().length > 0
+    ).length;
+
+    asignarTextoTipo("statTiposTotal", total);
+    asignarTextoTipo("statTiposActivos", activos);
+    asignarTextoTipo("statTiposInactivos", inactivos);
+    asignarTextoTipo("statTiposConDescripcion", conDescripcion);
+}
+
+function aplicarFiltrosTipos() {
+    const texto = normalizarTipoTexto(
+        document.getElementById("filtroTipoTexto")?.value
+    );
+
+    const estado = String(
+        document.getElementById("filtroTipoEstado")?.value || ""
+    ).toUpperCase();
+
+    tiposEventosFiltrados = tiposEventosVigia.filter((tipo) => {
+        const contenido = normalizarTipoTexto([
+            tipo.id_tipo_evento,
+            tipo.nombre_tipo,
+            tipo.descripcion
+        ].join(" "));
+
+        const coincideTexto = !texto || contenido.includes(texto);
+        const coincideEstado = !estado
+            || (estado === "ACTIVO" && tipo.estado === true)
+            || (estado === "INACTIVO" && tipo.estado !== true);
+
+        return coincideTexto && coincideEstado;
+    });
+
+    renderizarTipos();
+}
+
+function limpiarFiltrosTipos() {
+    asignarValorTipo("filtroTipoTexto", "");
+    asignarValorTipo("filtroTipoEstado", "");
+    aplicarFiltrosTipos();
+}
+
+function renderizarTipos() {
+    const tbody = document.getElementById("tiposTableBody");
+    const textoResultado = document.getElementById("tiposResultadoTexto");
+
+    if (textoResultado) {
+        textoResultado.textContent =
+            `${tiposEventosFiltrados.length} tipo(s) coincidente(s) de ${tiposEventosVigia.length} registrado(s).`;
+    }
+
+    if (!tbody) return;
+
+    if (tiposEventosFiltrados.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="tipo-empty">
+                    No existen tipos de eventos que coincidan con la consulta.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = tiposEventosFiltrados.map((tipo) => {
+        const id = Number(tipo.id_tipo_evento);
+        const nombre = window.escaparHTML(tipo.nombre_tipo || "-");
+        const descripcion = window.escaparHTML(tipo.descripcion || "Sin descripción");
+        const badgeEstado = crearBadgeEstadoTipo(tipo.estado);
+
+        return `
+            <tr>
+                <td><span class="tipo-id">#${id}</span></td>
+                <td><span class="tipo-name">${nombre}</span></td>
+                <td><span class="tipo-description">${descripcion}</span></td>
+                <td>${badgeEstado}</td>
+                <td class="tipo-actions-cell">
+                    <button
+                        type="button"
+                        class="btn btn-outline btn-sm"
+                        data-tipo-action="detalle"
+                        data-tipo-id="${id}"
+                    >
+                        Ver detalle
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function manejarAccionTablaTipos(event) {
+    const boton = event.target.closest("[data-tipo-action]");
+    if (!boton) return;
+
+    const id = Number(boton.dataset.tipoId);
+    const accion = boton.dataset.tipoAction;
+
+    if (accion === "detalle") {
+        abrirDetalleTipo(id);
+    }
+}
+
+function abrirDetalleTipo(idTipo) {
+    const tipo = tiposEventosVigia.find(
+        (item) => Number(item.id_tipo_evento) === Number(idTipo)
+    );
+
+    if (!tipo) {
+        window.mostrarMensaje?.(
+            "No fue posible localizar el tipo de evento seleccionado.",
+            "error"
+        );
+        return;
+    }
+
+    tipoEventoSeleccionado = tipo;
+
+    asignarTextoTipo("detalleTipoTitulo", `Tipo de Evento #${tipo.id_tipo_evento}`);
+    asignarTextoTipo("detalleTipoId", `#${tipo.id_tipo_evento}`);
+    asignarTextoTipo("detalleTipoNombre", tipo.nombre_tipo || "-");
+    asignarTextoTipo("detalleTipoDescripcion", tipo.descripcion || "Sin descripción");
+
+    const estadoContenedor = document.getElementById("detalleTipoEstado");
+    if (estadoContenedor) {
+        estadoContenedor.innerHTML = crearBadgeEstadoTipo(tipo.estado);
+    }
+
+    configurarBotonEstadoTipo(tipo);
+    window.abrirModal("modalDetalleTipo");
+}
+
+function configurarBotonEstadoTipo(tipo) {
+    const boton = document.getElementById("btnCambiarEstadoTipo");
+    if (!boton) return;
+
+    if (tipo.estado === true) {
+        boton.textContent = "Desactivar";
+        boton.className = "btn btn-danger admin-type-action";
+    }
+    else {
+        boton.textContent = "Reactivar";
+        boton.className = "btn btn-success admin-type-action";
+    }
+
+    boton.classList.toggle("hidden", !usuarioPuedeAdministrarTipos);
+}
+
+function prepararNuevoTipo() {
+    if (!usuarioPuedeAdministrarTipos) return;
+
+    tipoEventoSeleccionado = null;
+    document.getElementById("formTipoEvento")?.reset();
+    asignarValorTipo("tipoEventoId", "");
+    asignarTextoTipo("formTipoTitulo", "Nuevo Tipo de Evento");
+    asignarTextoTipo(
+        "formTipoDescripcion",
+        "Registre una nueva clasificación para los eventos de seguridad."
+    );
+    asignarTextoTipo("btnGuardarTipo", "Guardar tipo");
+    window.abrirModal("modalFormularioTipo");
+}
+
+function editarTipoSeleccionado() {
+    if (!usuarioPuedeAdministrarTipos || !tipoEventoSeleccionado) return;
+
+    const tipo = tipoEventoSeleccionado;
+    window.cerrarModal("modalDetalleTipo");
+
+    asignarValorTipo("tipoEventoId", tipo.id_tipo_evento);
+    asignarValorTipo("tipoEventoNombre", tipo.nombre_tipo || "");
+    asignarValorTipo("tipoEventoDescripcion", tipo.descripcion || "");
+    asignarTextoTipo("formTipoTitulo", `Editar Tipo #${tipo.id_tipo_evento}`);
+    asignarTextoTipo(
+        "formTipoDescripcion",
+        "Modifique la información de la clasificación seleccionada."
+    );
+    asignarTextoTipo("btnGuardarTipo", "Guardar cambios");
+
+    window.abrirModal("modalFormularioTipo");
+}
+
+async function guardarTipoEvento(event) {
+    event.preventDefault();
+
+    if (!usuarioPuedeAdministrarTipos) {
+        window.mostrarMensaje?.(
+            "No tiene permisos para administrar tipos de eventos.",
+            "error"
+        );
+        return;
+    }
+
+    const id = Number(document.getElementById("tipoEventoId")?.value || 0);
+    const nombre = String(
+        document.getElementById("tipoEventoNombre")?.value || ""
+    ).trim().toUpperCase();
+    const descripcion = String(
+        document.getElementById("tipoEventoDescripcion")?.value || ""
+    ).trim();
+
+    if (!nombre) {
+        window.mostrarMensaje?.(
+            "El nombre del tipo de evento es obligatorio.",
+            "warning"
+        );
+        return;
+    }
+
+    const boton = document.getElementById("btnGuardarTipo");
+    window.bloquearBoton?.(boton, "Guardando...");
+
+    try {
+        const datos = {
+            nombre_tipo: nombre,
+            descripcion: descripcion || null
+        };
+
+        let respuesta;
+
+        if (id > 0) {
+            respuesta = await window.apiPut(`/tipos-eventos/${id}`, datos);
+        }
+        else {
+            respuesta = await window.apiPost("/tipos-eventos", datos);
+        }
+
+        window.cerrarModal("modalFormularioTipo");
+        window.mostrarMensaje?.(
+            respuesta?.mensaje || (
+                id > 0
+                    ? "Tipo de evento actualizado correctamente."
+                    : "Tipo de evento creado correctamente."
+            ),
+            "success"
+        );
+
+        await cargarTiposEventos();
+    }
+    catch (error) {
+        console.error("Error al guardar tipo de evento:", error);
+        window.mostrarMensaje?.(
+            error.message || "No fue posible guardar el tipo de evento.",
+            "error",
+            0
+        );
+    }
+    finally {
+        window.desbloquearBoton?.(boton);
+    }
+}
+
+async function cambiarEstadoTipoSeleccionado() {
+    if (!usuarioPuedeAdministrarTipos || !tipoEventoSeleccionado) return;
+
+    const tipo = tipoEventoSeleccionado;
+    const estaActivo = tipo.estado === true;
+    const operacion = estaActivo ? "desactivar" : "reactivar";
+
+    const confirmado = window.confirmarAccion(
+        `¿Desea ${operacion} el tipo de evento "${tipo.nombre_tipo}"?`
+    );
+
+    if (!confirmado) return;
+
+    const boton = document.getElementById("btnCambiarEstadoTipo");
+    window.bloquearBoton?.(
+        boton,
+        estaActivo ? "Desactivando..." : "Reactivando..."
+    );
+
+    try {
+        let respuesta;
+
+        if (estaActivo) {
+            respuesta = await window.apiDelete(`/tipos-eventos/${tipo.id_tipo_evento}`);
+        }
+        else {
+            respuesta = await window.apiPut(
+                `/tipos-eventos/${tipo.id_tipo_evento}`,
+                { estado: true }
+            );
+        }
+
+        window.cerrarModal("modalDetalleTipo");
+        window.mostrarMensaje?.(
+            respuesta?.mensaje || (
+                estaActivo
+                    ? "Tipo de evento desactivado correctamente."
+                    : "Tipo de evento reactivado correctamente."
+            ),
+            "success"
+        );
+
+        tipoEventoSeleccionado = null;
+        await cargarTiposEventos();
+    }
+    catch (error) {
+        console.error("Error al cambiar estado del tipo de evento:", error);
+        window.mostrarMensaje?.(
+            error.message || "No fue posible actualizar el estado del tipo de evento.",
+            "error",
+            0
+        );
+    }
+    finally {
+        window.desbloquearBoton?.(boton);
+    }
+}
+
+function crearBadgeEstadoTipo(estado) {
+    if (estado === true) {
+        return `<span class="badge badge-success">Activo</span>`;
+    }
+
+    return `<span class="badge badge-neutral">Inactivo</span>`;
+}
+
+function normalizarTipoTexto(valor) {
+    return String(valor ?? "").trim().toUpperCase();
+}
+
+function asignarTextoTipo(id, valor) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.textContent = valor ?? "";
+}
+
+function asignarValorTipo(id, valor) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.value = valor ?? "";
+}
+</script>
+{% endblock %}

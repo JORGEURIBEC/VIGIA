@@ -1,0 +1,1136 @@
+{% extends "base.html" %}
+
+{% block title %}
+Auditoría | VIGIA
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .audit-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    .audit-eyebrow {
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .audit-heading h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .audit-description {
+        margin-top: 5px;
+        color: #475569;
+        font-size: 13px;
+    }
+
+    .audit-filter-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(220px, 1.2fr)
+            minmax(170px, .8fr)
+            minmax(180px, .9fr)
+            minmax(170px, .8fr);
+        gap: 12px;
+        align-items: end;
+    }
+
+    .audit-filter-grid-secondary {
+        display: grid;
+        grid-template-columns:
+            minmax(150px, .7fr)
+            minmax(150px, .7fr)
+            minmax(160px, .8fr)
+            minmax(130px, .6fr)
+            auto;
+        gap: 12px;
+        align-items: end;
+        margin-top: 12px;
+    }
+
+    .audit-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .audit-table-card {
+        margin-top: 18px;
+    }
+
+    .audit-table-description {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .audit-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .audit-user {
+        color: #0f172a;
+        font-weight: 650;
+    }
+
+    .audit-user-sub {
+        display: block;
+        margin-top: 2px;
+        color: #64748b;
+        font-size: 10px;
+    }
+
+    .audit-action {
+        color: #0f172a;
+        font-size: 11px;
+        font-weight: 700;
+        word-break: break-word;
+    }
+
+    .audit-entity {
+        color: #0f172a;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .audit-subtle {
+        display: block;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 10px;
+    }
+
+    .audit-ip {
+        color: #334155;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 10px;
+    }
+
+    .audit-detail-preview {
+        max-width: 330px;
+        overflow: hidden;
+        color: #475569;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .audit-role-note {
+        margin-bottom: 18px;
+        padding: 11px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 7px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+    }
+
+    .audit-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .audit-detail-item {
+        padding: 13px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .audit-detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .audit-detail-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .audit-detail-value {
+        color: #0f172a;
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .audit-detail-text {
+        line-height: 1.55;
+        white-space: pre-wrap;
+    }
+
+    .audit-empty,
+    .audit-loading {
+        padding: 28px 15px !important;
+        text-align: center !important;
+    }
+
+    .audit-empty {
+        color: #64748b !important;
+    }
+
+    @media (max-width: 1200px) {
+        .audit-filter-grid,
+        .audit-filter-grid-secondary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .audit-filter-actions {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .audit-heading {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .audit-filter-grid,
+        .audit-filter-grid-secondary {
+            grid-template-columns: 1fr;
+        }
+
+        .audit-filter-actions {
+            grid-column: auto;
+            flex-direction: column;
+        }
+
+        .audit-filter-actions .btn {
+            width: 100%;
+        }
+
+        .audit-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .audit-detail-item.full-width {
+            grid-column: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="audit-heading">
+    <div>
+        <div class="audit-eyebrow">TRAZABILIDAD Y CONTROL</div>
+        <h1>Registro de Auditoría</h1>
+        <p class="audit-description">
+            Consulta de las acciones relevantes ejecutadas dentro de VIGIA.
+        </p>
+    </div>
+</section>
+
+<div id="globalMessage" class="global-message hidden"></div>
+
+<div id="auditRoleNote" class="audit-role-note hidden">
+    El Registro de Auditoría es de administración. Su perfil no posee permisos para consultar la trazabilidad del sistema.
+</div>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Registros</span>
+        </div>
+        <div class="stat-card-value" id="statAuditTotal">--</div>
+        <span class="stat-card-detail">Operaciones coincidentes</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Exitosas</span>
+        </div>
+        <div class="stat-card-value" id="statAuditOk">--</div>
+        <span class="stat-card-detail">Resultado OK</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Con error</span>
+        </div>
+        <div class="stat-card-value" id="statAuditError">--</div>
+        <span class="stat-card-detail">Resultado ERROR</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Usuarios</span>
+        </div>
+        <div class="stat-card-value" id="statAuditUsuarios">--</div>
+        <span class="stat-card-detail">Usuarios involucrados</span>
+    </article>
+</section>
+
+<section class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Filtros de auditoría</h2>
+            <p class="audit-table-description">
+                Permite localizar operaciones por usuario, acción, entidad, resultado, IP o rango de fechas.
+            </p>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="audit-filter-grid">
+            <div class="filter-group">
+                <label for="auditTexto">Buscar</label>
+                <input
+                    type="text"
+                    id="auditTexto"
+                    class="form-control"
+                    placeholder="Acción, entidad, detalle o IP"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="auditUsuario">Usuario</label>
+                <select id="auditUsuario" class="form-control">
+                    <option value="">Todos los usuarios</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="auditAccion">Acción</label>
+                <select id="auditAccion" class="form-control">
+                    <option value="">Todas las acciones</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="auditEntidad">Entidad</label>
+                <select id="auditEntidad" class="form-control">
+                    <option value="">Todas las entidades</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="audit-filter-grid-secondary">
+            <div class="filter-group">
+                <label for="auditResultado">Resultado</label>
+                <select id="auditResultado" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="OK">OK</option>
+                    <option value="ERROR">ERROR</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="auditFechaDesde">Fecha desde</label>
+                <input type="date" id="auditFechaDesde" class="form-control">
+            </div>
+
+            <div class="filter-group">
+                <label for="auditFechaHasta">Fecha hasta</label>
+                <input type="date" id="auditFechaHasta" class="form-control">
+            </div>
+
+            <div class="filter-group">
+                <label for="auditLimite">Máximo</label>
+                <select id="auditLimite" class="form-control">
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200" selected>200</option>
+                    <option value="500">500</option>
+                </select>
+            </div>
+
+            <div class="audit-filter-actions">
+                <button type="button" class="btn btn-primary" id="btnAplicarAudit">
+                    Aplicar filtros
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnLimpiarAudit">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card audit-table-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Trazabilidad registrada</h2>
+            <p class="audit-table-description" id="auditResultadoTexto">
+                Consultando registros...
+            </p>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="btnActualizarAudit">
+            Actualizar
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha / Hora</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Entidad</th>
+                    <th>Resultado</th>
+                    <th>IP</th>
+                    <th>Detalle</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="auditTableBody">
+                <tr>
+                    <td colspan="9" class="audit-loading">
+                        Consultando registros de auditoría...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal-overlay" id="modalAuditDetalle">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="auditDetalleTitulo">Registro de Auditoría</h2>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="audit-detail-grid">
+                <div class="audit-detail-item">
+                    <span class="audit-detail-label">ID Auditoría</span>
+                    <span class="audit-detail-value" id="auditDetalleId">-</span>
+                </div>
+
+                <div class="audit-detail-item">
+                    <span class="audit-detail-label">Fecha / Hora</span>
+                    <span class="audit-detail-value" id="auditDetalleFecha">-</span>
+                </div>
+
+                <div class="audit-detail-item full-width">
+                    <span class="audit-detail-label">Usuario</span>
+                    <span class="audit-detail-value" id="auditDetalleUsuario">-</span>
+                </div>
+
+                <div class="audit-detail-item">
+                    <span class="audit-detail-label">Acción</span>
+                    <span class="audit-detail-value" id="auditDetalleAccion">-</span>
+                </div>
+
+                <div class="audit-detail-item">
+                    <span class="audit-detail-label">Resultado</span>
+                    <div id="auditDetalleResultado">-</div>
+                </div>
+
+                <div class="audit-detail-item">
+                    <span class="audit-detail-label">Entidad</span>
+                    <span class="audit-detail-value" id="auditDetalleEntidad">-</span>
+                </div>
+
+                <div class="audit-detail-item">
+                    <span class="audit-detail-label">Registro afectado</span>
+                    <span class="audit-detail-value" id="auditDetalleRegistro">-</span>
+                </div>
+
+                <div class="audit-detail-item full-width">
+                    <span class="audit-detail-label">Dirección IP</span>
+                    <span class="audit-detail-value audit-ip" id="auditDetalleIp">-</span>
+                </div>
+
+                <div class="audit-detail-item full-width">
+                    <span class="audit-detail-label">Detalle</span>
+                    <span class="audit-detail-value audit-detail-text" id="auditDetalleTexto">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-modal-close>Cerrar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+"use strict";
+
+let auditRegistros = [];
+let auditUsuarios = [];
+let auditPuedeConsultar = false;
+let auditCatalogoAcciones = [];
+let auditCatalogoEntidades = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarAuditoria();
+});
+
+async function inicializarAuditoria() {
+    configurarPermisosAuditoria();
+    configurarEventosAuditoria();
+
+    if (!auditPuedeConsultar) {
+        mostrarAuditoriaRestringida();
+        return;
+    }
+
+    await cargarUsuariosAuditoria();
+    await cargarAuditoria(true);
+}
+
+function obtenerUsuarioActualAudit() {
+    return typeof window.obtenerUsuario === "function"
+        ? window.obtenerUsuario()
+        : null;
+}
+
+function obtenerRolActualAudit() {
+    const usuario = obtenerUsuarioActualAudit();
+
+    if (!usuario) return "";
+
+    if (typeof usuario.rol === "string") {
+        return usuario.rol.trim().toUpperCase();
+    }
+
+    if (usuario.rol && typeof usuario.rol.nombre_rol === "string") {
+        return usuario.rol.nombre_rol.trim().toUpperCase();
+    }
+
+    if (typeof usuario.nombre_rol === "string") {
+        return usuario.nombre_rol.trim().toUpperCase();
+    }
+
+    return "";
+}
+
+function configurarPermisosAuditoria() {
+    auditPuedeConsultar =
+        obtenerRolActualAudit() === "ADMINISTRADOR";
+
+    document.getElementById("auditRoleNote")?.classList.toggle(
+        "hidden",
+        auditPuedeConsultar
+    );
+}
+
+function mostrarAuditoriaRestringida() {
+    asignarTextoAudit("statAuditTotal", "-");
+    asignarTextoAudit("statAuditOk", "-");
+    asignarTextoAudit("statAuditError", "-");
+    asignarTextoAudit("statAuditUsuarios", "-");
+    asignarTextoAudit(
+        "auditResultadoTexto",
+        "Acceso reservado al Administrador."
+    );
+
+    const tbody = document.getElementById("auditTableBody");
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="audit-empty">
+                    Su perfil no tiene permisos para consultar el registro de auditoría.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function configurarEventosAuditoria() {
+    document.getElementById("btnAplicarAudit")?.addEventListener(
+        "click",
+        () => cargarAuditoria(false)
+    );
+
+    document.getElementById("btnLimpiarAudit")?.addEventListener(
+        "click",
+        limpiarFiltrosAuditoria
+    );
+
+    document.getElementById("btnActualizarAudit")?.addEventListener(
+        "click",
+        () => cargarAuditoria(false)
+    );
+
+    document.getElementById("auditResultado")?.addEventListener(
+        "change",
+        () => cargarAuditoria(false)
+    );
+
+    document.getElementById("auditTableBody")?.addEventListener(
+        "click",
+        manejarAccionTablaAudit
+    );
+}
+
+async function cargarUsuariosAuditoria() {
+    try {
+        const respuesta = await window.apiGet("/usuarios");
+
+        auditUsuarios = extraerListaAudit(
+            respuesta
+        );
+
+        auditUsuarios.sort(
+            (a, b) => Number(a.id_usuario || 0) - Number(b.id_usuario || 0)
+        );
+
+        renderizarUsuariosAuditoria();
+    }
+    catch (error) {
+        console.error(
+            "Error al cargar usuarios para auditoría:",
+            error
+        );
+
+        auditUsuarios = [];
+        renderizarUsuariosAuditoria();
+    }
+}
+
+function renderizarUsuariosAuditoria() {
+    const select = document.getElementById(
+        "auditUsuario"
+    );
+
+    if (!select) return;
+
+    select.innerHTML = `
+        <option value="">Todos los usuarios</option>
+        ${auditUsuarios.map((usuario) => {
+            const nombre = `${usuario.nombre || ""} ${usuario.apellido || ""}`.trim();
+
+            return `
+                <option value="${Number(usuario.id_usuario)}">
+                    ${window.escaparHTML(
+                        `#${usuario.id_usuario} - ${nombre || usuario.correo || "Usuario"}`
+                    )}
+                </option>
+            `;
+        }).join("")}
+    `;
+}
+
+async function cargarAuditoria(actualizarCatalogos) {
+    if (!auditPuedeConsultar) return;
+
+    const tbody = document.getElementById(
+        "auditTableBody"
+    );
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="audit-loading">
+                    Consultando registros de auditoría...
+                </td>
+            </tr>
+        `;
+    }
+
+    try {
+        const query = construirQueryAuditoria(
+            actualizarCatalogos
+        );
+
+        const respuesta = await window.apiGet(
+            `/auditoria${query}`
+        );
+
+        auditRegistros = extraerListaAudit(
+            respuesta
+        );
+
+        actualizarResumenAuditoria(
+            respuesta
+        );
+
+        renderizarAuditoria(
+            respuesta
+        );
+
+        if (actualizarCatalogos) {
+            actualizarCatalogosAuditoria(
+                auditRegistros
+            );
+        }
+    }
+    catch (error) {
+        console.error(
+            "Error al cargar auditoría:",
+            error
+        );
+
+        auditRegistros = [];
+
+        asignarTextoAudit("statAuditTotal", "-");
+        asignarTextoAudit("statAuditOk", "-");
+        asignarTextoAudit("statAuditError", "-");
+        asignarTextoAudit("statAuditUsuarios", "-");
+
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="audit-empty">
+                        No fue posible consultar la auditoría.
+                    </td>
+                </tr>
+            `;
+        }
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible consultar la auditoría.",
+            "error",
+            0
+        );
+
+        if (error.status === 401) {
+            window.setTimeout(() => {
+                window.location.href = "/login";
+            }, 1200);
+        }
+    }
+}
+
+function construirQueryAuditoria(cargaInicial) {
+    const parametros = new URLSearchParams();
+
+    if (!cargaInicial) {
+        const texto = String(
+            document.getElementById("auditTexto")?.value || ""
+        ).trim();
+
+        const idUsuario = String(
+            document.getElementById("auditUsuario")?.value || ""
+        ).trim();
+
+        const accion = String(
+            document.getElementById("auditAccion")?.value || ""
+        ).trim();
+
+        const entidad = String(
+            document.getElementById("auditEntidad")?.value || ""
+        ).trim();
+
+        const resultado = String(
+            document.getElementById("auditResultado")?.value || ""
+        ).trim();
+
+        const fechaDesde = String(
+            document.getElementById("auditFechaDesde")?.value || ""
+        ).trim();
+
+        const fechaHasta = String(
+            document.getElementById("auditFechaHasta")?.value || ""
+        ).trim();
+
+        if (texto) parametros.set("texto", texto);
+        if (idUsuario) parametros.set("id_usuario", idUsuario);
+        if (accion) parametros.set("accion", accion);
+        if (entidad) parametros.set("entidad", entidad);
+        if (resultado) parametros.set("resultado", resultado);
+        if (fechaDesde) parametros.set("fecha_desde", fechaDesde);
+        if (fechaHasta) parametros.set("fecha_hasta", fechaHasta);
+    }
+
+    parametros.set(
+        "limite",
+        String(
+            document.getElementById("auditLimite")?.value || "200"
+        )
+    );
+
+    const texto = parametros.toString();
+
+    return texto
+        ? `?${texto}`
+        : "";
+}
+
+function actualizarResumenAuditoria(respuesta) {
+    const resumen = respuesta?.resumen || {};
+
+    asignarTextoAudit(
+        "statAuditTotal",
+        resumen.total ?? respuesta?.total_filtrado ?? auditRegistros.length
+    );
+
+    asignarTextoAudit(
+        "statAuditOk",
+        resumen.ok ?? auditRegistros.filter(
+            (registro) => registro.resultado === "OK"
+        ).length
+    );
+
+    asignarTextoAudit(
+        "statAuditError",
+        resumen.error ?? auditRegistros.filter(
+            (registro) => registro.resultado === "ERROR"
+        ).length
+    );
+
+    asignarTextoAudit(
+        "statAuditUsuarios",
+        resumen.usuarios ?? new Set(
+            auditRegistros
+                .map((registro) => registro.id_usuario)
+                .filter((valor) => valor !== null && valor !== undefined)
+        ).size
+    );
+}
+
+function renderizarAuditoria(respuesta) {
+    const tbody = document.getElementById(
+        "auditTableBody"
+    );
+
+    const totalFiltrado =
+        respuesta?.total_filtrado
+        ?? auditRegistros.length;
+
+    asignarTextoAudit(
+        "auditResultadoTexto",
+        `${auditRegistros.length} registro(s) mostrado(s) de ${totalFiltrado} coincidente(s).`
+    );
+
+    if (!tbody) return;
+
+    if (auditRegistros.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="audit-empty">
+                    No existen registros que coincidan con los filtros seleccionados.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = auditRegistros.map((registro) => {
+        const id = Number(registro.id_auditoria);
+        const usuario = construirNombreUsuarioAuditoria(registro);
+
+        return `
+            <tr>
+                <td>
+                    <span class="audit-id">#${id}</span>
+                </td>
+
+                <td>
+                    ${window.escaparHTML(formatearFechaAuditoria(registro.fecha_hora))}
+                </td>
+
+                <td>
+                    <span class="audit-user">
+                        ${window.escaparHTML(usuario.nombre)}
+                    </span>
+                    <span class="audit-user-sub">
+                        ${window.escaparHTML(usuario.subtitulo)}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="audit-action">
+                        ${window.escaparHTML(registro.accion || "-")}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="audit-entity">
+                        ${window.escaparHTML(registro.entidad_afectada || "-")}
+                    </span>
+                    <span class="audit-subtle">
+                        Registro: ${window.escaparHTML(
+                            registro.id_registro_afectado ?? "-"
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${crearBadgeResultadoAuditoria(registro.resultado)}
+                </td>
+
+                <td>
+                    <span class="audit-ip">
+                        ${window.escaparHTML(registro.direccion_ip || "-")}
+                    </span>
+                </td>
+
+                <td>
+                    <div class="audit-detail-preview" title="${window.escaparHTML(registro.detalle || "")}">
+                        ${window.escaparHTML(registro.detalle || "Sin detalle")}
+                    </div>
+                </td>
+
+                <td>
+                    <button
+                        type="button"
+                        class="btn btn-outline btn-sm"
+                        data-audit-id="${id}"
+                    >
+                        Ver detalle
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function manejarAccionTablaAudit(event) {
+    const boton = event.target.closest(
+        "[data-audit-id]"
+    );
+
+    if (!boton) return;
+
+    abrirDetalleAuditoria(
+        Number(boton.dataset.auditId)
+    );
+}
+
+function abrirDetalleAuditoria(idAuditoria) {
+    const registro = auditRegistros.find(
+        (item) => Number(item.id_auditoria) === Number(idAuditoria)
+    );
+
+    if (!registro) {
+        window.mostrarMensaje?.(
+            "No fue posible localizar el registro seleccionado.",
+            "error"
+        );
+        return;
+    }
+
+    const usuario = construirNombreUsuarioAuditoria(
+        registro
+    );
+
+    asignarTextoAudit(
+        "auditDetalleTitulo",
+        `Registro de Auditoría #${registro.id_auditoria}`
+    );
+
+    asignarTextoAudit(
+        "auditDetalleId",
+        `#${registro.id_auditoria}`
+    );
+
+    asignarTextoAudit(
+        "auditDetalleFecha",
+        formatearFechaAuditoria(registro.fecha_hora)
+    );
+
+    asignarTextoAudit(
+        "auditDetalleUsuario",
+        `${usuario.nombre} — ${usuario.subtitulo}`
+    );
+
+    asignarTextoAudit(
+        "auditDetalleAccion",
+        registro.accion || "-"
+    );
+
+    asignarTextoAudit(
+        "auditDetalleEntidad",
+        registro.entidad_afectada || "-"
+    );
+
+    asignarTextoAudit(
+        "auditDetalleRegistro",
+        registro.id_registro_afectado ?? "-"
+    );
+
+    asignarTextoAudit(
+        "auditDetalleIp",
+        registro.direccion_ip || "-"
+    );
+
+    asignarTextoAudit(
+        "auditDetalleTexto",
+        registro.detalle || "Sin detalle."
+    );
+
+    const resultado = document.getElementById(
+        "auditDetalleResultado"
+    );
+
+    if (resultado) {
+        resultado.innerHTML =
+            crearBadgeResultadoAuditoria(
+                registro.resultado
+            );
+    }
+
+    window.abrirModal(
+        "modalAuditDetalle"
+    );
+}
+
+function actualizarCatalogosAuditoria(registros) {
+    auditCatalogoAcciones = Array.from(
+        new Set(
+            registros
+                .map((registro) => registro.accion)
+                .filter(Boolean)
+        )
+    ).sort();
+
+    auditCatalogoEntidades = Array.from(
+        new Set(
+            registros
+                .map((registro) => registro.entidad_afectada)
+                .filter(Boolean)
+        )
+    ).sort();
+
+    renderizarCatalogoAuditoria(
+        "auditAccion",
+        auditCatalogoAcciones,
+        "Todas las acciones"
+    );
+
+    renderizarCatalogoAuditoria(
+        "auditEntidad",
+        auditCatalogoEntidades,
+        "Todas las entidades"
+    );
+}
+
+function renderizarCatalogoAuditoria(idSelect, valores, etiquetaInicial) {
+    const select = document.getElementById(
+        idSelect
+    );
+
+    if (!select) return;
+
+    const valorActual = select.value;
+
+    select.innerHTML = `
+        <option value="">${window.escaparHTML(etiquetaInicial)}</option>
+        ${valores.map((valor) => `
+            <option value="${window.escaparHTML(valor)}">
+                ${window.escaparHTML(valor)}
+            </option>
+        `).join("")}
+    `;
+
+    if (valores.includes(valorActual)) {
+        select.value = valorActual;
+    }
+}
+
+function limpiarFiltrosAuditoria() {
+    asignarValorAudit("auditTexto", "");
+    asignarValorAudit("auditUsuario", "");
+    asignarValorAudit("auditAccion", "");
+    asignarValorAudit("auditEntidad", "");
+    asignarValorAudit("auditResultado", "");
+    asignarValorAudit("auditFechaDesde", "");
+    asignarValorAudit("auditFechaHasta", "");
+    asignarValorAudit("auditLimite", "200");
+
+    cargarAuditoria(false);
+}
+
+function construirNombreUsuarioAuditoria(registro) {
+    const nombre = String(
+        registro.usuario_nombre || ""
+    ).trim();
+
+    const correo = String(
+        registro.usuario_correo || ""
+    ).trim();
+
+    const rol = String(
+        registro.usuario_rol || ""
+    ).trim();
+
+    if (registro.id_usuario === null || registro.id_usuario === undefined) {
+        return {
+            nombre: "Sistema / Sin usuario",
+            subtitulo: correo || "Sin identidad asociada"
+        };
+    }
+
+    return {
+        nombre: nombre || `Usuario #${registro.id_usuario}`,
+        subtitulo: [
+            `ID ${registro.id_usuario}`,
+            correo,
+            rol
+        ].filter(Boolean).join(" · ")
+    };
+}
+
+function crearBadgeResultadoAuditoria(resultado) {
+    const valor = String(
+        resultado || ""
+    ).toUpperCase();
+
+    if (valor === "OK") {
+        return `<span class="badge badge-success">OK</span>`;
+    }
+
+    if (valor === "ERROR") {
+        return `<span class="badge badge-danger">ERROR</span>`;
+    }
+
+    return `
+        <span class="badge badge-neutral">
+            ${window.escaparHTML(resultado || "-")}
+        </span>
+    `;
+}
+
+function formatearFechaAuditoria(valor) {
+    if (!valor) return "Sin registro";
+
+    const fecha = new Date(valor);
+
+    if (Number.isNaN(fecha.getTime())) {
+        return String(valor);
+    }
+
+    return fecha.toLocaleString("es-CL");
+}
+
+function extraerListaAudit(respuesta) {
+    if (Array.isArray(respuesta)) return respuesta;
+    if (Array.isArray(respuesta?.data)) return respuesta.data;
+    if (Array.isArray(respuesta?.data?.items)) return respuesta.data.items;
+    return [];
+}
+
+function asignarTextoAudit(id, valor) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+        elemento.textContent = valor ?? "";
+    }
+}
+
+function asignarValorAudit(id, valor) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+        elemento.value = valor ?? "";
+    }
+}
+</script>
+{% endblock %}

@@ -165,18 +165,18 @@ def fuentes():
 @web_bp.route("/tipos-eventos")
 def tipos_eventos():
     """
-    Administración de las categorías o
-    tipos de eventos utilizados por VIGIA.
+    Interfaz web para administrar y consultar
+    los tipos de eventos utilizados por VIGIA.
+
+    El Administrador puede crear, modificar,
+    activar y desactivar tipos de eventos.
+
+    El Analista dispone de acceso de consulta.
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Tipos de eventos",
-        encabezado="Tipos de Eventos",
-        descripcion=(
-            "Administración de las categorías utilizadas "
-            "para clasificar los eventos de seguridad."
-        )
+        "tipos_eventos.html",
+        titulo="Tipos de eventos"
     )
 
 
@@ -187,18 +187,15 @@ def tipos_eventos():
 @web_bp.route("/reglas")
 def reglas():
     """
-    Administración de las reglas
+    Interfaz web para administrar las reglas
     de detección utilizadas por VIGIA.
+
+    Este módulo es de acceso administrativo.
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Reglas",
-        encabezado="Reglas de Detección",
-        descripcion=(
-            "Configuración de las reglas utilizadas para "
-            "analizar eventos y generar alertas."
-        )
+        "reglas.html",
+        titulo="Reglas"
     )
 
 
@@ -209,18 +206,15 @@ def reglas():
 @web_bp.route("/usuarios")
 def usuarios():
     """
-    Administración de usuarios,
-    perfiles y estados de acceso.
+    Interfaz web para administrar usuarios,
+    perfiles y estados de acceso a VIGIA.
+
+    Este módulo es de acceso administrativo.
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Usuarios",
-        encabezado="Gestión de Usuarios",
-        descripcion=(
-            "Administración de usuarios, perfiles "
-            "y estados de acceso al sistema."
-        )
+        "usuarios.html",
+        titulo="Usuarios"
     )
 
 
@@ -231,16 +225,13 @@ def usuarios():
 @web_bp.route("/auditoria")
 def auditoria():
     """
-    Consulta de los registros de auditoría
-    generados por las operaciones relevantes.
+    Interfaz web para consultar la trazabilidad
+    de las operaciones relevantes realizadas en VIGIA.
+
+    Este módulo es de acceso administrativo.
     """
 
     return render_template(
-        "pagina_base.html",
-        titulo="Auditoría",
-        encabezado="Registro de Auditoría",
-        descripcion=(
-            "Consulta de las acciones relevantes realizadas "
-            "por los usuarios dentro de VIGIA."
-        )
+        "auditoria.html",
+        titulo="Auditoría"
     )

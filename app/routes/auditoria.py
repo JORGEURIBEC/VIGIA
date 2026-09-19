@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app import db
 from app.models import Auditoria, Usuario
+from app.decorators import roles_required
 
 
 auditoria_bp = Blueprint(
@@ -18,77 +18,56 @@ auditoria_bp = Blueprint(
 # FUNCIONES AUXILIARES
 # ============================================================
 
-def obtener_usuario_actual():
-    """
-    Obtiene el usuario autenticado a partir del JWT.
-    VIGIA utiliza el id del usuario como identidad principal.
-    También se deja compatibilidad por correo.
-    """
+def normalizar_texto(valor):
+    if valor is None:
+        return ""
+    return str(valor).strip()
 
-    identidad = get_jwt_identity()
 
-    if identidad is None:
+def obtener_usuario_por_id(id_usuario):
+    if id_usuario is None:
         return None
 
-    # Intentar interpretar la identidad como ID numérico
     try:
-        id_usuario = int(identidad)
-        usuario = db.session.get(Usuario, id_usuario)
-
-        if usuario:
-            return usuario
-
+        return db.session.get(
+            Usuario,
+            int(id_usuario)
+        )
     except (TypeError, ValueError):
-        pass
-
-    # Compatibilidad en caso de que el JWT almacene el correo
-    return Usuario.query.filter_by(
-        correo=str(identidad)
-    ).first()
+        return None
 
 
-def verificar_administrador():
+def auditoria_a_dict(registro, usuario=None):
     """
-    Verifica que el usuario autenticado corresponda
-    al perfil Administrador.
+    Convierte un registro de auditoría en un diccionario JSON.
 
-    En la base de datos actual de VIGIA:
-    id_rol = 1 -> ADMINISTRADOR
-    id_rol = 2 -> ANALISTA DE SEGURIDAD
+    La información del usuario se agrega únicamente como apoyo
+    para la consulta visual; no modifica el registro de auditoría.
     """
 
-    usuario = obtener_usuario_actual()
-
-    if not usuario:
-        return None, (
-            jsonify({
-                "estado": "ERROR",
-                "mensaje": "No fue posible identificar al usuario autenticado."
-            }),
-            401
+    if usuario is None:
+        usuario = obtener_usuario_por_id(
+            registro.id_usuario
         )
-
-    if usuario.id_rol != 1:
-        return None, (
-            jsonify({
-                "estado": "ERROR",
-                "mensaje": "Acceso denegado. Esta función requiere perfil ADMINISTRADOR."
-            }),
-            403
-        )
-
-    return usuario, None
-
-
-def auditoria_a_dict(registro):
-    """
-    Convierte un registro de auditoría en un diccionario
-    apto para ser retornado como JSON.
-    """
 
     return {
         "id_auditoria": registro.id_auditoria,
         "id_usuario": registro.id_usuario,
+        "usuario_nombre": (
+            f"{usuario.nombre} {usuario.apellido}".strip()
+            if usuario
+            else None
+        ),
+        "usuario_correo": (
+            usuario.correo
+            if usuario
+            else None
+        ),
+        "usuario_rol": (
+            usuario.rol.nombre_rol
+            if usuario and usuario.rol
+            else None
+        ),
         "accion": registro.accion,
         "entidad_afectada": registro.entidad_afectada,
         "id_registro_afectado": registro.id_registro_afectado,
@@ -103,167 +82,364 @@ def auditoria_a_dict(registro):
     }
 
 
+def parsear_entero(nombre_parametro, valor, minimo=None, maximo=None):
+    try:
+        numero = int(valor)
+    except (TypeError, ValueError):
+        raise ValueError(
+            f"El parámetro {nombre_parametro} debe ser numérico."
+        )
+
+    if minimo is not None and numero < minimo:
+        numero = minimo
+
+    if maximo is not None and numero > maximo:
+        numero = maximo
+
+    return numero
+
+
 # ============================================================
 # GET /api/v1/auditoria
 # LISTAR REGISTROS DE AUDITORÍA
 # ============================================================
 
-@auditoria_bp.route("", methods=["GET"])
-@jwt_required()
+@auditoria_bp.get("")
+@roles_required("ADMINISTRADOR")
 def listar_auditoria():
+    """
+    Lista los registros de auditoría de VIGIA.
 
-    usuario, error = verificar_administrador()
+    Acceso exclusivo para ADMINISTRADOR.
 
-    if error:
-        return error
+    Filtros disponibles:
+    - texto
+    - id_usuario
+    - accion
+    - entidad
+    - id_registro_afectado
+    - resultado
+    - direccion_ip
+    - fecha_desde
+    - fecha_hasta
+    - limite
+    - offset
+    """
 
-    consulta = Auditoria.query
+    try:
+        consulta = Auditoria.query
 
-    # --------------------------------------------------------
-    # FILTRO POR USUARIO
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+        # BÚSQUEDA GENERAL
+        # ----------------------------------------------------
 
-    id_usuario = request.args.get("id_usuario")
+        texto = normalizar_texto(
+            request.args.get("texto")
+        )
 
-    if id_usuario:
-        try:
+        if texto:
+            patron = f"%{texto}%"
+
             consulta = consulta.filter(
-                Auditoria.id_usuario == int(id_usuario)
+                db.or_(
+                    Auditoria.accion.ilike(patron),
+                    Auditoria.entidad_afectada.ilike(patron),
+                    Auditoria.resultado.ilike(patron),
+                    Auditoria.detalle.ilike(patron),
+                    Auditoria.direccion_ip.ilike(patron)
+                )
             )
-        except ValueError:
-            return jsonify({
-                "estado": "ERROR",
-                "mensaje": "El parámetro id_usuario debe ser numérico."
-            }), 400
 
-    # --------------------------------------------------------
-    # FILTRO POR ACCIÓN
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+        # FILTRO POR USUARIO
+        # ----------------------------------------------------
 
-    accion = request.args.get("accion")
-
-    if accion:
-        consulta = consulta.filter(
-            Auditoria.accion.ilike(f"%{accion.strip()}%")
+        id_usuario = normalizar_texto(
+            request.args.get("id_usuario")
         )
 
-    # --------------------------------------------------------
-    # FILTRO POR ENTIDAD
-    # --------------------------------------------------------
+        if id_usuario:
+            try:
+                id_usuario_num = int(id_usuario)
+            except ValueError:
+                return jsonify({
+                    "estado": "ERROR",
+                    "mensaje": (
+                        "El parámetro id_usuario "
+                        "debe ser numérico."
+                    )
+                }), 400
 
-    entidad = request.args.get("entidad")
-
-    if entidad:
-        consulta = consulta.filter(
-            Auditoria.entidad_afectada.ilike(
-                f"%{entidad.strip()}%"
+            consulta = consulta.filter(
+                Auditoria.id_usuario == id_usuario_num
             )
+
+        # ----------------------------------------------------
+        # FILTRO POR ACCIÓN
+        # ----------------------------------------------------
+
+        accion = normalizar_texto(
+            request.args.get("accion")
         )
 
-    # --------------------------------------------------------
-    # FILTRO POR RESULTADO
-    # --------------------------------------------------------
+        if accion:
+            consulta = consulta.filter(
+                Auditoria.accion == accion
+            )
 
-    resultado = request.args.get("resultado")
+        # ----------------------------------------------------
+        # FILTRO POR ENTIDAD
+        # ----------------------------------------------------
 
-    if resultado:
-        consulta = consulta.filter(
-            Auditoria.resultado == resultado.strip().upper()
+        entidad = normalizar_texto(
+            request.args.get("entidad")
         )
 
-    # --------------------------------------------------------
-    # FILTRO DESDE FECHA
-    # Formato esperado: YYYY-MM-DD
-    # --------------------------------------------------------
-
-    fecha_desde = request.args.get("fecha_desde")
-
-    if fecha_desde:
-        try:
-            fecha_desde_obj = datetime.strptime(
-                fecha_desde,
-                "%Y-%m-%d"
+        if entidad:
+            consulta = consulta.filter(
+                Auditoria.entidad_afectada == entidad
             )
+
+        # ----------------------------------------------------
+        # FILTRO POR ID DEL REGISTRO AFECTADO
+        # ----------------------------------------------------
+
+        id_registro_afectado = normalizar_texto(
+            request.args.get("id_registro_afectado")
+        )
+
+        if id_registro_afectado:
+            try:
+                id_registro_num = int(
+                    id_registro_afectado
+                )
+            except ValueError:
+                return jsonify({
+                    "estado": "ERROR",
+                    "mensaje": (
+                        "El parámetro id_registro_afectado "
+                        "debe ser numérico."
+                    )
+                }), 400
+
+            consulta = consulta.filter(
+                Auditoria.id_registro_afectado
+                == id_registro_num
+            )
+
+        # ----------------------------------------------------
+        # FILTRO POR RESULTADO
+        # ----------------------------------------------------
+
+        resultado = normalizar_texto(
+            request.args.get("resultado")
+        ).upper()
+
+        if resultado:
+            consulta = consulta.filter(
+                Auditoria.resultado == resultado
+            )
+
+        # ----------------------------------------------------
+        # FILTRO POR IP
+        # ----------------------------------------------------
+
+        direccion_ip = normalizar_texto(
+            request.args.get("direccion_ip")
+        )
+
+        if direccion_ip:
+            consulta = consulta.filter(
+                Auditoria.direccion_ip.ilike(
+                    f"%{direccion_ip}%"
+                )
+            )
+
+        # ----------------------------------------------------
+        # FILTRO DESDE FECHA
+        # Formato: YYYY-MM-DD
+        # ----------------------------------------------------
+
+        fecha_desde = normalizar_texto(
+            request.args.get("fecha_desde")
+        )
+
+        if fecha_desde:
+            try:
+                fecha_desde_obj = datetime.strptime(
+                    fecha_desde,
+                    "%Y-%m-%d"
+                )
+            except ValueError:
+                return jsonify({
+                    "estado": "ERROR",
+                    "mensaje": (
+                        "fecha_desde debe utilizar "
+                        "el formato YYYY-MM-DD."
+                    )
+                }), 400
 
             consulta = consulta.filter(
                 Auditoria.fecha_hora >= fecha_desde_obj
             )
 
-        except ValueError:
-            return jsonify({
-                "estado": "ERROR",
-                "mensaje": (
-                    "fecha_desde debe utilizar "
-                    "el formato YYYY-MM-DD."
+        # ----------------------------------------------------
+        # FILTRO HASTA FECHA
+        # ----------------------------------------------------
+
+        fecha_hasta = normalizar_texto(
+            request.args.get("fecha_hasta")
+        )
+
+        if fecha_hasta:
+            try:
+                fecha_hasta_obj = datetime.strptime(
+                    fecha_hasta,
+                    "%Y-%m-%d"
+                ).replace(
+                    hour=23,
+                    minute=59,
+                    second=59,
+                    microsecond=999999
                 )
-            }), 400
-
-    # --------------------------------------------------------
-    # FILTRO HASTA FECHA
-    # --------------------------------------------------------
-
-    fecha_hasta = request.args.get("fecha_hasta")
-
-    if fecha_hasta:
-        try:
-            fecha_hasta_obj = datetime.strptime(
-                fecha_hasta,
-                "%Y-%m-%d"
-            )
-
-            # Incluir todo el día seleccionado
-            fecha_hasta_obj = fecha_hasta_obj.replace(
-                hour=23,
-                minute=59,
-                second=59
-            )
+            except ValueError:
+                return jsonify({
+                    "estado": "ERROR",
+                    "mensaje": (
+                        "fecha_hasta debe utilizar "
+                        "el formato YYYY-MM-DD."
+                    )
+                }), 400
 
             consulta = consulta.filter(
                 Auditoria.fecha_hora <= fecha_hasta_obj
             )
 
-        except ValueError:
+        # ----------------------------------------------------
+        # PAGINACIÓN SIMPLE
+        # ----------------------------------------------------
+
+        try:
+            limite = parsear_entero(
+                "limite",
+                request.args.get("limite", 200),
+                minimo=1,
+                maximo=500
+            )
+
+            offset = parsear_entero(
+                "offset",
+                request.args.get("offset", 0),
+                minimo=0
+            )
+        except ValueError as error:
             return jsonify({
                 "estado": "ERROR",
-                "mensaje": (
-                    "fecha_hasta debe utilizar "
-                    "el formato YYYY-MM-DD."
-                )
+                "mensaje": str(error)
             }), 400
 
-    # --------------------------------------------------------
-    # LÍMITE DE RESULTADOS
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+        # RESUMEN DEL CONJUNTO FILTRADO
+        # ----------------------------------------------------
 
-    try:
-        limite = int(request.args.get("limite", 100))
-    except ValueError:
-        return jsonify({
-            "estado": "ERROR",
-            "mensaje": "El parámetro limite debe ser numérico."
-        }), 400
+        total_filtrado = consulta.count()
 
-    if limite < 1:
-        limite = 1
+        total_ok = (
+            consulta
+            .filter(Auditoria.resultado == "OK")
+            .count()
+        )
 
-    if limite > 500:
-        limite = 500
+        total_error = (
+            consulta
+            .filter(Auditoria.resultado == "ERROR")
+            .count()
+        )
 
-    registros = (
-        consulta
-        .order_by(Auditoria.fecha_hora.desc())
-        .limit(limite)
-        .all()
-    )
+        usuarios_involucrados = (
+            consulta
+            .filter(Auditoria.id_usuario.isnot(None))
+            .with_entities(Auditoria.id_usuario)
+            .distinct()
+            .count()
+        )
 
-    return jsonify({
-        "estado": "OK",
-        "total": len(registros),
-        "data": [
-            auditoria_a_dict(registro)
+        # ----------------------------------------------------
+        # OBTENER REGISTROS
+        # ----------------------------------------------------
+
+        registros = (
+            consulta
+            .order_by(
+                Auditoria.fecha_hora.desc(),
+                Auditoria.id_auditoria.desc()
+            )
+            .offset(offset)
+            .limit(limite)
+            .all()
+        )
+
+        # ----------------------------------------------------
+        # CARGA DE USUARIOS EN BLOQUE
+        # ----------------------------------------------------
+
+        ids_usuario = {
+            registro.id_usuario
+            for registro in registros
+            if registro.id_usuario is not None
+        }
+
+        usuarios = {}
+
+        if ids_usuario:
+            usuarios_consulta = (
+                Usuario.query
+                .filter(Usuario.id_usuario.in_(ids_usuario))
+                .all()
+            )
+
+            usuarios = {
+                usuario.id_usuario: usuario
+                for usuario in usuarios_consulta
+            }
+
+        data = [
+            auditoria_a_dict(
+                registro,
+                usuarios.get(registro.id_usuario)
+            )
             for registro in registros
         ]
-    }), 200
+
+        return jsonify({
+            "estado": "OK",
+            "total": len(data),
+            "total_filtrado": total_filtrado,
+            "limite": limite,
+            "offset": offset,
+            "resumen": {
+                "total": total_filtrado,
+                "ok": total_ok,
+                "error": total_error,
+                "usuarios": usuarios_involucrados
+            },
+            "data": data
+        }), 200
+
+    except Exception as error:
+        print(
+            "ERROR AL LISTAR AUDITORÍA:",
+            type(error).__name__,
+            str(error)
+        )
+
+        return jsonify({
+            "estado": "ERROR",
+            "mensaje": (
+                "Ocurrió un error al consultar "
+                "los registros de auditoría."
+            )
+        }), 500
 
 
 # ============================================================
@@ -271,30 +447,52 @@ def listar_auditoria():
 # OBTENER UN REGISTRO ESPECÍFICO
 # ============================================================
 
-@auditoria_bp.route(
-    "/<int:id_auditoria>",
-    methods=["GET"]
-)
-@jwt_required()
+@auditoria_bp.get("/<int:id_auditoria>")
+@roles_required("ADMINISTRADOR")
 def obtener_auditoria(id_auditoria):
+    """
+    Obtiene un registro específico de auditoría.
+    Acceso exclusivo para ADMINISTRADOR.
+    """
 
-    usuario, error = verificar_administrador()
+    try:
+        registro = db.session.get(
+            Auditoria,
+            id_auditoria
+        )
 
-    if error:
-        return error
+        if registro is None:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": (
+                    "Registro de auditoría "
+                    "no encontrado."
+                )
+            }), 404
 
-    registro = db.session.get(
-        Auditoria,
-        id_auditoria
-    )
+        usuario = obtener_usuario_por_id(
+            registro.id_usuario
+        )
 
-    if not registro:
+        return jsonify({
+            "estado": "OK",
+            "data": auditoria_a_dict(
+                registro,
+                usuario
+            )
+        }), 200
+
+    except Exception as error:
+        print(
+            "ERROR AL OBTENER AUDITORÍA:",
+            type(error).__name__,
+            str(error)
+        )
+
         return jsonify({
             "estado": "ERROR",
-            "mensaje": "Registro de auditoría no encontrado."
-        }), 404
-
-    return jsonify({
-        "estado": "OK",
-        "data": auditoria_a_dict(registro)
-    }), 200
+            "mensaje": (
+                "Ocurrió un error al consultar "
+                "el registro de auditoría."
+            )
+        }), 500

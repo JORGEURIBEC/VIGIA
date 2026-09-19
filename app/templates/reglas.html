@@ -1,0 +1,1139 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reglas de Detección | VIGIA
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reglas-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    .reglas-eyebrow {
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .reglas-heading h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .reglas-description {
+        margin-top: 5px;
+        color: #475569;
+        font-size: 13px;
+    }
+
+    .reglas-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .reglas-filter-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(220px, 1.3fr)
+            minmax(180px, .9fr)
+            minmax(160px, .8fr)
+            minmax(150px, .7fr)
+            auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .reglas-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .reglas-table-card {
+        margin-top: 18px;
+    }
+
+    .reglas-table-description {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .regla-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .regla-name {
+        color: #0f172a;
+        font-weight: 650;
+    }
+
+    .regla-description {
+        display: block;
+        max-width: 340px;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 11px;
+        line-height: 1.35;
+    }
+
+    .regla-condition {
+        color: #334155;
+        font-size: 11px;
+        font-weight: 650;
+        word-break: break-word;
+    }
+
+    .regla-number {
+        color: #334155;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .regla-actions-cell {
+        white-space: nowrap;
+    }
+
+    .regla-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .regla-detail-item {
+        padding: 13px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .regla-detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .regla-detail-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .regla-detail-value {
+        color: #0f172a;
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .reglas-role-note {
+        margin-bottom: 18px;
+        padding: 11px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 7px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+    }
+
+    .regla-empty,
+    .regla-loading {
+        padding: 28px 15px !important;
+        text-align: center !important;
+    }
+
+    .regla-empty {
+        color: #64748b !important;
+    }
+
+    .reglas-modal-description {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .regla-help {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 10px;
+        line-height: 1.35;
+    }
+
+    @media (max-width: 1200px) {
+        .reglas-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .reglas-filter-actions {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .reglas-heading {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .reglas-toolbar,
+        .reglas-toolbar .btn,
+        .reglas-filter-actions .btn {
+            width: 100%;
+        }
+
+        .reglas-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .reglas-filter-actions {
+            grid-column: auto;
+            flex-direction: column;
+        }
+
+        .regla-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .regla-detail-item.full-width {
+            grid-column: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="reglas-heading">
+    <div>
+        <div class="reglas-eyebrow">ADMINISTRACIÓN Y CONFIGURACIÓN</div>
+        <h1>Reglas de Detección</h1>
+        <p class="reglas-description">
+            Configuración de las reglas utilizadas por VIGIA para analizar eventos y generar alertas.
+        </p>
+    </div>
+
+    <div class="reglas-toolbar">
+        <button type="button" class="btn btn-primary" id="btnNuevaRegla">
+            + Nueva regla
+        </button>
+    </div>
+</section>
+
+<div id="globalMessage" class="global-message hidden"></div>
+
+<div id="reglasRoleNote" class="reglas-role-note hidden">
+    El módulo Reglas de Detección es de administración. Su perfil no posee permisos para consultar ni modificar esta configuración.
+</div>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Total de reglas</span></div>
+        <div class="stat-card-value" id="statReglasTotal">--</div>
+        <span class="stat-card-detail">Reglas configuradas</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Activas</span></div>
+        <div class="stat-card-value" id="statReglasActivas">--</div>
+        <span class="stat-card-detail">Participan en la detección</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Inactivas</span></div>
+        <div class="stat-card-value" id="statReglasInactivas">--</div>
+        <span class="stat-card-detail">Fuera del análisis</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header"><span class="stat-card-title">Condiciones</span></div>
+        <div class="stat-card-value" id="statReglasCondiciones">--</div>
+        <span class="stat-card-detail">Tipos de condición configurados</span>
+    </article>
+</section>
+
+<section class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Filtros de consulta</h2>
+            <p class="reglas-table-description">
+                Permite localizar reglas por nombre, condición, severidad o estado.
+            </p>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="reglas-filter-grid">
+            <div class="filter-group">
+                <label for="filtroReglaTexto">Buscar</label>
+                <input
+                    type="text"
+                    id="filtroReglaTexto"
+                    class="form-control"
+                    placeholder="Nombre o descripción"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="filtroReglaCondicion">Condición</label>
+                <select id="filtroReglaCondicion" class="form-control">
+                    <option value="">Todas las condiciones</option>
+                    <option value="AUTENTICACIONES_FALLIDAS">Autenticaciones fallidas</option>
+                    <option value="MISMA_IP">Misma IP</option>
+                    <option value="EVENTO_CRITICO">Evento crítico</option>
+                    <option value="FUERA_HORARIO">Fuera de horario</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filtroReglaSeveridad">Severidad</label>
+                <select id="filtroReglaSeveridad" class="form-control">
+                    <option value="">Todas las severidades</option>
+                    <option value="BAJA">Baja</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRITICA">Crítica</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filtroReglaEstado">Estado</label>
+                <select id="filtroReglaEstado" class="form-control">
+                    <option value="">Todos los estados</option>
+                    <option value="ACTIVA">Activas</option>
+                    <option value="INACTIVA">Inactivas</option>
+                </select>
+            </div>
+
+            <div class="reglas-filter-actions">
+                <button type="button" class="btn btn-primary" id="btnAplicarFiltrosReglas">
+                    Aplicar filtros
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnLimpiarFiltrosReglas">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card reglas-table-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Reglas registradas</h2>
+            <p class="reglas-table-description" id="reglasResultadoTexto">
+                Consultando información...
+            </p>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="btnActualizarReglas">
+            Actualizar
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Condición</th>
+                    <th>Umbral</th>
+                    <th>Intervalo</th>
+                    <th>Severidad</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="reglasTableBody">
+                <tr>
+                    <td colspan="8" class="regla-loading">Consultando reglas de detección...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal-overlay" id="modalDetalleRegla">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="detalleReglaTitulo">Regla de Detección</h2>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="regla-detail-grid">
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Identificador</span>
+                    <span class="regla-detail-value" id="detalleReglaId">-</span>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Estado</span>
+                    <div id="detalleReglaEstado">-</div>
+                </div>
+
+                <div class="regla-detail-item full-width">
+                    <span class="regla-detail-label">Nombre</span>
+                    <span class="regla-detail-value" id="detalleReglaNombre">-</span>
+                </div>
+
+                <div class="regla-detail-item full-width">
+                    <span class="regla-detail-label">Descripción</span>
+                    <span class="regla-detail-value" id="detalleReglaDescripcion">-</span>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Tipo de condición</span>
+                    <span class="regla-detail-value" id="detalleReglaCondicion">-</span>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Severidad de alerta</span>
+                    <div id="detalleReglaSeveridad">-</div>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Umbral</span>
+                    <span class="regla-detail-value" id="detalleReglaUmbral">-</span>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Intervalo</span>
+                    <span class="regla-detail-value" id="detalleReglaIntervalo">-</span>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Fecha creación</span>
+                    <span class="regla-detail-value" id="detalleReglaCreacion">-</span>
+                </div>
+
+                <div class="regla-detail-item">
+                    <span class="regla-detail-label">Última actualización</span>
+                    <span class="regla-detail-value" id="detalleReglaActualizacion">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-modal-close>Cerrar</button>
+            <button type="button" class="btn btn-outline" id="btnEditarReglaDetalle">Editar</button>
+            <button type="button" class="btn" id="btnCambiarEstadoRegla">Desactivar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalFormularioRegla">
+    <div class="modal">
+        <form id="formReglaDeteccion">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="formReglaTitulo">Nueva Regla de Detección</h2>
+                    <p class="reglas-modal-description" id="formReglaDescripcion">
+                        Configure una condición para el análisis de eventos de seguridad.
+                    </p>
+                </div>
+                <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="reglaId">
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="reglaNombre">Nombre *</label>
+                        <input
+                            type="text"
+                            id="reglaNombre"
+                            class="form-control"
+                            maxlength="120"
+                            required
+                            autocomplete="off"
+                            placeholder="Ej: Intentos fallidos reiterados"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="reglaDescripcion">Descripción *</label>
+                        <textarea
+                            id="reglaDescripcion"
+                            class="form-control"
+                            maxlength="500"
+                            required
+                            placeholder="Descripción funcional de la regla"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reglaCondicion">Tipo de condición *</label>
+                        <select id="reglaCondicion" class="form-control" required>
+                            <option value="">Seleccione...</option>
+                            <option value="AUTENTICACIONES_FALLIDAS">Autenticaciones fallidas</option>
+                            <option value="MISMA_IP">Concentración por misma IP</option>
+                            <option value="EVENTO_CRITICO">Evento crítico</option>
+                            <option value="FUERA_HORARIO">Actividad fuera de horario</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reglaSeveridad">Severidad de alerta *</label>
+                        <select id="reglaSeveridad" class="form-control" required>
+                            <option value="">Seleccione...</option>
+                            <option value="BAJA">Baja</option>
+                            <option value="MEDIA">Media</option>
+                            <option value="ALTA">Alta</option>
+                            <option value="CRITICA">Crítica</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reglaUmbral">Umbral *</label>
+                        <input
+                            type="number"
+                            id="reglaUmbral"
+                            class="form-control"
+                            min="1"
+                            step="1"
+                            value="1"
+                            required
+                        >
+                        <div class="regla-help">Cantidad mínima de coincidencias requeridas.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reglaIntervalo">Intervalo (minutos) *</label>
+                        <input
+                            type="number"
+                            id="reglaIntervalo"
+                            class="form-control"
+                            min="0"
+                            step="1"
+                            value="0"
+                            required
+                        >
+                        <div class="regla-help">Ventana temporal de análisis; puede ser 0 cuando no aplica.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btnGuardarRegla">Guardar regla</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+"use strict";
+
+let reglasVigia = [];
+let reglasFiltradas = [];
+let reglaSeleccionada = null;
+let usuarioPuedeAdministrarReglas = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarModuloReglas();
+});
+
+async function inicializarModuloReglas() {
+    configurarPermisosReglas();
+    configurarEventosReglas();
+
+    if (!usuarioPuedeAdministrarReglas) {
+        mostrarModuloReglasRestringido();
+        return;
+    }
+
+    await cargarReglas();
+}
+
+function obtenerRolReglaActual() {
+    const usuario = typeof window.obtenerUsuario === "function"
+        ? window.obtenerUsuario()
+        : null;
+
+    if (!usuario) return "";
+
+    if (typeof usuario.rol === "string") {
+        return usuario.rol.trim().toUpperCase();
+    }
+
+    if (usuario.rol && typeof usuario.rol.nombre_rol === "string") {
+        return usuario.rol.nombre_rol.trim().toUpperCase();
+    }
+
+    if (typeof usuario.nombre_rol === "string") {
+        return usuario.nombre_rol.trim().toUpperCase();
+    }
+
+    return "";
+}
+
+function configurarPermisosReglas() {
+    const rol = obtenerRolReglaActual();
+    usuarioPuedeAdministrarReglas = rol === "ADMINISTRADOR";
+
+    document.getElementById("btnNuevaRegla")?.classList.toggle(
+        "hidden",
+        !usuarioPuedeAdministrarReglas
+    );
+
+    document.getElementById("reglasRoleNote")?.classList.toggle(
+        "hidden",
+        usuarioPuedeAdministrarReglas
+    );
+}
+
+function mostrarModuloReglasRestringido() {
+    asignarTextoRegla("statReglasTotal", "-");
+    asignarTextoRegla("statReglasActivas", "-");
+    asignarTextoRegla("statReglasInactivas", "-");
+    asignarTextoRegla("statReglasCondiciones", "-");
+    asignarTextoRegla("reglasResultadoTexto", "Acceso reservado al Administrador.");
+
+    const tbody = document.getElementById("reglasTableBody");
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="regla-empty">
+                    Su perfil no tiene permisos para consultar la configuración de reglas de detección.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function configurarEventosReglas() {
+    document.getElementById("btnNuevaRegla")?.addEventListener("click", prepararNuevaRegla);
+    document.getElementById("btnActualizarReglas")?.addEventListener("click", () => {
+        if (usuarioPuedeAdministrarReglas) cargarReglas();
+    });
+    document.getElementById("btnAplicarFiltrosReglas")?.addEventListener("click", aplicarFiltrosReglas);
+    document.getElementById("btnLimpiarFiltrosReglas")?.addEventListener("click", limpiarFiltrosReglas);
+    document.getElementById("filtroReglaTexto")?.addEventListener("input", aplicarFiltrosReglas);
+    document.getElementById("filtroReglaCondicion")?.addEventListener("change", aplicarFiltrosReglas);
+    document.getElementById("filtroReglaSeveridad")?.addEventListener("change", aplicarFiltrosReglas);
+    document.getElementById("filtroReglaEstado")?.addEventListener("change", aplicarFiltrosReglas);
+    document.getElementById("formReglaDeteccion")?.addEventListener("submit", guardarRegla);
+    document.getElementById("btnEditarReglaDetalle")?.addEventListener("click", editarReglaSeleccionada);
+    document.getElementById("btnCambiarEstadoRegla")?.addEventListener("click", cambiarEstadoReglaSeleccionada);
+    document.getElementById("reglasTableBody")?.addEventListener("click", manejarAccionTablaReglas);
+}
+
+async function cargarReglas() {
+    const tbody = document.getElementById("reglasTableBody");
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="regla-loading">Consultando reglas de detección...</td>
+            </tr>
+        `;
+    }
+
+    try {
+        const respuesta = await window.apiGet("/reglas");
+        reglasVigia = extraerListaReglas(respuesta);
+
+        reglasVigia.sort(
+            (a, b) => Number(b.id_regla || 0) - Number(a.id_regla || 0)
+        );
+
+        actualizarResumenReglas();
+        aplicarFiltrosReglas();
+    }
+    catch (error) {
+        console.error("Error al cargar reglas de detección:", error);
+
+        reglasVigia = [];
+        reglasFiltradas = [];
+        actualizarResumenReglas();
+        renderizarReglas();
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible cargar las reglas de detección.",
+            "error",
+            0
+        );
+
+        if (error.status === 401) {
+            window.setTimeout(() => {
+                window.location.href = "/login";
+            }, 1200);
+        }
+    }
+}
+
+function extraerListaReglas(respuesta) {
+    if (Array.isArray(respuesta)) return respuesta;
+    if (Array.isArray(respuesta?.data)) return respuesta.data;
+    if (Array.isArray(respuesta?.data?.items)) return respuesta.data.items;
+    if (Array.isArray(respuesta?.data?.reglas)) return respuesta.data.reglas;
+    if (Array.isArray(respuesta?.reglas)) return respuesta.reglas;
+    return [];
+}
+
+function actualizarResumenReglas() {
+    const total = reglasVigia.length;
+    const activas = reglasVigia.filter((regla) => regla.estado === true).length;
+    const inactivas = reglasVigia.filter((regla) => regla.estado !== true).length;
+    const condiciones = new Set(
+        reglasVigia
+            .map((regla) => String(regla.tipo_condicion || "").trim())
+            .filter(Boolean)
+    ).size;
+
+    asignarTextoRegla("statReglasTotal", total);
+    asignarTextoRegla("statReglasActivas", activas);
+    asignarTextoRegla("statReglasInactivas", inactivas);
+    asignarTextoRegla("statReglasCondiciones", condiciones);
+}
+
+function aplicarFiltrosReglas() {
+    if (!usuarioPuedeAdministrarReglas) return;
+
+    const texto = normalizarReglaTexto(
+        document.getElementById("filtroReglaTexto")?.value
+    );
+    const condicion = String(
+        document.getElementById("filtroReglaCondicion")?.value || ""
+    ).toUpperCase();
+    const severidad = String(
+        document.getElementById("filtroReglaSeveridad")?.value || ""
+    ).toUpperCase();
+    const estado = String(
+        document.getElementById("filtroReglaEstado")?.value || ""
+    ).toUpperCase();
+
+    reglasFiltradas = reglasVigia.filter((regla) => {
+        const contenido = normalizarReglaTexto([
+            regla.id_regla,
+            regla.nombre,
+            regla.descripcion,
+            regla.tipo_condicion,
+            regla.severidad_alerta
+        ].join(" "));
+
+        const coincideTexto = !texto || contenido.includes(texto);
+        const coincideCondicion = !condicion
+            || String(regla.tipo_condicion || "").toUpperCase() === condicion;
+        const coincideSeveridad = !severidad
+            || String(regla.severidad_alerta || "").toUpperCase() === severidad;
+        const coincideEstado = !estado
+            || (estado === "ACTIVA" && regla.estado === true)
+            || (estado === "INACTIVA" && regla.estado !== true);
+
+        return coincideTexto
+            && coincideCondicion
+            && coincideSeveridad
+            && coincideEstado;
+    });
+
+    renderizarReglas();
+}
+
+function limpiarFiltrosReglas() {
+    asignarValorRegla("filtroReglaTexto", "");
+    asignarValorRegla("filtroReglaCondicion", "");
+    asignarValorRegla("filtroReglaSeveridad", "");
+    asignarValorRegla("filtroReglaEstado", "");
+    aplicarFiltrosReglas();
+}
+
+function renderizarReglas() {
+    const tbody = document.getElementById("reglasTableBody");
+    const textoResultado = document.getElementById("reglasResultadoTexto");
+
+    if (textoResultado) {
+        textoResultado.textContent =
+            `${reglasFiltradas.length} regla(s) coincidente(s) de ${reglasVigia.length} registrada(s).`;
+    }
+
+    if (!tbody) return;
+
+    if (reglasFiltradas.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="regla-empty">
+                    No existen reglas de detección que coincidan con la consulta.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = reglasFiltradas.map((regla) => {
+        const id = Number(regla.id_regla);
+        const nombre = window.escaparHTML(regla.nombre || "-");
+        const descripcion = window.escaparHTML(regla.descripcion || "Sin descripción");
+        const condicion = window.escaparHTML(formatearCondicionRegla(regla.tipo_condicion));
+        const umbral = Number(regla.umbral ?? 0);
+        const intervalo = Number(regla.intervalo_minutos ?? 0);
+
+        return `
+            <tr>
+                <td><span class="regla-id">#${id}</span></td>
+                <td>
+                    <span class="regla-name">${nombre}</span>
+                    <span class="regla-description">${descripcion}</span>
+                </td>
+                <td><span class="regla-condition">${condicion}</span></td>
+                <td><span class="regla-number">${umbral}</span></td>
+                <td><span class="regla-number">${intervalo} min</span></td>
+                <td>${crearBadgeSeveridadRegla(regla.severidad_alerta)}</td>
+                <td>${crearBadgeEstadoRegla(regla.estado)}</td>
+                <td class="regla-actions-cell">
+                    <button
+                        type="button"
+                        class="btn btn-outline btn-sm"
+                        data-regla-action="detalle"
+                        data-regla-id="${id}"
+                    >
+                        Ver detalle
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function manejarAccionTablaReglas(event) {
+    const boton = event.target.closest("[data-regla-action]");
+    if (!boton) return;
+
+    const id = Number(boton.dataset.reglaId);
+    const accion = boton.dataset.reglaAction;
+
+    if (accion === "detalle") {
+        abrirDetalleRegla(id);
+    }
+}
+
+function abrirDetalleRegla(idRegla) {
+    const regla = reglasVigia.find(
+        (item) => Number(item.id_regla) === Number(idRegla)
+    );
+
+    if (!regla) {
+        window.mostrarMensaje?.(
+            "No fue posible localizar la regla seleccionada.",
+            "error"
+        );
+        return;
+    }
+
+    reglaSeleccionada = regla;
+
+    asignarTextoRegla("detalleReglaTitulo", `Regla de Detección #${regla.id_regla}`);
+    asignarTextoRegla("detalleReglaId", `#${regla.id_regla}`);
+    asignarTextoRegla("detalleReglaNombre", regla.nombre || "-");
+    asignarTextoRegla("detalleReglaDescripcion", regla.descripcion || "-");
+    asignarTextoRegla("detalleReglaCondicion", formatearCondicionRegla(regla.tipo_condicion));
+    asignarTextoRegla("detalleReglaUmbral", String(regla.umbral ?? "-"));
+    asignarTextoRegla(
+        "detalleReglaIntervalo",
+        `${Number(regla.intervalo_minutos ?? 0)} minuto(s)`
+    );
+    asignarTextoRegla("detalleReglaCreacion", formatearFechaRegla(regla.fecha_creacion));
+    asignarTextoRegla("detalleReglaActualizacion", formatearFechaRegla(regla.fecha_actualizacion));
+
+    const estadoContenedor = document.getElementById("detalleReglaEstado");
+    if (estadoContenedor) {
+        estadoContenedor.innerHTML = crearBadgeEstadoRegla(regla.estado);
+    }
+
+    const severidadContenedor = document.getElementById("detalleReglaSeveridad");
+    if (severidadContenedor) {
+        severidadContenedor.innerHTML = crearBadgeSeveridadRegla(regla.severidad_alerta);
+    }
+
+    configurarBotonEstadoRegla(regla);
+    window.abrirModal("modalDetalleRegla");
+}
+
+function configurarBotonEstadoRegla(regla) {
+    const boton = document.getElementById("btnCambiarEstadoRegla");
+    if (!boton) return;
+
+    if (regla.estado === true) {
+        boton.textContent = "Desactivar";
+        boton.className = "btn btn-danger";
+    }
+    else {
+        boton.textContent = "Reactivar";
+        boton.className = "btn btn-success";
+    }
+}
+
+function prepararNuevaRegla() {
+    if (!usuarioPuedeAdministrarReglas) return;
+
+    reglaSeleccionada = null;
+    document.getElementById("formReglaDeteccion")?.reset();
+    asignarValorRegla("reglaId", "");
+    asignarValorRegla("reglaUmbral", "1");
+    asignarValorRegla("reglaIntervalo", "0");
+    asignarTextoRegla("formReglaTitulo", "Nueva Regla de Detección");
+    asignarTextoRegla(
+        "formReglaDescripcion",
+        "Configure una condición para el análisis de eventos de seguridad."
+    );
+    asignarTextoRegla("btnGuardarRegla", "Guardar regla");
+
+    window.abrirModal("modalFormularioRegla");
+}
+
+function editarReglaSeleccionada() {
+    if (!usuarioPuedeAdministrarReglas || !reglaSeleccionada) return;
+
+    const regla = reglaSeleccionada;
+    window.cerrarModal("modalDetalleRegla");
+
+    asignarValorRegla("reglaId", regla.id_regla);
+    asignarValorRegla("reglaNombre", regla.nombre || "");
+    asignarValorRegla("reglaDescripcion", regla.descripcion || "");
+    asignarValorRegla("reglaCondicion", regla.tipo_condicion || "");
+    asignarValorRegla("reglaUmbral", regla.umbral ?? 1);
+    asignarValorRegla("reglaIntervalo", regla.intervalo_minutos ?? 0);
+    asignarValorRegla("reglaSeveridad", regla.severidad_alerta || "");
+    asignarTextoRegla("formReglaTitulo", `Editar Regla #${regla.id_regla}`);
+    asignarTextoRegla(
+        "formReglaDescripcion",
+        "Modifique los parámetros de la regla seleccionada."
+    );
+    asignarTextoRegla("btnGuardarRegla", "Guardar cambios");
+
+    window.abrirModal("modalFormularioRegla");
+}
+
+async function guardarRegla(event) {
+    event.preventDefault();
+
+    if (!usuarioPuedeAdministrarReglas) {
+        window.mostrarMensaje?.(
+            "No tiene permisos para administrar reglas de detección.",
+            "error"
+        );
+        return;
+    }
+
+    const id = Number(document.getElementById("reglaId")?.value || 0);
+    const nombre = String(document.getElementById("reglaNombre")?.value || "").trim();
+    const descripcion = String(document.getElementById("reglaDescripcion")?.value || "").trim();
+    const tipoCondicion = String(document.getElementById("reglaCondicion")?.value || "").trim().toUpperCase();
+    const severidad = String(document.getElementById("reglaSeveridad")?.value || "").trim().toUpperCase();
+    const umbral = Number(document.getElementById("reglaUmbral")?.value);
+    const intervalo = Number(document.getElementById("reglaIntervalo")?.value);
+
+    if (!nombre || !descripcion || !tipoCondicion || !severidad) {
+        window.mostrarMensaje?.(
+            "Complete todos los campos obligatorios de la regla.",
+            "warning"
+        );
+        return;
+    }
+
+    if (!Number.isInteger(umbral) || umbral < 1) {
+        window.mostrarMensaje?.(
+            "El umbral debe ser un número entero igual o superior a 1.",
+            "warning"
+        );
+        return;
+    }
+
+    if (!Number.isInteger(intervalo) || intervalo < 0) {
+        window.mostrarMensaje?.(
+            "El intervalo debe ser un número entero igual o superior a 0.",
+            "warning"
+        );
+        return;
+    }
+
+    const boton = document.getElementById("btnGuardarRegla");
+    window.bloquearBoton?.(boton, "Guardando...");
+
+    try {
+        const datos = {
+            nombre: nombre,
+            descripcion: descripcion,
+            tipo_condicion: tipoCondicion,
+            umbral: umbral,
+            intervalo_minutos: intervalo,
+            severidad_alerta: severidad
+        };
+
+        let respuesta;
+
+        if (id > 0) {
+            respuesta = await window.apiPut(`/reglas/${id}`, datos);
+        }
+        else {
+            datos.estado = true;
+            respuesta = await window.apiPost("/reglas", datos);
+        }
+
+        window.cerrarModal("modalFormularioRegla");
+        window.mostrarMensaje?.(
+            respuesta?.mensaje || (
+                id > 0
+                    ? "Regla de detección actualizada correctamente."
+                    : "Regla de detección creada correctamente."
+            ),
+            "success"
+        );
+
+        await cargarReglas();
+    }
+    catch (error) {
+        console.error("Error al guardar regla de detección:", error);
+        window.mostrarMensaje?.(
+            error.message || "No fue posible guardar la regla de detección.",
+            "error",
+            0
+        );
+    }
+    finally {
+        window.desbloquearBoton?.(boton);
+    }
+}
+
+async function cambiarEstadoReglaSeleccionada() {
+    if (!usuarioPuedeAdministrarReglas || !reglaSeleccionada) return;
+
+    const regla = reglaSeleccionada;
+    const estaActiva = regla.estado === true;
+    const operacion = estaActiva ? "desactivar" : "reactivar";
+
+    const confirmado = window.confirmarAccion(
+        `¿Desea ${operacion} la regla "${regla.nombre}"?`
+    );
+
+    if (!confirmado) return;
+
+    const boton = document.getElementById("btnCambiarEstadoRegla");
+    window.bloquearBoton?.(
+        boton,
+        estaActiva ? "Desactivando..." : "Reactivando..."
+    );
+
+    try {
+        let respuesta;
+
+        if (estaActiva) {
+            respuesta = await window.apiDelete(`/reglas/${regla.id_regla}`);
+        }
+        else {
+            respuesta = await window.apiPut(
+                `/reglas/${regla.id_regla}`,
+                { estado: true }
+            );
+        }
+
+        window.cerrarModal("modalDetalleRegla");
+        window.mostrarMensaje?.(
+            respuesta?.mensaje || (
+                estaActiva
+                    ? "Regla de detección desactivada correctamente."
+                    : "Regla de detección reactivada correctamente."
+            ),
+            "success"
+        );
+
+        reglaSeleccionada = null;
+        await cargarReglas();
+    }
+    catch (error) {
+        console.error("Error al cambiar estado de la regla:", error);
+        window.mostrarMensaje?.(
+            error.message || "No fue posible actualizar el estado de la regla.",
+            "error",
+            0
+        );
+    }
+    finally {
+        window.desbloquearBoton?.(boton);
+    }
+}
+
+function crearBadgeEstadoRegla(estado) {
+    if (estado === true) {
+        return `<span class="badge badge-success">Activa</span>`;
+    }
+
+    return `<span class="badge badge-neutral">Inactiva</span>`;
+}
+
+function crearBadgeSeveridadRegla(severidad) {
+    const valor = String(severidad || "").toUpperCase();
+
+    const clases = {
+        BAJA: "badge-success",
+        MEDIA: "badge-info",
+        ALTA: "badge-warning",
+        CRITICA: "badge-danger"
+    };
+
+    const etiquetas = {
+        BAJA: "Baja",
+        MEDIA: "Media",
+        ALTA: "Alta",
+        CRITICA: "Crítica"
+    };
+
+    const clase = clases[valor] || "badge-neutral";
+    const etiqueta = etiquetas[valor] || valor || "-";
+
+    return `<span class="badge ${clase}">${window.escaparHTML(etiqueta)}</span>`;
+}
+
+function formatearCondicionRegla(condicion) {
+    const valor = String(condicion || "").toUpperCase();
+
+    const etiquetas = {
+        AUTENTICACIONES_FALLIDAS: "Autenticaciones fallidas",
+        MISMA_IP: "Concentración por misma IP",
+        EVENTO_CRITICO: "Evento crítico",
+        FUERA_HORARIO: "Actividad fuera de horario"
+    };
+
+    return etiquetas[valor] || valor || "-";
+}
+
+function formatearFechaRegla(valor) {
+    if (!valor) return "-";
+
+    const fecha = new Date(valor);
+    if (Number.isNaN(fecha.getTime())) {
+        return String(valor);
+    }
+
+    return fecha.toLocaleString("es-CL");
+}
+
+function normalizarReglaTexto(valor) {
+    return String(valor ?? "").trim().toUpperCase();
+}
+
+function asignarTextoRegla(id, valor) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.textContent = valor ?? "";
+}
+
+function asignarValorRegla(id, valor) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.value = valor ?? "";
+}
+</script>
+{% endblock %}

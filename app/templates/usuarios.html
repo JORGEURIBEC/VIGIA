@@ -1,0 +1,1437 @@
+{% extends "base.html" %}
+
+{% block title %}
+Usuarios | VIGIA
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .usuarios-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    .usuarios-eyebrow {
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .usuarios-heading h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .usuarios-description {
+        margin-top: 5px;
+        color: #475569;
+        font-size: 13px;
+    }
+
+    .usuarios-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .usuarios-filter-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(260px, 1.4fr)
+            minmax(180px, .8fr)
+            minmax(160px, .7fr)
+            auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .usuarios-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .usuarios-table-card {
+        margin-top: 18px;
+    }
+
+    .usuarios-table-description {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .usuario-id {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .usuario-name {
+        color: #0f172a;
+        font-weight: 650;
+    }
+
+    .usuario-email {
+        display: block;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .usuario-actions-cell {
+        white-space: nowrap;
+    }
+
+    .usuario-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .usuario-detail-item {
+        padding: 13px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .usuario-detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .usuario-detail-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .usuario-detail-value {
+        color: #0f172a;
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .usuarios-role-note {
+        margin-bottom: 18px;
+        padding: 11px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 7px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+    }
+
+    .usuario-empty,
+    .usuario-loading {
+        padding: 28px 15px !important;
+        text-align: center !important;
+    }
+
+    .usuario-empty {
+        color: #64748b !important;
+    }
+
+    .usuarios-modal-description {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .usuario-help {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 10px;
+        line-height: 1.35;
+    }
+
+    .usuario-password-note {
+        padding: 10px 12px;
+        border: 1px solid #dbeafe;
+        border-radius: 7px;
+        background: #eff6ff;
+        color: #1e40af;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    @media (max-width: 1100px) {
+        .usuarios-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .usuarios-filter-actions {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .usuarios-heading {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .usuarios-toolbar,
+        .usuarios-toolbar .btn,
+        .usuarios-filter-actions .btn {
+            width: 100%;
+        }
+
+        .usuarios-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .usuarios-filter-actions {
+            grid-column: auto;
+            flex-direction: column;
+        }
+
+        .usuario-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .usuario-detail-item.full-width {
+            grid-column: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="usuarios-heading">
+    <div>
+        <div class="usuarios-eyebrow">ADMINISTRACIÓN Y CONTROL DE ACCESO</div>
+        <h1>Gestión de Usuarios</h1>
+        <p class="usuarios-description">
+            Administración de cuentas, perfiles y estados de acceso a VIGIA.
+        </p>
+    </div>
+
+    <div class="usuarios-toolbar">
+        <button type="button" class="btn btn-primary" id="btnNuevoUsuario">
+            + Nuevo usuario
+        </button>
+    </div>
+</section>
+
+<div id="globalMessage" class="global-message hidden"></div>
+
+<div id="usuariosRoleNote" class="usuarios-role-note hidden">
+    El módulo Gestión de Usuarios es de administración. Su perfil no posee permisos para consultar ni modificar cuentas.
+</div>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Total de usuarios</span>
+        </div>
+        <div class="stat-card-value" id="statUsuariosTotal">--</div>
+        <span class="stat-card-detail">Cuentas registradas</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Activos</span>
+        </div>
+        <div class="stat-card-value" id="statUsuariosActivos">--</div>
+        <span class="stat-card-detail">Con acceso habilitado</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Inactivos</span>
+        </div>
+        <div class="stat-card-value" id="statUsuariosInactivos">--</div>
+        <span class="stat-card-detail">Con acceso deshabilitado</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Administradores</span>
+        </div>
+        <div class="stat-card-value" id="statUsuariosAdministradores">--</div>
+        <span class="stat-card-detail">Cuentas con perfil administrativo</span>
+    </article>
+</section>
+
+<section class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Filtros de consulta</h2>
+            <p class="usuarios-table-description">
+                Permite localizar usuarios por nombre, correo, rol o estado.
+            </p>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="usuarios-filter-grid">
+            <div class="filter-group">
+                <label for="filtroUsuarioTexto">Buscar</label>
+                <input
+                    type="text"
+                    id="filtroUsuarioTexto"
+                    class="form-control"
+                    placeholder="Nombre, apellido o correo"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="filtroUsuarioRol">Rol</label>
+                <select id="filtroUsuarioRol" class="form-control">
+                    <option value="">Todos los roles</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filtroUsuarioEstado">Estado</label>
+                <select id="filtroUsuarioEstado" class="form-control">
+                    <option value="">Todos los estados</option>
+                    <option value="ACTIVO">Activos</option>
+                    <option value="INACTIVO">Inactivos</option>
+                </select>
+            </div>
+
+            <div class="usuarios-filter-actions">
+                <button type="button" class="btn btn-primary" id="btnAplicarFiltrosUsuarios">
+                    Aplicar filtros
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnLimpiarFiltrosUsuarios">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card usuarios-table-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Usuarios registrados</h2>
+            <p class="usuarios-table-description" id="usuariosResultadoTexto">
+                Consultando información...
+            </p>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="btnActualizarUsuarios">
+            Actualizar
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Creación</th>
+                    <th>Último acceso</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="usuariosTableBody">
+                <tr>
+                    <td colspan="7" class="usuario-loading">
+                        Consultando usuarios...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal-overlay" id="modalDetalleUsuario">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="detalleUsuarioTitulo">Usuario</h2>
+            <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="usuario-detail-grid">
+                <div class="usuario-detail-item">
+                    <span class="usuario-detail-label">Identificador</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioId">-</span>
+                </div>
+
+                <div class="usuario-detail-item">
+                    <span class="usuario-detail-label">Estado</span>
+                    <div id="detalleUsuarioEstado">-</div>
+                </div>
+
+                <div class="usuario-detail-item">
+                    <span class="usuario-detail-label">Nombre</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioNombre">-</span>
+                </div>
+
+                <div class="usuario-detail-item">
+                    <span class="usuario-detail-label">Apellido</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioApellido">-</span>
+                </div>
+
+                <div class="usuario-detail-item full-width">
+                    <span class="usuario-detail-label">Correo electrónico</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioCorreo">-</span>
+                </div>
+
+                <div class="usuario-detail-item">
+                    <span class="usuario-detail-label">Rol</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioRol">-</span>
+                </div>
+
+                <div class="usuario-detail-item">
+                    <span class="usuario-detail-label">Fecha de creación</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioCreacion">-</span>
+                </div>
+
+                <div class="usuario-detail-item full-width">
+                    <span class="usuario-detail-label">Último acceso</span>
+                    <span class="usuario-detail-value" id="detalleUsuarioUltimoAcceso">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-modal-close>Cerrar</button>
+            <button type="button" class="btn btn-outline" id="btnEditarUsuarioDetalle">Editar</button>
+            <button type="button" class="btn" id="btnCambiarEstadoUsuario">Desactivar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalFormularioUsuario">
+    <div class="modal">
+        <form id="formUsuario">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="formUsuarioTitulo">Nuevo Usuario</h2>
+                    <p class="usuarios-modal-description" id="formUsuarioDescripcion">
+                        Registre una nueva cuenta de acceso a VIGIA.
+                    </p>
+                </div>
+                <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="usuarioId">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="usuarioNombre">Nombre *</label>
+                        <input
+                            type="text"
+                            id="usuarioNombre"
+                            class="form-control"
+                            maxlength="80"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="usuarioApellido">Apellido *</label>
+                        <input
+                            type="text"
+                            id="usuarioApellido"
+                            class="form-control"
+                            maxlength="80"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="usuarioCorreo">Correo electrónico *</label>
+                        <input
+                            type="email"
+                            id="usuarioCorreo"
+                            class="form-control"
+                            maxlength="150"
+                            required
+                            autocomplete="off"
+                            placeholder="usuario@ejemplo.cl"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="usuarioRol">Rol *</label>
+                        <select id="usuarioRol" class="form-control" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="usuarioPassword">
+                            Contraseña <span id="usuarioPasswordRequerida">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="usuarioPassword"
+                            class="form-control"
+                            minlength="8"
+                            autocomplete="new-password"
+                            placeholder="Mínimo 8 caracteres"
+                        >
+                        <div class="usuario-help" id="usuarioPasswordHelp">
+                            La contraseña es obligatoria al crear el usuario.
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="grupoCambiarPassword" style="display:none;">
+                        <label style="display:flex; gap:8px; align-items:center; margin-top:24px;">
+                            <input type="checkbox" id="usuarioCambiarPassword">
+                            Cambiar contraseña
+                        </label>
+                        <div class="usuario-help">
+                            Active esta opción solo si desea reemplazar la contraseña actual.
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <div class="usuario-password-note">
+                            Por seguridad, VIGIA nunca muestra ni recupera la contraseña actual. Al editar una cuenta, deje este campo vacío si no desea cambiarla.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btnGuardarUsuario">
+                    Guardar usuario
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+"use strict";
+
+let usuariosVigia = [];
+let usuariosFiltrados = [];
+let rolesVigia = [];
+let usuarioSeleccionado = null;
+let usuarioPuedeAdministrarUsuarios = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarModuloUsuarios();
+});
+
+async function inicializarModuloUsuarios() {
+    configurarPermisosUsuarios();
+    configurarEventosUsuarios();
+
+    if (!usuarioPuedeAdministrarUsuarios) {
+        mostrarModuloUsuariosRestringido();
+        return;
+    }
+
+    await cargarRolesUsuarios();
+    await cargarUsuarios();
+}
+
+function obtenerUsuarioActualVigia() {
+    return typeof window.obtenerUsuario === "function"
+        ? window.obtenerUsuario()
+        : null;
+}
+
+function obtenerRolUsuarioActual() {
+    const usuario = obtenerUsuarioActualVigia();
+
+    if (!usuario) return "";
+
+    if (typeof usuario.rol === "string") {
+        return usuario.rol.trim().toUpperCase();
+    }
+
+    if (usuario.rol && typeof usuario.rol.nombre_rol === "string") {
+        return usuario.rol.nombre_rol.trim().toUpperCase();
+    }
+
+    if (typeof usuario.nombre_rol === "string") {
+        return usuario.nombre_rol.trim().toUpperCase();
+    }
+
+    return "";
+}
+
+function obtenerIdUsuarioActual() {
+    const usuario = obtenerUsuarioActualVigia();
+    return Number(usuario?.id_usuario || usuario?.id || 0);
+}
+
+function configurarPermisosUsuarios() {
+    const rol = obtenerRolUsuarioActual();
+    usuarioPuedeAdministrarUsuarios = rol === "ADMINISTRADOR";
+
+    document.getElementById("btnNuevoUsuario")?.classList.toggle(
+        "hidden",
+        !usuarioPuedeAdministrarUsuarios
+    );
+
+    document.getElementById("usuariosRoleNote")?.classList.toggle(
+        "hidden",
+        usuarioPuedeAdministrarUsuarios
+    );
+}
+
+function mostrarModuloUsuariosRestringido() {
+    asignarTextoUsuario("statUsuariosTotal", "-");
+    asignarTextoUsuario("statUsuariosActivos", "-");
+    asignarTextoUsuario("statUsuariosInactivos", "-");
+    asignarTextoUsuario("statUsuariosAdministradores", "-");
+    asignarTextoUsuario(
+        "usuariosResultadoTexto",
+        "Acceso reservado al Administrador."
+    );
+
+    const tbody = document.getElementById("usuariosTableBody");
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="usuario-empty">
+                    Su perfil no tiene permisos para consultar la gestión de usuarios.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function configurarEventosUsuarios() {
+    document.getElementById("btnNuevoUsuario")?.addEventListener(
+        "click",
+        prepararNuevoUsuario
+    );
+
+    document.getElementById("btnActualizarUsuarios")?.addEventListener(
+        "click",
+        () => {
+            if (usuarioPuedeAdministrarUsuarios) cargarUsuarios();
+        }
+    );
+
+    document.getElementById("btnAplicarFiltrosUsuarios")?.addEventListener(
+        "click",
+        aplicarFiltrosUsuarios
+    );
+
+    document.getElementById("btnLimpiarFiltrosUsuarios")?.addEventListener(
+        "click",
+        limpiarFiltrosUsuarios
+    );
+
+    document.getElementById("filtroUsuarioTexto")?.addEventListener(
+        "input",
+        aplicarFiltrosUsuarios
+    );
+
+    document.getElementById("filtroUsuarioRol")?.addEventListener(
+        "change",
+        aplicarFiltrosUsuarios
+    );
+
+    document.getElementById("filtroUsuarioEstado")?.addEventListener(
+        "change",
+        aplicarFiltrosUsuarios
+    );
+
+    document.getElementById("formUsuario")?.addEventListener(
+        "submit",
+        guardarUsuario
+    );
+
+    document.getElementById("usuarioCambiarPassword")?.addEventListener(
+        "change",
+        actualizarControlPasswordUsuario
+    );
+
+    document.getElementById("btnEditarUsuarioDetalle")?.addEventListener(
+        "click",
+        editarUsuarioSeleccionado
+    );
+
+    document.getElementById("btnCambiarEstadoUsuario")?.addEventListener(
+        "click",
+        cambiarEstadoUsuarioSeleccionado
+    );
+
+    document.getElementById("usuariosTableBody")?.addEventListener(
+        "click",
+        manejarAccionTablaUsuarios
+    );
+}
+
+async function cargarRolesUsuarios() {
+    try {
+        const respuesta = await window.apiGet("/roles");
+
+        rolesVigia = extraerListaUsuarios(
+            respuesta
+        );
+
+        rolesVigia.sort(
+            (a, b) => Number(a.id_rol || 0) - Number(b.id_rol || 0)
+        );
+
+        renderizarSelectRoles();
+    }
+    catch (error) {
+        console.error("Error al cargar roles:", error);
+
+        rolesVigia = [];
+        renderizarSelectRoles();
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible cargar los roles disponibles.",
+            "error",
+            0
+        );
+    }
+}
+
+function renderizarSelectRoles() {
+    const selectFormulario = document.getElementById("usuarioRol");
+    const selectFiltro = document.getElementById("filtroUsuarioRol");
+
+    if (selectFormulario) {
+        selectFormulario.innerHTML = `
+            <option value="">Seleccione...</option>
+            ${rolesVigia.map((rol) => `
+                <option value="${Number(rol.id_rol)}">
+                    ${window.escaparHTML(rol.nombre_rol || `Rol ${rol.id_rol}`)}
+                </option>
+            `).join("")}
+        `;
+    }
+
+    if (selectFiltro) {
+        selectFiltro.innerHTML = `
+            <option value="">Todos los roles</option>
+            ${rolesVigia.map((rol) => `
+                <option value="${window.escaparHTML(
+                    String(rol.nombre_rol || "").toUpperCase()
+                )}">
+                    ${window.escaparHTML(rol.nombre_rol || `Rol ${rol.id_rol}`)}
+                </option>
+            `).join("")}
+        `;
+    }
+}
+
+async function cargarUsuarios() {
+    const tbody = document.getElementById("usuariosTableBody");
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="usuario-loading">
+                    Consultando usuarios...
+                </td>
+            </tr>
+        `;
+    }
+
+    try {
+        const respuesta = await window.apiGet("/usuarios");
+
+        usuariosVigia = extraerListaUsuarios(
+            respuesta
+        );
+
+        usuariosVigia.sort(
+            (a, b) => Number(b.id_usuario || 0) - Number(a.id_usuario || 0)
+        );
+
+        actualizarResumenUsuarios();
+        aplicarFiltrosUsuarios();
+    }
+    catch (error) {
+        console.error("Error al cargar usuarios:", error);
+
+        usuariosVigia = [];
+        usuariosFiltrados = [];
+
+        actualizarResumenUsuarios();
+        renderizarUsuarios();
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible cargar los usuarios.",
+            "error",
+            0
+        );
+
+        if (error.status === 401) {
+            window.setTimeout(() => {
+                window.location.href = "/login";
+            }, 1200);
+        }
+    }
+}
+
+function extraerListaUsuarios(respuesta) {
+    if (Array.isArray(respuesta)) return respuesta;
+    if (Array.isArray(respuesta?.data)) return respuesta.data;
+    if (Array.isArray(respuesta?.data?.items)) return respuesta.data.items;
+    if (Array.isArray(respuesta?.usuarios)) return respuesta.usuarios;
+    return [];
+}
+
+function actualizarResumenUsuarios() {
+    const total = usuariosVigia.length;
+
+    const activos = usuariosVigia.filter(
+        (usuario) => usuario.estado === true
+    ).length;
+
+    const inactivos = usuariosVigia.filter(
+        (usuario) => usuario.estado !== true
+    ).length;
+
+    const administradores = usuariosVigia.filter(
+        (usuario) => String(usuario.rol || "").toUpperCase() === "ADMINISTRADOR"
+    ).length;
+
+    asignarTextoUsuario("statUsuariosTotal", total);
+    asignarTextoUsuario("statUsuariosActivos", activos);
+    asignarTextoUsuario("statUsuariosInactivos", inactivos);
+    asignarTextoUsuario("statUsuariosAdministradores", administradores);
+}
+
+function aplicarFiltrosUsuarios() {
+    if (!usuarioPuedeAdministrarUsuarios) return;
+
+    const texto = normalizarUsuarioTexto(
+        document.getElementById("filtroUsuarioTexto")?.value
+    );
+
+    const rol = String(
+        document.getElementById("filtroUsuarioRol")?.value || ""
+    ).toUpperCase();
+
+    const estado = String(
+        document.getElementById("filtroUsuarioEstado")?.value || ""
+    ).toUpperCase();
+
+    usuariosFiltrados = usuariosVigia.filter((usuario) => {
+        const contenido = normalizarUsuarioTexto([
+            usuario.id_usuario,
+            usuario.nombre,
+            usuario.apellido,
+            usuario.correo,
+            usuario.rol
+        ].join(" "));
+
+        const coincideTexto = !texto || contenido.includes(texto);
+
+        const coincideRol = !rol
+            || String(usuario.rol || "").toUpperCase() === rol;
+
+        const coincideEstado = !estado
+            || (estado === "ACTIVO" && usuario.estado === true)
+            || (estado === "INACTIVO" && usuario.estado !== true);
+
+        return coincideTexto
+            && coincideRol
+            && coincideEstado;
+    });
+
+    renderizarUsuarios();
+}
+
+function limpiarFiltrosUsuarios() {
+    asignarValorUsuario("filtroUsuarioTexto", "");
+    asignarValorUsuario("filtroUsuarioRol", "");
+    asignarValorUsuario("filtroUsuarioEstado", "");
+    aplicarFiltrosUsuarios();
+}
+
+function renderizarUsuarios() {
+    const tbody = document.getElementById("usuariosTableBody");
+    const textoResultado = document.getElementById("usuariosResultadoTexto");
+
+    if (textoResultado) {
+        textoResultado.textContent =
+            `${usuariosFiltrados.length} usuario(s) coincidente(s) de ${usuariosVigia.length} registrado(s).`;
+    }
+
+    if (!tbody) return;
+
+    if (usuariosFiltrados.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="usuario-empty">
+                    No existen usuarios que coincidan con la consulta.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = usuariosFiltrados.map((usuario) => {
+        const id = Number(usuario.id_usuario);
+        const nombreCompleto = `${usuario.nombre || ""} ${usuario.apellido || ""}`.trim();
+
+        return `
+            <tr>
+                <td>
+                    <span class="usuario-id">#${id}</span>
+                </td>
+
+                <td>
+                    <span class="usuario-name">
+                        ${window.escaparHTML(nombreCompleto || "-")}
+                    </span>
+                    <span class="usuario-email">
+                        ${window.escaparHTML(usuario.correo || "-")}
+                    </span>
+                </td>
+
+                <td>
+                    ${crearBadgeRolUsuario(usuario.rol)}
+                </td>
+
+                <td>
+                    ${crearBadgeEstadoUsuario(usuario.estado)}
+                </td>
+
+                <td>
+                    ${window.escaparHTML(formatearFechaUsuario(usuario.fecha_creacion))}
+                </td>
+
+                <td>
+                    ${window.escaparHTML(formatearFechaUsuario(usuario.ultimo_acceso))}
+                </td>
+
+                <td class="usuario-actions-cell">
+                    <button
+                        type="button"
+                        class="btn btn-outline btn-sm"
+                        data-usuario-action="detalle"
+                        data-usuario-id="${id}"
+                    >
+                        Ver detalle
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function manejarAccionTablaUsuarios(event) {
+    const boton = event.target.closest("[data-usuario-action]");
+    if (!boton) return;
+
+    const id = Number(
+        boton.dataset.usuarioId
+    );
+
+    if (boton.dataset.usuarioAction === "detalle") {
+        abrirDetalleUsuario(id);
+    }
+}
+
+function abrirDetalleUsuario(idUsuario) {
+    const usuario = usuariosVigia.find(
+        (item) => Number(item.id_usuario) === Number(idUsuario)
+    );
+
+    if (!usuario) {
+        window.mostrarMensaje?.(
+            "No fue posible localizar el usuario seleccionado.",
+            "error"
+        );
+        return;
+    }
+
+    usuarioSeleccionado = usuario;
+
+    asignarTextoUsuario(
+        "detalleUsuarioTitulo",
+        `Usuario #${usuario.id_usuario}`
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioId",
+        `#${usuario.id_usuario}`
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioNombre",
+        usuario.nombre || "-"
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioApellido",
+        usuario.apellido || "-"
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioCorreo",
+        usuario.correo || "-"
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioRol",
+        usuario.rol || "-"
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioCreacion",
+        formatearFechaUsuario(usuario.fecha_creacion)
+    );
+
+    asignarTextoUsuario(
+        "detalleUsuarioUltimoAcceso",
+        formatearFechaUsuario(usuario.ultimo_acceso)
+    );
+
+    const estadoContenedor = document.getElementById(
+        "detalleUsuarioEstado"
+    );
+
+    if (estadoContenedor) {
+        estadoContenedor.innerHTML =
+            crearBadgeEstadoUsuario(usuario.estado);
+    }
+
+    configurarBotonEstadoUsuario(
+        usuario
+    );
+
+    window.abrirModal(
+        "modalDetalleUsuario"
+    );
+}
+
+function configurarBotonEstadoUsuario(usuario) {
+    const boton = document.getElementById(
+        "btnCambiarEstadoUsuario"
+    );
+
+    if (!boton) return;
+
+    const esCuentaActual =
+        Number(usuario.id_usuario) === obtenerIdUsuarioActual();
+
+    if (esCuentaActual) {
+        boton.textContent = "Cuenta actual";
+        boton.className = "btn btn-secondary";
+        boton.disabled = true;
+        return;
+    }
+
+    boton.disabled = false;
+
+    if (usuario.estado === true) {
+        boton.textContent = "Desactivar";
+        boton.className = "btn btn-danger";
+    }
+    else {
+        boton.textContent = "Reactivar";
+        boton.className = "btn btn-success";
+    }
+}
+
+function actualizarControlPasswordUsuario() {
+    const id = Number(
+        document.getElementById("usuarioId")?.value || 0
+    );
+
+    const password = document.getElementById("usuarioPassword");
+    const checkbox = document.getElementById("usuarioCambiarPassword");
+
+    if (!password) return;
+
+    if (id === 0) {
+        password.disabled = false;
+        password.required = true;
+        return;
+    }
+
+    const habilitado = checkbox?.checked === true;
+
+    password.disabled = !habilitado;
+    password.required = habilitado;
+
+    if (!habilitado) {
+        password.value = "";
+    }
+}
+
+function prepararNuevoUsuario() {
+    if (!usuarioPuedeAdministrarUsuarios) return;
+
+    usuarioSeleccionado = null;
+
+    document.getElementById("formUsuario")?.reset();
+
+    asignarValorUsuario("usuarioId", "");
+    asignarTextoUsuario("formUsuarioTitulo", "Nuevo Usuario");
+    asignarTextoUsuario(
+        "formUsuarioDescripcion",
+        "Registre una nueva cuenta de acceso a VIGIA."
+    );
+    asignarTextoUsuario("btnGuardarUsuario", "Guardar usuario");
+
+    const grupoCambio = document.getElementById("grupoCambiarPassword");
+    const checkboxCambio = document.getElementById("usuarioCambiarPassword");
+
+    if (grupoCambio) grupoCambio.style.display = "none";
+    if (checkboxCambio) checkboxCambio.checked = false;
+
+    const password = document.getElementById("usuarioPassword");
+    if (password) {
+        password.disabled = false;
+        password.required = true;
+        password.value = "";
+    }
+
+    asignarTextoUsuario("usuarioPasswordRequerida", "*");
+    asignarTextoUsuario(
+        "usuarioPasswordHelp",
+        "La contraseña es obligatoria al crear el usuario."
+    );
+
+    window.abrirModal(
+        "modalFormularioUsuario"
+    );
+}
+
+function editarUsuarioSeleccionado() {
+    if (!usuarioPuedeAdministrarUsuarios || !usuarioSeleccionado) return;
+
+    const usuario = usuarioSeleccionado;
+
+    window.cerrarModal(
+        "modalDetalleUsuario"
+    );
+
+    asignarValorUsuario("usuarioId", usuario.id_usuario);
+    asignarValorUsuario("usuarioNombre", usuario.nombre || "");
+    asignarValorUsuario("usuarioApellido", usuario.apellido || "");
+    asignarValorUsuario("usuarioCorreo", usuario.correo || "");
+    asignarValorUsuario("usuarioRol", usuario.id_rol || "");
+
+    const grupoCambio = document.getElementById("grupoCambiarPassword");
+    const checkboxCambio = document.getElementById("usuarioCambiarPassword");
+
+    if (grupoCambio) grupoCambio.style.display = "";
+    if (checkboxCambio) checkboxCambio.checked = false;
+
+    const password = document.getElementById("usuarioPassword");
+
+    if (password) {
+        password.required = false;
+        password.disabled = true;
+        password.value = "";
+    }
+
+    asignarTextoUsuario("usuarioPasswordRequerida", "");
+    asignarTextoUsuario(
+        "usuarioPasswordHelp",
+        "Opcional al editar. Si se deja vacío, la contraseña actual no se modifica."
+    );
+
+    asignarTextoUsuario(
+        "formUsuarioTitulo",
+        `Editar Usuario #${usuario.id_usuario}`
+    );
+
+    asignarTextoUsuario(
+        "formUsuarioDescripcion",
+        "Modifique los datos, el perfil o la contraseña de la cuenta."
+    );
+
+    asignarTextoUsuario(
+        "btnGuardarUsuario",
+        "Guardar cambios"
+    );
+
+    window.abrirModal(
+        "modalFormularioUsuario"
+    );
+}
+
+async function guardarUsuario(event) {
+    event.preventDefault();
+
+    if (!usuarioPuedeAdministrarUsuarios) {
+        window.mostrarMensaje?.(
+            "No tiene permisos para administrar usuarios.",
+            "error"
+        );
+        return;
+    }
+
+    const id = Number(
+        document.getElementById("usuarioId")?.value || 0
+    );
+
+    const nombre = String(
+        document.getElementById("usuarioNombre")?.value || ""
+    ).trim();
+
+    const apellido = String(
+        document.getElementById("usuarioApellido")?.value || ""
+    ).trim();
+
+    const correo = String(
+        document.getElementById("usuarioCorreo")?.value || ""
+    ).trim().toLowerCase();
+
+    const idRol = Number(
+        document.getElementById("usuarioRol")?.value || 0
+    );
+
+    const password = String(
+        document.getElementById("usuarioPassword")?.value || ""
+    );
+
+    const cambiarPassword = document.getElementById(
+        "usuarioCambiarPassword"
+    )?.checked === true;
+
+    if (!nombre || !apellido || !correo || !idRol) {
+        window.mostrarMensaje?.(
+            "Complete todos los campos obligatorios del usuario.",
+            "warning"
+        );
+        return;
+    }
+
+    if (id === 0 && password.length < 8) {
+        window.mostrarMensaje?.(
+            "La contraseña debe contener al menos 8 caracteres.",
+            "warning"
+        );
+        return;
+    }
+
+    if (id > 0 && cambiarPassword && password.length < 8) {
+        window.mostrarMensaje?.(
+            "La nueva contraseña debe contener al menos 8 caracteres.",
+            "warning"
+        );
+        return;
+    }
+
+    const boton = document.getElementById("btnGuardarUsuario");
+    window.bloquearBoton?.(
+        boton,
+        "Guardando..."
+    );
+
+    try {
+        const datos = {
+            nombre: nombre,
+            apellido: apellido,
+            correo: correo,
+            id_rol: idRol
+        };
+
+        if (id === 0 || (id > 0 && cambiarPassword)) {
+            datos.password = password;
+        }
+
+        let respuesta;
+
+        if (id > 0) {
+            respuesta = await window.apiPut(
+                `/usuarios/${id}`,
+                datos
+            );
+        }
+        else {
+            respuesta = await window.apiPost(
+                "/usuarios",
+                datos
+            );
+        }
+
+        window.cerrarModal(
+            "modalFormularioUsuario"
+        );
+
+        window.mostrarMensaje?.(
+            respuesta?.mensaje || (
+                id > 0
+                    ? "Usuario actualizado correctamente."
+                    : "Usuario creado correctamente."
+            ),
+            "success"
+        );
+
+        await cargarUsuarios();
+    }
+    catch (error) {
+        console.error(
+            "Error al guardar usuario:",
+            error
+        );
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible guardar el usuario.",
+            "error",
+            0
+        );
+    }
+    finally {
+        window.desbloquearBoton?.(
+            boton
+        );
+    }
+}
+
+async function cambiarEstadoUsuarioSeleccionado() {
+    if (!usuarioPuedeAdministrarUsuarios || !usuarioSeleccionado) return;
+
+    const usuario = usuarioSeleccionado;
+
+    if (Number(usuario.id_usuario) === obtenerIdUsuarioActual()) {
+        window.mostrarMensaje?.(
+            "No puede desactivar la cuenta con la que mantiene la sesión actual.",
+            "warning"
+        );
+        return;
+    }
+
+    const estaActivo = usuario.estado === true;
+    const operacion = estaActivo ? "desactivar" : "reactivar";
+
+    const confirmado = window.confirmarAccion(
+        `¿Desea ${operacion} al usuario "${usuario.correo}"?`
+    );
+
+    if (!confirmado) return;
+
+    const boton = document.getElementById(
+        "btnCambiarEstadoUsuario"
+    );
+
+    window.bloquearBoton?.(
+        boton,
+        estaActivo ? "Desactivando..." : "Reactivando..."
+    );
+
+    try {
+        let respuesta;
+
+        if (estaActivo) {
+            respuesta = await window.apiDelete(
+                `/usuarios/${usuario.id_usuario}`
+            );
+        }
+        else {
+            respuesta = await window.apiPut(
+                `/usuarios/${usuario.id_usuario}`,
+                { estado: true }
+            );
+        }
+
+        window.cerrarModal(
+            "modalDetalleUsuario"
+        );
+
+        window.mostrarMensaje?.(
+            respuesta?.mensaje || (
+                estaActivo
+                    ? "Usuario desactivado correctamente."
+                    : "Usuario reactivado correctamente."
+            ),
+            "success"
+        );
+
+        usuarioSeleccionado = null;
+
+        await cargarUsuarios();
+    }
+    catch (error) {
+        console.error(
+            "Error al cambiar el estado del usuario:",
+            error
+        );
+
+        window.mostrarMensaje?.(
+            error.message || "No fue posible actualizar el estado del usuario.",
+            "error",
+            0
+        );
+    }
+    finally {
+        window.desbloquearBoton?.(
+            boton
+        );
+    }
+}
+
+function crearBadgeEstadoUsuario(estado) {
+    if (estado === true) {
+        return `<span class="badge badge-success">Activo</span>`;
+    }
+
+    return `<span class="badge badge-neutral">Inactivo</span>`;
+}
+
+function crearBadgeRolUsuario(rol) {
+    const valor = String(rol || "").toUpperCase();
+
+    if (valor === "ADMINISTRADOR") {
+        return `<span class="badge badge-info">Administrador</span>`;
+    }
+
+    if (valor === "ANALISTA") {
+        return `<span class="badge badge-warning">Analista</span>`;
+    }
+
+    return `<span class="badge badge-neutral">${window.escaparHTML(rol || "-")}</span>`;
+}
+
+function formatearFechaUsuario(valor) {
+    if (!valor) return "Sin registro";
+
+    const fecha = new Date(valor);
+
+    if (Number.isNaN(fecha.getTime())) {
+        return String(valor);
+    }
+
+    return fecha.toLocaleString("es-CL");
+}
+
+function normalizarUsuarioTexto(valor) {
+    return String(valor ?? "").trim().toUpperCase();
+}
+
+function asignarTextoUsuario(id, valor) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+        elemento.textContent = valor ?? "";
+    }
+}
+
+function asignarValorUsuario(id, valor) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+        elemento.value = valor ?? "";
+    }
+}
+</script>
+{% endblock %}

@@ -1,10 +1,14 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
 
 from app import db
 from app.models import TipoEvento
 from app.decorators import roles_required
+from app.services.auditoria_service import registrar_auditoria
 
+
+# ============================================================
+# BLUEPRINT DE TIPOS DE EVENTOS
+# ============================================================
 
 tipos_eventos_bp = Blueprint(
     "tipos_eventos",
@@ -15,69 +19,93 @@ tipos_eventos_bp = Blueprint(
 
 # ============================================================
 # LISTAR TIPOS DE EVENTOS
+# ADMINISTRADOR / ANALISTA
 # ============================================================
 
 @tipos_eventos_bp.get("")
-@jwt_required()
+@roles_required("ADMINISTRADOR", "ANALISTA")
 def listar_tipos_eventos():
     """
     Lista todos los tipos de eventos registrados en VIGIA.
-
-    Acceso permitido para usuarios autenticados:
-    - ADMINISTRADOR
-    - ANALISTA
-
-    Los perfiles pueden consultar los tipos de eventos,
-    pero solamente el ADMINISTRADOR puede administrarlos.
     """
 
-    tipos = TipoEvento.query.order_by(
-        TipoEvento.id_tipo_evento
-    ).all()
+    try:
+        tipos = (
+            TipoEvento.query
+            .order_by(TipoEvento.id_tipo_evento.asc())
+            .all()
+        )
 
-    return jsonify({
-        "estado": "OK",
-        "total": len(tipos),
-        "data": [
-            tipo.to_dict()
-            for tipo in tipos
-        ]
-    }), 200
+        return jsonify({
+            "estado": "OK",
+            "total": len(tipos),
+            "data": [tipo.to_dict() for tipo in tipos]
+        }), 200
+
+    except Exception as error:
+        print(
+            "ERROR AL LISTAR TIPOS DE EVENTOS:",
+            type(error).__name__,
+            str(error)
+        )
+
+        return jsonify({
+            "estado": "ERROR",
+            "mensaje": (
+                "Ocurrió un error al consultar "
+                "los tipos de eventos."
+            )
+        }), 500
 
 
 # ============================================================
 # OBTENER TIPO DE EVENTO POR ID
+# ADMINISTRADOR / ANALISTA
 # ============================================================
 
 @tipos_eventos_bp.get("/<int:id_tipo_evento>")
-@jwt_required()
+@roles_required("ADMINISTRADOR", "ANALISTA")
 def obtener_tipo_evento(id_tipo_evento):
     """
     Obtiene un tipo de evento específico mediante su ID.
-
-    Acceso permitido para usuarios autenticados:
-    - ADMINISTRADOR
-    - ANALISTA
     """
 
-    tipo = TipoEvento.query.filter_by(
-        id_tipo_evento=id_tipo_evento
-    ).first()
+    try:
+        tipo = db.session.get(
+            TipoEvento,
+            id_tipo_evento
+        )
 
-    if not tipo:
+        if tipo is None:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": "Tipo de evento no encontrado."
+            }), 404
+
+        return jsonify({
+            "estado": "OK",
+            "data": tipo.to_dict()
+        }), 200
+
+    except Exception as error:
+        print(
+            "ERROR AL OBTENER TIPO DE EVENTO:",
+            type(error).__name__,
+            str(error)
+        )
+
         return jsonify({
             "estado": "ERROR",
-            "mensaje": "Tipo de evento no encontrado."
-        }), 404
-
-    return jsonify({
-        "estado": "OK",
-        "data": tipo.to_dict()
-    }), 200
+            "mensaje": (
+                "Ocurrió un error al consultar "
+                "el tipo de evento."
+            )
+        }), 500
 
 
 # ============================================================
 # CREAR TIPO DE EVENTO
+# SOLO ADMINISTRADOR
 # ============================================================
 
 @tipos_eventos_bp.post("")
@@ -85,8 +113,6 @@ def obtener_tipo_evento(id_tipo_evento):
 def crear_tipo_evento():
     """
     Registra un nuevo tipo de evento en VIGIA.
-
-    Acceso exclusivo para ADMINISTRADOR.
     """
 
     datos = request.get_json(silent=True) or {}
@@ -95,9 +121,7 @@ def crear_tipo_evento():
         datos.get("nombre_tipo", "")
     ).strip()
 
-    descripcion = str(
-        datos.get("descripcion", "")
-    ).strip()
+    descripcion = datos.get("descripcion")
 
     # --------------------------------------------------------
     # VALIDAR NOMBRE
@@ -111,15 +135,45 @@ def crear_tipo_evento():
             )
         }), 400
 
+    if len(nombre_tipo) > 100:
+        return jsonify({
+            "estado": "ERROR",
+            "mensaje": (
+                "El nombre del tipo de evento no puede superar "
+                "los 100 caracteres."
+            )
+        }), 400
+
+    # --------------------------------------------------------
+    # VALIDAR DESCRIPCIÓN
+    # --------------------------------------------------------
+
+    if descripcion is not None:
+        descripcion = str(descripcion).strip()
+
+        if len(descripcion) > 255:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": (
+                    "La descripción no puede superar "
+                    "los 255 caracteres."
+                )
+            }), 400
+
+        if not descripcion:
+            descripcion = None
+
     # --------------------------------------------------------
     # VALIDAR DUPLICADO
     # --------------------------------------------------------
 
-    existente = TipoEvento.query.filter_by(
-        nombre_tipo=nombre_tipo
-    ).first()
+    existente = (
+        TipoEvento.query
+        .filter_by(nombre_tipo=nombre_tipo)
+        .first()
+    )
 
-    if existente:
+    if existente is not None:
         return jsonify({
             "estado": "ERROR",
             "mensaje": (
@@ -129,7 +183,7 @@ def crear_tipo_evento():
         }), 409
 
     # --------------------------------------------------------
-    # ESTADO
+    # VALIDAR ESTADO
     # --------------------------------------------------------
 
     estado = datos.get("estado", True)
@@ -140,20 +194,36 @@ def crear_tipo_evento():
             "mensaje": "El estado debe ser true o false."
         }), 400
 
-    # --------------------------------------------------------
-    # CREAR REGISTRO
-    # --------------------------------------------------------
-
-    nuevo_tipo = TipoEvento(
-        nombre_tipo=nombre_tipo,
-        descripcion=descripcion or None,
-        estado=estado
-    )
-
     try:
+        nuevo_tipo = TipoEvento(
+            nombre_tipo=nombre_tipo,
+            descripcion=descripcion,
+            estado=estado
+        )
 
         db.session.add(nuevo_tipo)
-        db.session.commit()
+        db.session.flush()
+
+        auditoria_registrada = registrar_auditoria(
+            accion="CREAR_TIPO_EVENTO",
+            entidad_afectada="TIPO_EVENTO",
+            id_registro_afectado=nuevo_tipo.id_tipo_evento,
+            resultado="OK",
+            detalle=(
+                f"Se creó el tipo de evento "
+                f"'{nuevo_tipo.nombre_tipo}' "
+                f"con ID {nuevo_tipo.id_tipo_evento}."
+            )
+        )
+
+        if not auditoria_registrada:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": (
+                    "No fue posible registrar la "
+                    "trazabilidad de la creación."
+                )
+            }), 500
 
         return jsonify({
             "estado": "OK",
@@ -161,9 +231,14 @@ def crear_tipo_evento():
             "data": nuevo_tipo.to_dict()
         }), 201
 
-    except Exception:
-
+    except Exception as error:
         db.session.rollback()
+
+        print(
+            "ERROR AL CREAR TIPO DE EVENTO:",
+            type(error).__name__,
+            str(error)
+        )
 
         return jsonify({
             "estado": "ERROR",
@@ -176,6 +251,7 @@ def crear_tipo_evento():
 
 # ============================================================
 # ACTUALIZAR TIPO DE EVENTO
+# SOLO ADMINISTRADOR
 # ============================================================
 
 @tipos_eventos_bp.put("/<int:id_tipo_evento>")
@@ -184,14 +260,18 @@ def actualizar_tipo_evento(id_tipo_evento):
     """
     Actualiza la información de un tipo de evento.
 
-    Acceso exclusivo para ADMINISTRADOR.
+    Permite modificar:
+    - nombre_tipo
+    - descripcion
+    - estado
     """
 
-    tipo = TipoEvento.query.filter_by(
-        id_tipo_evento=id_tipo_evento
-    ).first()
+    tipo = db.session.get(
+        TipoEvento,
+        id_tipo_evento
+    )
 
-    if not tipo:
+    if tipo is None:
         return jsonify({
             "estado": "ERROR",
             "mensaje": "Tipo de evento no encontrado."
@@ -199,12 +279,21 @@ def actualizar_tipo_evento(id_tipo_evento):
 
     datos = request.get_json(silent=True) or {}
 
+    if not datos:
+        return jsonify({
+            "estado": "ERROR",
+            "mensaje": "No se recibieron datos para actualizar."
+        }), 400
+
+    nombre_anterior = tipo.nombre_tipo
+    descripcion_anterior = tipo.descripcion
+    estado_anterior = bool(tipo.estado)
+
     # --------------------------------------------------------
     # NOMBRE
     # --------------------------------------------------------
 
     if "nombre_tipo" in datos:
-
         nombre_tipo = str(
             datos.get("nombre_tipo", "")
         ).strip()
@@ -218,12 +307,25 @@ def actualizar_tipo_evento(id_tipo_evento):
                 )
             }), 400
 
-        existente = TipoEvento.query.filter(
-            TipoEvento.nombre_tipo == nombre_tipo,
-            TipoEvento.id_tipo_evento != id_tipo_evento
-        ).first()
+        if len(nombre_tipo) > 100:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": (
+                    "El nombre del tipo de evento no puede superar "
+                    "los 100 caracteres."
+                )
+            }), 400
 
-        if existente:
+        existente = (
+            TipoEvento.query
+            .filter(
+                TipoEvento.nombre_tipo == nombre_tipo,
+                TipoEvento.id_tipo_evento != id_tipo_evento
+            )
+            .first()
+        )
+
+        if existente is not None:
             return jsonify({
                 "estado": "ERROR",
                 "mensaje": (
@@ -239,19 +341,29 @@ def actualizar_tipo_evento(id_tipo_evento):
     # --------------------------------------------------------
 
     if "descripcion" in datos:
+        descripcion = datos.get("descripcion")
 
-        descripcion = str(
-            datos.get("descripcion", "")
-        ).strip()
+        if descripcion is None:
+            tipo.descripcion = None
+        else:
+            descripcion = str(descripcion).strip()
 
-        tipo.descripcion = descripcion or None
+            if len(descripcion) > 255:
+                return jsonify({
+                    "estado": "ERROR",
+                    "mensaje": (
+                        "La descripción no puede superar "
+                        "los 255 caracteres."
+                    )
+                }), 400
+
+            tipo.descripcion = descripcion or None
 
     # --------------------------------------------------------
     # ESTADO
     # --------------------------------------------------------
 
     if "estado" in datos:
-
         estado = datos.get("estado")
 
         if not isinstance(estado, bool):
@@ -262,13 +374,65 @@ def actualizar_tipo_evento(id_tipo_evento):
 
         tipo.estado = estado
 
-    # --------------------------------------------------------
-    # GUARDAR
-    # --------------------------------------------------------
-
     try:
+        estado_nuevo = bool(tipo.estado)
 
-        db.session.commit()
+        if (
+            estado_anterior is False
+            and estado_nuevo is True
+        ):
+            accion_auditoria = "ACTIVAR_TIPO_EVENTO"
+
+        elif (
+            estado_anterior is True
+            and estado_nuevo is False
+        ):
+            accion_auditoria = "DESACTIVAR_TIPO_EVENTO"
+
+        else:
+            accion_auditoria = "ACTUALIZAR_TIPO_EVENTO"
+
+        cambios = []
+
+        if nombre_anterior != tipo.nombre_tipo:
+            cambios.append(
+                f"nombre: '{nombre_anterior}' -> "
+                f"'{tipo.nombre_tipo}'"
+            )
+
+        if descripcion_anterior != tipo.descripcion:
+            cambios.append("descripción modificada")
+
+        if estado_anterior != estado_nuevo:
+            cambios.append(
+                f"estado: {estado_anterior} -> {estado_nuevo}"
+            )
+
+        detalle_cambios = (
+            "; ".join(cambios)
+            if cambios
+            else "No se detectaron cambios de valores."
+        )
+
+        auditoria_registrada = registrar_auditoria(
+            accion=accion_auditoria,
+            entidad_afectada="TIPO_EVENTO",
+            id_registro_afectado=id_tipo_evento,
+            resultado="OK",
+            detalle=(
+                f"Tipo de evento {id_tipo_evento} actualizado. "
+                f"{detalle_cambios}"
+            )
+        )
+
+        if not auditoria_registrada:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": (
+                    "No fue posible registrar la "
+                    "trazabilidad de la actualización."
+                )
+            }), 500
 
         return jsonify({
             "estado": "OK",
@@ -278,9 +442,14 @@ def actualizar_tipo_evento(id_tipo_evento):
             "data": tipo.to_dict()
         }), 200
 
-    except Exception:
-
+    except Exception as error:
         db.session.rollback()
+
+        print(
+            "ERROR AL ACTUALIZAR TIPO DE EVENTO:",
+            type(error).__name__,
+            str(error)
+        )
 
         return jsonify({
             "estado": "ERROR",
@@ -293,6 +462,7 @@ def actualizar_tipo_evento(id_tipo_evento):
 
 # ============================================================
 # DESACTIVAR TIPO DE EVENTO
+# SOLO ADMINISTRADOR
 # ============================================================
 
 @tipos_eventos_bp.delete("/<int:id_tipo_evento>")
@@ -301,16 +471,16 @@ def desactivar_tipo_evento(id_tipo_evento):
     """
     Desactiva lógicamente un tipo de evento.
 
-    No elimina físicamente el registro.
-
-    Acceso exclusivo para ADMINISTRADOR.
+    No elimina físicamente el registro porque puede estar
+    relacionado con eventos históricos almacenados en VIGIA.
     """
 
-    tipo = TipoEvento.query.filter_by(
-        id_tipo_evento=id_tipo_evento
-    ).first()
+    tipo = db.session.get(
+        TipoEvento,
+        id_tipo_evento
+    )
 
-    if not tipo:
+    if tipo is None:
         return jsonify({
             "estado": "ERROR",
             "mensaje": "Tipo de evento no encontrado."
@@ -320,15 +490,33 @@ def desactivar_tipo_evento(id_tipo_evento):
         return jsonify({
             "estado": "ERROR",
             "mensaje": (
-                "El tipo de evento ya se encuentra "
-                "desactivado."
+                "El tipo de evento ya se encuentra desactivado."
             )
         }), 409
 
     try:
-
         tipo.estado = False
-        db.session.commit()
+
+        auditoria_registrada = registrar_auditoria(
+            accion="DESACTIVAR_TIPO_EVENTO",
+            entidad_afectada="TIPO_EVENTO",
+            id_registro_afectado=id_tipo_evento,
+            resultado="OK",
+            detalle=(
+                f"Se desactivó el tipo de evento "
+                f"'{tipo.nombre_tipo}' "
+                f"con ID {id_tipo_evento}."
+            )
+        )
+
+        if not auditoria_registrada:
+            return jsonify({
+                "estado": "ERROR",
+                "mensaje": (
+                    "No fue posible registrar la "
+                    "trazabilidad de la desactivación."
+                )
+            }), 500
 
         return jsonify({
             "estado": "OK",
@@ -338,9 +526,14 @@ def desactivar_tipo_evento(id_tipo_evento):
             "data": tipo.to_dict()
         }), 200
 
-    except Exception:
-
+    except Exception as error:
         db.session.rollback()
+
+        print(
+            "ERROR AL DESACTIVAR TIPO DE EVENTO:",
+            type(error).__name__,
+            str(error)
+        )
 
         return jsonify({
             "estado": "ERROR",
