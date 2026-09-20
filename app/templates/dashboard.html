@@ -217,7 +217,6 @@ Dashboard | VIGIA
     </article>
 
 
-
     <!-- ALERTAS POR ESTADO -->
 
     <article class="card">
@@ -250,7 +249,6 @@ Dashboard | VIGIA
     </article>
 
 
-
     <!-- INCIDENTES POR PRIORIDAD -->
 
     <article class="card">
@@ -281,7 +279,6 @@ Dashboard | VIGIA
         </div>
 
     </article>
-
 
 
     <!-- INCIDENTES POR ESTADO -->
@@ -386,10 +383,8 @@ async function cargarDashboard() {
 
 
         /*
-        Si todavía no existe token en el navegador,
-        mostramos la interfaz igualmente.
-
-        El login web será el siguiente módulo.
+        Se obtiene el token JWT almacenado por VIGIA
+        para consultar el endpoint protegido del Dashboard.
         */
 
         const headers = {
@@ -415,6 +410,29 @@ async function cargarDashboard() {
             );
 
 
+        /*
+        Si el token ya no es válido,
+        volver a la pantalla de inicio de sesión.
+        */
+
+        if (respuesta.status === 401) {
+
+            localStorage.removeItem(
+                "vigia_access_token"
+            );
+
+            localStorage.removeItem(
+                "vigia_usuario"
+            );
+
+            window.location.href =
+                "/login";
+
+            return;
+
+        }
+
+
         if (!respuesta.ok) {
 
             throw new Error(
@@ -434,7 +452,7 @@ async function cargarDashboard() {
         ) {
 
             throw new Error(
-                "No fue posible obtener los datos."
+                "No fue posible obtener los datos del Dashboard."
             );
 
         }
@@ -456,7 +474,7 @@ async function cargarDashboard() {
     catch (error) {
 
         console.error(
-            "Error al cargar dashboard:",
+            "Error al cargar Dashboard:",
             error
         );
 
@@ -464,9 +482,9 @@ async function cargarDashboard() {
         if (mensaje) {
 
             mensaje.textContent =
-                "El Dashboard está disponible, pero todavía " +
-                "se requiere iniciar sesión para consultar " +
-                "los indicadores protegidos.";
+                "No fue posible cargar los indicadores " +
+                "del Dashboard. Verifique la conexión " +
+                "con el servidor.";
 
             mensaje.hidden = false;
 
@@ -478,50 +496,51 @@ async function cargarDashboard() {
 
 
 /* ==========================================================
-   MOSTRAR DATOS
+   MOSTRAR DATOS DEL DASHBOARD
 ========================================================== */
 
 function mostrarDashboard(data) {
 
+    /*
+    Los indicadores generales vienen agrupados dentro
+    del objeto "indicadores" generado por DashboardService.
+    */
+
+    const indicadores =
+        data.indicadores || {};
+
+
+    /* ------------------------------------------------------
+       INDICADORES PRINCIPALES
+    ------------------------------------------------------ */
+
     asignarTexto(
         "totalEventos",
-        data.total_eventos ?? 0
+        indicadores.total_eventos ?? 0
     );
+
 
     asignarTexto(
         "totalAlertas",
-        data.total_alertas ?? 0
+        indicadores.total_alertas ?? 0
     );
+
 
     asignarTexto(
         "totalIncidentes",
-        data.total_incidentes ?? 0
+        indicadores.total_incidentes ?? 0
     );
-
-
-    const incidentesEstado =
-        data.incidentes_por_estado || {};
-
-
-    const activos = Object.entries(
-        incidentesEstado
-    )
-        .filter(
-            ([estado]) =>
-                estado !== "CERRADO"
-        )
-        .reduce(
-            (acumulado, [, cantidad]) =>
-                acumulado + cantidad,
-            0
-        );
 
 
     asignarTexto(
         "incidentesActivos",
-        activos
+        indicadores.incidentes_abiertos ?? 0
     );
 
+
+    /* ------------------------------------------------------
+       DISTRIBUCIONES
+    ------------------------------------------------------ */
 
     mostrarDistribucion(
         "eventosSeveridad",
@@ -564,10 +583,32 @@ function asignarTexto(
         );
 
 
-    if (elemento) {
+    if (!elemento) {
+
+        return;
+
+    }
+
+
+    const numero =
+        Number(valor);
+
+
+    if (
+        Number.isFinite(numero)
+    ) {
 
         elemento.textContent =
-            valor;
+            new Intl.NumberFormat(
+                "es-CL"
+            ).format(numero);
+
+    }
+
+    else {
+
+        elemento.textContent =
+            valor ?? "0";
 
     }
 
@@ -590,7 +631,9 @@ function mostrarDistribucion(
 
 
     if (!contenedor) {
+
         return;
+
     }
 
 
@@ -669,7 +712,7 @@ function mostrarDistribucion(
 
 
 /* ==========================================================
-   PORCENTAJE
+   CALCULAR PORCENTAJE PARA BARRAS
 ========================================================== */
 
 function calcularPorcentaje(
@@ -687,7 +730,9 @@ function calcularPorcentaje(
 
 
     if (total === 0) {
+
         return 0;
+
     }
 
 
