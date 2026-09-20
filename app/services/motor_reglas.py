@@ -1,6 +1,9 @@
 from collections import defaultdict, deque
 from datetime import timedelta
+from time import perf_counter
 import unicodedata
+
+from sqlalchemy.orm import joinedload
 
 from app import db
 from app.models import (
@@ -18,6 +21,9 @@ class MotorReglas:
     Analiza los eventos almacenados utilizando las reglas
     activas configuradas en la base de datos y genera alertas
     evitando duplicar alertas previamente creadas.
+
+    La detección de duplicados utiliza una caché en memoria
+    para evitar ejecutar miles de consultas SQL individuales.
     """
 
     HORA_INICIO_HABITUAL = 8
@@ -26,17 +32,25 @@ class MotorReglas:
     def __init__(self):
         self.alertas_generadas = 0
 
+        # Conjunto de pares (id_regla, id_evento).
+        # Se carga una sola vez antes del procesamiento.
+        self.eventos_ya_alertados = set()
+
     # ==========================================================
     # UTILIDADES
     # ==========================================================
 
     @staticmethod
     def _normalizar(texto):
+        """
+        Convierte un texto a minúsculas y elimina tildes
+        para facilitar las comparaciones.
+        """
+
         if not texto:
             return ""
 
         texto = str(texto).lower().strip()
-
         texto = unicodedata.normalize("NFD", texto)
 
         return "".join(
@@ -59,6 +73,10 @@ class MotorReglas:
 
     @staticmethod
     def _regla_es(regla, palabras):
+        """
+        Comprueba si una regla contiene determinadas palabras.
+        """
+
         texto = MotorReglas._valor_regla(regla)
 
         return all(
@@ -67,30 +85,60 @@ class MotorReglas:
         )
 
     # ==========================================================
-    # CONTROL DE DUPLICADOS
+    # CARGA Y CONTROL DE DUPLICADOS
     # ==========================================================
 
-    @staticmethod
-    def _evento_ya_alertado(id_regla, id_evento):
+    def _cargar_eventos_ya_alertados(self):
         """
-        Comprueba si un evento ya está asociado a una alerta
-        generada por la misma regla.
+        Obtiene en una sola consulta todas las relaciones
+        regla-evento que ya han generado una alerta.
+
+        Así se evita consultar MySQL individualmente por cada
+        evento procesado.
         """
 
-        resultado = (
-            db.session.query(AlertaEvento)
+        inicio = perf_counter()
+
+        print("Cargando relaciones de alertas existentes...")
+
+        relaciones = (
+            db.session.query(
+                Alerta.id_regla,
+                AlertaEvento.id_evento,
+            )
             .join(
-                Alerta,
-                Alerta.id_alerta == AlertaEvento.id_alerta
+                AlertaEvento,
+                Alerta.id_alerta == AlertaEvento.id_alerta,
             )
-            .filter(
-                Alerta.id_regla == id_regla,
-                AlertaEvento.id_evento == id_evento
-            )
-            .first()
+            .all()
         )
 
-        return resultado is not None
+        self.eventos_ya_alertados = {
+            (id_regla, id_evento)
+            for id_regla, id_evento in relaciones
+        }
+
+        tiempo = perf_counter() - inicio
+
+        print(
+            "Relaciones regla-evento cargadas: "
+            f"{len(self.eventos_ya_alertados):,}"
+        )
+        print(
+            "Tiempo carga de relaciones: "
+            f"{tiempo:.4f} segundos"
+        )
+
+    def _evento_ya_alertado(self, id_regla, id_evento):
+        """
+        Comprueba en memoria si un evento ya fue procesado
+        por una determinada regla.
+        """
+
+        return (
+            id_regla,
+            id_evento,
+        ) in self.eventos_ya_alertados
 
     # ==========================================================
     # CREACIÓN DE ALERTA
@@ -101,10 +149,13 @@ class MotorReglas:
         regla,
         eventos,
         descripcion,
-        severidad=None
+        severidad=None,
     ):
         """
         Crea una alerta y relaciona los eventos que la originaron.
+
+        Solo considera eventos que todavía no hayan generado
+        una alerta para la misma regla.
         """
 
         if not eventos:
@@ -115,7 +166,7 @@ class MotorReglas:
             for evento in eventos
             if not self._evento_ya_alertado(
                 regla.id_regla,
-                evento.id_evento
+                evento.id_evento,
             )
         ]
 
@@ -130,21 +181,31 @@ class MotorReglas:
                 or "MEDIA"
             ),
             descripcion=descripcion,
-            estado="PENDIENTE"
+            estado="PENDIENTE",
         )
 
         db.session.add(alerta)
 
-        # Necesario para obtener id_alerta
+        # Necesario para obtener id_alerta antes de crear
+        # las relaciones alerta-evento.
         db.session.flush()
 
         for evento in eventos_nuevos:
             relacion = AlertaEvento(
                 id_alerta=alerta.id_alerta,
-                id_evento=evento.id_evento
+                id_evento=evento.id_evento,
             )
 
             db.session.add(relacion)
+
+            # Actualiza inmediatamente la caché para impedir
+            # duplicados dentro de esta misma ejecución.
+            self.eventos_ya_alertados.add(
+                (
+                    regla.id_regla,
+                    evento.id_evento,
+                )
+            )
 
         self.alertas_generadas += 1
 
@@ -156,13 +217,18 @@ class MotorReglas:
     # ==========================================================
 
     def _autenticaciones_fallidas(self, regla, eventos):
+        """
+        Detecta varios intentos de autenticación fallida
+        provenientes de una misma dirección IP dentro
+        de un intervalo determinado.
+        """
+
         umbral = regla.umbral or 3
         intervalo = regla.intervalo_minutos or 10
 
         candidatos = []
 
         for evento in eventos:
-
             texto = self._normalizar(
                 f"{getattr(evento.tipo_evento, 'nombre_tipo', '')} "
                 f"{evento.resultado or ''} "
@@ -186,13 +252,10 @@ class MotorReglas:
                 por_ip[evento.direccion_ip].append(evento)
 
         for ip, lista in por_ip.items():
-
             lista.sort(key=lambda e: e.fecha_hora)
-
             ventana = deque()
 
             for evento in lista:
-
                 ventana.append(evento)
 
                 limite = (
@@ -207,7 +270,6 @@ class MotorReglas:
                     ventana.popleft()
 
                 if len(ventana) >= umbral:
-
                     eventos_alerta = list(ventana)
 
                     self._crear_alerta(
@@ -219,7 +281,7 @@ class MotorReglas:
                             f"desde la dirección IP {ip} "
                             f"dentro de un período de "
                             f"{intervalo} minutos."
-                        )
+                        ),
                     )
 
                     ventana.clear()
@@ -230,6 +292,11 @@ class MotorReglas:
     # ==========================================================
 
     def _concentracion_ip(self, regla, eventos):
+        """
+        Detecta concentraciones de eventos provenientes
+        desde una misma dirección IP.
+        """
+
         umbral = regla.umbral or 10
         intervalo = regla.intervalo_minutos or 10
 
@@ -240,13 +307,10 @@ class MotorReglas:
                 por_ip[evento.direccion_ip].append(evento)
 
         for ip, lista in por_ip.items():
-
             lista.sort(key=lambda e: e.fecha_hora)
-
             ventana = deque()
 
             for evento in lista:
-
                 ventana.append(evento)
 
                 limite = (
@@ -261,7 +325,6 @@ class MotorReglas:
                     ventana.popleft()
 
                 if len(ventana) >= umbral:
-
                     eventos_alerta = list(ventana)
 
                     self._crear_alerta(
@@ -273,7 +336,7 @@ class MotorReglas:
                             f"provenientes de la dirección IP "
                             f"{ip} dentro de un período de "
                             f"{intervalo} minutos."
-                        )
+                        ),
                     )
 
                     ventana.clear()
@@ -284,15 +347,17 @@ class MotorReglas:
     # ==========================================================
 
     def _eventos_criticos(self, regla, eventos):
+        """
+        Genera una alerta individual cuando se detecta
+        un evento clasificado con severidad crítica.
+        """
 
         for evento in eventos:
-
             severidad = self._normalizar(
                 evento.severidad
             )
 
             if severidad == "critica":
-
                 self._crear_alerta(
                     regla,
                     [evento],
@@ -302,7 +367,7 @@ class MotorReglas:
                         f"Origen IP: "
                         f"{evento.direccion_ip or 'No registrada'}."
                     ),
-                    severidad="CRITICA"
+                    severidad="CRITICA",
                 )
 
     # ==========================================================
@@ -311,9 +376,12 @@ class MotorReglas:
     # ==========================================================
 
     def _fuera_horario(self, regla, eventos):
+        """
+        Detecta eventos registrados fuera del horario
+        habitual configurado para VIGIA.
+        """
 
         for evento in eventos:
-
             if not evento.fecha_hora:
                 continue
 
@@ -325,7 +393,6 @@ class MotorReglas:
             )
 
             if fuera_horario:
-
                 self._crear_alerta(
                     regla,
                     [evento],
@@ -335,7 +402,7 @@ class MotorReglas:
                         f"Evento #{evento.id_evento} registrado "
                         f"a las "
                         f"{evento.fecha_hora.strftime('%H:%M:%S')}."
-                    )
+                    ),
                 )
 
     # ==========================================================
@@ -343,10 +410,26 @@ class MotorReglas:
     # ==========================================================
 
     def procesar(self):
+        """
+        Ejecuta todas las reglas activas sobre los eventos
+        almacenados en VIGIA.
+
+        La transacción se confirma una sola vez al final para
+        evitar que SQLAlchemy expire los objetos cargados entre
+        reglas y provoque miles de recargas desde MySQL.
+        """
+
+        inicio_total = perf_counter()
 
         print("=" * 60)
         print("VIGIA - MOTOR DE REGLAS DE DETECCION")
         print("=" * 60)
+
+        # ------------------------------------------------------
+        # CARGAR REGLAS ACTIVAS
+        # ------------------------------------------------------
+
+        inicio = perf_counter()
 
         reglas = (
             ReglaDeteccion.query
@@ -355,24 +438,69 @@ class MotorReglas:
             .all()
         )
 
+        tiempo_reglas = perf_counter() - inicio
+
+        # ------------------------------------------------------
+        # CARGAR EVENTOS
+        # joinedload evita consultas adicionales al acceder
+        # a evento.tipo_evento.
+        # ------------------------------------------------------
+
+        inicio = perf_counter()
+
         eventos = (
             EventoSeguridad.query
+            .options(
+                joinedload(
+                    EventoSeguridad.tipo_evento
+                )
+            )
             .order_by(EventoSeguridad.fecha_hora)
             .all()
         )
 
-        print(f"Eventos disponibles: {len(eventos):,}")
-        print(f"Reglas activas: {len(reglas)}")
+        tiempo_eventos = perf_counter() - inicio
+
+        print(
+            f"Eventos disponibles: {len(eventos):,}"
+        )
+        print(
+            f"Reglas activas: {len(reglas)}"
+        )
+        print(
+            "Tiempo carga de reglas: "
+            f"{tiempo_reglas:.4f} segundos"
+        )
+        print(
+            "Tiempo carga de eventos: "
+            f"{tiempo_eventos:.4f} segundos"
+        )
         print()
 
+        # ------------------------------------------------------
+        # CARGAR RELACIONES EXISTENTES UNA SOLA VEZ
+        # ------------------------------------------------------
+
+        self._cargar_eventos_ya_alertados()
+
+        print()
+
+        # ------------------------------------------------------
+        # PROCESAR REGLAS
+        # ------------------------------------------------------
+
         for regla in reglas:
+            inicio_regla = perf_counter()
 
             texto = self._valor_regla(regla)
 
             print(
                 f"Procesando regla "
-                f"{regla.id_regla}: {regla.nombre}"
+                f"{regla.id_regla}: "
+                f"{regla.nombre}"
             )
+
+            alertas_antes = self.alertas_generadas
 
             if (
                 "autentic" in texto
@@ -380,7 +508,7 @@ class MotorReglas:
             ):
                 self._autenticaciones_fallidas(
                     regla,
-                    eventos
+                    eventos,
                 )
 
             elif (
@@ -392,13 +520,13 @@ class MotorReglas:
             ):
                 self._concentracion_ip(
                     regla,
-                    eventos
+                    eventos,
                 )
 
             elif "critic" in texto:
                 self._eventos_criticos(
                     regla,
-                    eventos
+                    eventos,
                 )
 
             elif (
@@ -407,17 +535,54 @@ class MotorReglas:
             ):
                 self._fuera_horario(
                     regla,
-                    eventos
+                    eventos,
                 )
 
             else:
                 print(
-                    "  AVISO: tipo de regla no reconocido."
+                    "  AVISO: tipo de regla "
+                    "no reconocido."
                 )
 
-        db.session.commit()
+            # Envía cambios pendientes a la BD sin cerrar
+            # la transacción ni expirar los eventos cargados.
+            db.session.flush()
 
-        print()
+            generadas_regla = (
+                self.alertas_generadas
+                - alertas_antes
+            )
+
+            tiempo_regla = (
+                perf_counter()
+                - inicio_regla
+            )
+
+            print(
+                f"  Alertas nuevas de esta regla: "
+                f"{generadas_regla:,}"
+            )
+            print(
+                f"  Tiempo de la regla: "
+                f"{tiempo_regla:.4f} segundos"
+            )
+            print("  Estado: OK")
+            print()
+
+        # ------------------------------------------------------
+        # COMMIT ÚNICO FINAL
+        # ------------------------------------------------------
+
+        inicio_commit = perf_counter()
+        db.session.commit()
+        tiempo_commit = perf_counter() - inicio_commit
+
+        tiempo_total = perf_counter() - inicio_total
+
+        # ------------------------------------------------------
+        # RESULTADO
+        # ------------------------------------------------------
+
         print("=" * 60)
         print("RESULTADO DEL MOTOR DE REGLAS")
         print("=" * 60)
@@ -425,8 +590,16 @@ class MotorReglas:
             f"Alertas nuevas generadas: "
             f"{self.alertas_generadas:,}"
         )
+        print(
+            f"Tiempo del commit final: "
+            f"{tiempo_commit:.4f} segundos"
+        )
+        print(
+            f"Tiempo total del motor: "
+            f"{tiempo_total:.4f} segundos"
+        )
         print("ESTADO: PROCESAMIENTO FINALIZADO")
         print("=" * 60)
 
         return self.alertas_generadas
-    
+
